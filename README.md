@@ -24,3 +24,12 @@ This is a modern fullstack monorepo powered by:
 ├── package.json        # Root workspace manager
 └── pnpm-workspace.yaml # Workspace config
 ```
+
+---
+
+## Run dev servers
+
+```bash
+cd frontend && pnpm run dev   # for frontend
+cd backend && pnpm run dev    # for backend
+```
