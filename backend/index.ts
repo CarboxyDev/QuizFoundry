@@ -1,23 +1,25 @@
-import express from 'express';
-import cors from 'cors';
+import express from "express";
+import cors from "cors";
+import { env } from "./env";
+
 const app = express();
-const port = 2003;
+const port = env.PORT;
 
 app.use(
   cors({
-    origin: '*',
+    origin: "*",
     credentials: true,
   })
 );
 
-app.get('/', (req, res) => {
-  res.send('Hello from Express!');
+app.get("/", (req, res) => {
+  res.send("Hello from Express!");
 });
 
-app.get('/test', (req, res) => {
+app.get("/test", (req, res) => {
   res.json({
-    message: 'Hello from Express!',
-    status: 'success',
+    message: "Hello from Express!",
+    status: "success",
   });
 });
 
