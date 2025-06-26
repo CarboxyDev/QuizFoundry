@@ -1,6 +1,9 @@
 import express from "express";
 import cors from "cors";
 import { env } from "./env";
+import { errorHandler } from "./middleware/error-handler";
+import metaRouter from "./routes/meta";
+import usersRouter from "./routes/users";
 
 const app = express();
 const port = env.PORT;
@@ -12,15 +15,10 @@ app.use(
   })
 );
 
-app.get("/", (req, res) => {
-  res.send("Hello from Express!");
-});
+app.use("/api/meta", metaRouter);
+app.use("/api/users", usersRouter);
 
-app.get("/test", (req, res) => {
-  res.json({
-    message: "Hello from Express!",
-    status: "success",
-  });
-});
+// Global error handler
+app.use(errorHandler);
 
-app.listen(port, () => console.log(`Backend listening on port ${port}`));
+app.listen(port, () => console.log(`Backend started on port ${port}`));
