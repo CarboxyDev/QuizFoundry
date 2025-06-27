@@ -1,11 +1,22 @@
 {
     "compilerOptions": {
         "composite": true,
-        "target": "ES2020",
-        "module": "ESNext",
-        "strict": true
+        "declaration": true,
+        "declarationMap": false,
+        "emitDeclarationOnly": true,
+        "strict": true,
+        "target": "ESNext",
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "isolatedModules": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true
     },
     "include": [
-        "**/*.ts"
+        "./**/*.ts"
+    ],
+    "exclude": [
+        "node_modules",
+        "dist"
     ]
 }

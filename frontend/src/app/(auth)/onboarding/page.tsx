@@ -132,8 +132,8 @@ export default function OnboardingPage() {
                 Welcome aboard! 🎉
               </CardTitle>
               <CardDescription className="text-muted-foreground mb-8">
-                Your account has been set up successfully. You're ready to get
-                started!
+                Your account has been set up successfully. You&apos;re ready to
+                get started!
               </CardDescription>
 
               <Button
@@ -226,7 +226,7 @@ export default function OnboardingPage() {
                       className="text-foreground flex items-center gap-2"
                     >
                       <User className="w-4 h-4" />
-                      What's your role?
+                      What&apos;s your role?
                     </Label>
                     <Select
                       value={data.role}
