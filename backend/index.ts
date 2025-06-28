@@ -15,6 +15,9 @@ app.use(
   })
 );
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 app.use("/api/meta", metaRouter);
 app.use("/api/users", usersRouter);
 

@@ -3,12 +3,12 @@ import asyncHandler from "express-async-handler";
 
 const metaRouter = express.Router();
 
-metaRouter.post(
+metaRouter.get(
   "/test",
   asyncHandler(async (req, res) => {
     res.json({
       message: "Hello from Express!",
-      status: "success",
+      success: true,
     });
   })
 );

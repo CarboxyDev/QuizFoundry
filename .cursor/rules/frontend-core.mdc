@@ -51,9 +51,9 @@ You are a Senior Front-End Developer and an Expert in ReactJS, NextJS 15 (App ro
 - Use TypeScript for all code; prefer interfaces over types.
 - Use functional components with TypeScript interfaces.
 - Favor using curly braces in conditionals.
+- For components with props, create an interface for the props and then use it on the component.
 
 # Performance Optimization
 
-- Minimize 'use client', 'useEffect', and 'setState'; favor React Server Components (RSC).
 - Make loading state UI for components where it makes sense
 

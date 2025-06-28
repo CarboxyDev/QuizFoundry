@@ -26,9 +26,17 @@
       ],
       "@types/*": [
         "../packages/types/*"
+      ],
+      "@shared/*": [
+        "../packages/types/*"
       ]
     },
-    "baseUrl": "."
+    "baseUrl": ".",
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
   "include": [
     "next-env.d.ts",
