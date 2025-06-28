@@ -5,8 +5,8 @@ dotenv.config();
 
 const envSchema = z.object({
   PORT: z.string().transform(Number).default("2003"),
-  //DATABASE_URL: z.string().url(),
-  SECRET_KEY: z.string().min(1),
+  SUPABASE_URL: z.string().url(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

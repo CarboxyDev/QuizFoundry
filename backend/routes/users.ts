@@ -1,27 +1,90 @@
 import express from "express";
 import asyncHandler from "express-async-handler";
-import { createUserSchema } from "../schemas/userSchema";
+import { createUserSchema, updateUserSchema } from "../schemas/userSchema";
 import { AppError } from "../errors/AppError";
+import {
+  getAllUsers,
+  getUserById,
+  createUserProfile,
+  updateUserProfile,
+} from "../services/userService";
 
 const usersRouter = express.Router();
 
+/**
+ * GET /users - List all users
+ */
+usersRouter.get(
+  "/",
+  asyncHandler(async (req, res) => {
+    const users = await getAllUsers();
+    res.json({
+      success: true,
+      data: users,
+    });
+  })
+);
+
+/**
+ * GET /users/:id - Get single user by ID
+ */
+usersRouter.get(
+  "/:id",
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const user = await getUserById(id);
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+
+    res.json({
+      success: true,
+      data: user,
+    });
+  })
+);
+
+/**
+ * POST /users - Create user profile
+ */
 usersRouter.post(
   "/",
   asyncHandler(async (req, res) => {
-    const parsed = createUserSchema.safeParse(req.body);
+    const validationResult = createUserSchema.safeParse(req.body);
 
-    if (!parsed.success) {
-      throw new AppError("Invalid input", 400);
+    if (!validationResult.success) {
+      throw new AppError("Invalid input data", 400);
     }
 
-    const user = parsed.data;
+    const user = await createUserProfile(validationResult.data);
 
-    // Mock DB operation
-    if (user.email === "fail@example.com") {
-      throw new AppError("User already exists", 409);
+    res.status(201).json({
+      success: true,
+      data: user,
+    });
+  })
+);
+
+/**
+ * PUT /users/:id - Update user profile
+ */
+usersRouter.put(
+  "/:id",
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const validationResult = updateUserSchema.safeParse(req.body);
+
+    if (!validationResult.success) {
+      throw new AppError("Invalid input data", 400);
     }
 
-    res.status(201).json({ success: true, user });
+    const user = await updateUserProfile(id, validationResult.data);
+
+    res.json({
+      success: true,
+      data: user,
+    });
   })
 );
 

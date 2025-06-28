@@ -32,12 +32,13 @@ This is a modern fullstack monorepo powered by:
 ```bash
 cd frontend && pnpm run dev   # for frontend
 cd backend && pnpm run dev    # for backend
-supabase start # for database
+supabase start # for full db + services
+supabase start --exclude edge-runtime,realtime,storage-api # for core db
 ```
 
 ### URLs
 
 Frontend: http://localhost:4000
 Backend: http://localhost:2003
-Database: http://127.0.0.1:54321
+Database: postgresql://postgres:postgres@127.0.0.1:54322/postgres
 Database Studio: http://localhost:54323
