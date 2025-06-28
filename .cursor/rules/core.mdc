@@ -27,7 +27,7 @@ You will be collaborating with a human developer who is **very skilled at fronte
 # UI Development Guidelines
 
 - Use TailwindCSS. Follow project theme: `base` for background, `primary` for accents.
-- Use `shadcn/ui` components and extend them where possible before creating custom ones.
+- Use `shadcn/ui` components and extend them where possible before creating custom ones. `shadcn/ui` features a comprehensive list of components that are part of a complete design system.
 - Create modular components. Don't bloat pages with UI logic.
 - Add interaction details: `hover:`, `focus:`, `transition`, `ring`, `opacity`, `delay`, `ease-in-out` as appropriate.
 - Use `framer-motion` for animations when meaningful (e.g., modals, transitions, tooltips).
@@ -121,3 +121,13 @@ Use TypeScript path aliases for cleaner imports. These are configured in `tsconf
 - `@shared/*` → `shared/*` (shared code used by both frontend and backend)
 - `@shared/types/*` → `shared/types/*`
 - `@shared/utils/*` → `shared/utils/*`
+
+# Project Docs and Notes
+
+This project uses structured markdown notes for feature guidelines and design conventions.
+
+- All notes are in the `/docs` folder.
+- Use `tasks.md` for referencing the task progress. This file is view-only.
+- Refer to `frontend-notes/` and `backend-notes/` for implementation-specific guides.
+- Feature-specific notes (e.g., `onboarding.md`, `quiz-generation.md`) describe UX flows, component needs, and backend logic.
+- When generating code, follow instructions mentioned in these files if referenced in a prompt.
