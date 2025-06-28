@@ -40,5 +40,5 @@ supabase start --exclude edge-runtime,realtime,storage-api # for core db
 
 Frontend: http://localhost:4000
 Backend: http://localhost:2003
-Database: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+Database: http://127.0.0.1:54321
 Database Studio: http://localhost:54323

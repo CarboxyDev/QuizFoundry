@@ -1,15 +1,42 @@
 import express from "express";
 import asyncHandler from "express-async-handler";
-import { createUserSchema, updateUserSchema } from "../schemas/userSchema";
+import {
+  createUserSchema,
+  updateUserSchema,
+  signupSchema,
+} from "../schemas/userSchema";
 import { AppError } from "../errors/AppError";
 import {
   getAllUsers,
   getUserById,
   createUserProfile,
   updateUserProfile,
+  signupUser,
 } from "../services/userService";
 
 const usersRouter = express.Router();
+
+/**
+ * POST /users/sign-up - Sign up new user
+ */
+usersRouter.post(
+  "/sign-up",
+  asyncHandler(async (req, res) => {
+    const validationResult = signupSchema.safeParse(req.body);
+
+    if (!validationResult.success) {
+      throw new AppError("Invalid input data", 400);
+    }
+
+    const user = await signupUser(validationResult.data);
+
+    res.status(201).json({
+      success: true,
+      data: user,
+      message: "User created successfully",
+    });
+  })
+);
 
 /**
  * GET /users - List all users
@@ -39,27 +66,6 @@ usersRouter.get(
     }
 
     res.json({
-      success: true,
-      data: user,
-    });
-  })
-);
-
-/**
- * POST /users - Create user profile
- */
-usersRouter.post(
-  "/",
-  asyncHandler(async (req, res) => {
-    const validationResult = createUserSchema.safeParse(req.body);
-
-    if (!validationResult.success) {
-      throw new AppError("Invalid input data", 400);
-    }
-
-    const user = await createUserProfile(validationResult.data);
-
-    res.status(201).json({
       success: true,
       data: user,
     });

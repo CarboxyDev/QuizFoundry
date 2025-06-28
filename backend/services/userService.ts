@@ -1,6 +1,10 @@
 import supabase from "../lib/supabase";
 import { AppError } from "../errors/AppError";
-import type { CreateUserInput, UpdateUserInput } from "../schemas/userSchema";
+import type {
+  CreateUserInput,
+  UpdateUserInput,
+  SignupInput,
+} from "../schemas/userSchema";
 
 export interface UserProfile {
   id: string;
@@ -87,4 +91,50 @@ export async function updateUserProfile(
   }
 
   return data;
+}
+
+/**
+ * Sign up a new user with email/password and create their profile
+ */
+export async function signupUser(
+  signupData: SignupInput
+): Promise<UserProfile> {
+  const { email, password, name } = signupData;
+
+  // Create user in Supabase Auth using admin client
+  const { data: authData, error: authError } =
+    await supabase.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true, // Skip email confirmation
+    });
+
+  if (authError || !authData.user) {
+    throw new AppError(
+      `Failed to create user: ${authError?.message || "Unknown error"}`,
+      400
+    );
+  }
+
+  const { data: profileData, error: profileError } = await supabase
+    .from("profiles")
+    .insert({
+      id: authData.user.id,
+      name: name || null,
+      role: null, // FIXME: Add roles in future
+      avatar_url: null,
+    })
+    .select()
+    .single();
+
+  // In case profile creation fails, clean up the auth user
+  if (profileError) {
+    await supabase.auth.admin.deleteUser(authData.user.id);
+    throw new AppError(
+      `Failed to create user profile: ${profileError.message}`,
+      500
+    );
+  }
+
+  return profileData;
 }
