@@ -8,10 +8,18 @@
             "path": "backend"
         },
         {
-            "path": "packages/utils"
+            "path": "shared/types"
         },
         {
-            "path": "packages/types"
+            "path": "shared/utils"
         }
-    ]
+    ],
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "@shared/*": [
+                "shared/*"
+            ]
+        }
+    }
 }

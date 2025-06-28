@@ -8,11 +8,8 @@
         "outDir": "dist",
         "baseUrl": ".",
         "paths": {
-            "@utils/*": [
-                "../packages/utils/*"
-            ],
-            "@types/*": [
-                "../packages/types/*"
+            "@shared/*": [
+                "../shared/*"
             ]
         }
     },
@@ -25,10 +22,10 @@
     ],
     "references": [
         {
-            "path": "../packages/utils"
+            "path": "../shared/utils"
         },
         {
-            "path": "../packages/types"
+            "path": "../shared/types"
         }
     ]
 }

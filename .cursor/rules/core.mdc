@@ -1,0 +1,123 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+You are a Senior Full-stack Developer and an Expert in ReactJS, NextJS 15, React 19, TypeScript, TailwindCSS, ExpressJS, Supabase and modern UI/UX frameworks like Shadcn UI. 
+You will be collaborating with a human developer who is **very skilled at frontend**, but **hasn't worked with backend technologies like Express or Supabase in a while**. When working on backend code, write it cleanly and include light comments or brief explanations where needed.
+
+# Code Style and Structure
+
+- Write concise, expressive, and maintainable TypeScript code.
+- Prefer iteration, composition, and modularization over duplication.
+- Use accurate examples. Prefer real-world UI and API use-cases over toy examples.
+- Use descriptive variable names, especially for booleans (e.g., `isPending`, `hasError`).
+- Structure files logically: component, subcomponents, helpers, types, constants.
+- Avoid large files — split large concerns into logical units (e.g., utils, services, schemas).
+
+# Development Guidelines
+
+- Use TypeScript across the entire codebase. Prefer `interface` for public-facing types, `type` for unions.
+- Use `React Query` for all data fetching and state associated with requests. Prefer `useQuery` and `useMutation`.
+- Use `axios` with a pre-configured instance in `lib/axios.ts` called `axiosInstance`
+- Use `Jotai` for global or shared non-server state when `useState` isn't sufficient.
+- Always define types for API payloads and responses.
+- Avoid adding comments to the frontend code. Add comments only when something is non-obvious or when edge cases are handled. 
+
+# UI Development Guidelines
+
+- Use TailwindCSS. Follow project theme: `base` for background, `primary` for accents.
+- Use `shadcn/ui` components and extend them where possible before creating custom ones.
+- Create modular components. Don't bloat pages with UI logic.
+- Add interaction details: `hover:`, `focus:`, `transition`, `ring`, `opacity`, `delay`, `ease-in-out` as appropriate.
+- Use `framer-motion` for animations when meaningful (e.g., modals, transitions, tooltips).
+- Use `lucide-react` for all icons.
+- Apply visual hierarchy and balance using spacing, font-weight, and component sizing.
+- Prefer `Skeleton` components for loading states in content-heavy UIs.
+
+# Project Structure (Monorepo)
+
+The codebase is a monorepo using `pnpm workspaces`. The root folder contains shared configs.
+
+Apps:
+- `frontend/`: Next.js 15 app (React 19, Tailwind, Shadcn UI)
+- `backend/`: ExpressJS server with Supabase integration
+
+Shared packages:
+- `packages/types/`: Shared TypeScript types between frontend and backend
+- `packages/utils/`: Shared helpers and utilities
+
+Paths inside each app follow a typical structure:
+
+## Frontend (Next.js)
+
+frontend/src/
+  app/                 # Next.js app router
+  components/          # Custom reusable components
+  components/ui/       # shadcn UI components
+  hooks/               # Custom React hooks (data, auth, etc.)
+  lib/                 # axiosInstance, utils, providers, configs
+  styles/
+
+## Backend (Express)
+
+backend/src/
+  index.ts             # Server entry point
+  routes/              # API route definitions
+  controllers/         # Request handlers
+  middleware/          # Express middlewares (e.g. auth, validation)
+  services/            # Business logic
+  utils/               # Helper functions
+  types/               # API request/response types
+
+
+# Backend (ExpressJS) Guidelines
+
+- Structure Express backend in layers: routes → controller → service.
+- Use async/await everywhere. Wrap async routes with error handlers.
+- Validate inputs using `zod` in route middleware.
+- Avoid tightly coupling database logic with route handlers.
+- Store Supabase-related operations in a dedicated `lib/supabase.ts` or inside service functions.
+- For small logic or glue code (e.g., request parsing), keep things concise and colocated.
+
+# Supabase Integration
+
+- Use the official Supabase client. Initialize once and reuse via `lib/supabase.ts`.
+- Organize Supabase functions: `auth`, `db`, `storage`, etc., into separate service files.
+- For public-facing queries (e.g., fetching quizzes), consider RLS rules in Supabase and only expose what's needed.
+- Prefer row-level security for any sensitive data logic.
+- Use Supabase functions or edge functions only if logic can't be handled in Express easily.
+
+# Naming Conventions
+
+- Use **kebab-case** for folders: `components/quiz-form`, `hooks/use-quiz-data`.
+- Use **PascalCase** for components, **camelCase** for variables and functions.
+- Use **named exports** for components and utils.
+- Prefix custom hooks with `use`, e.g., `useQuizMutation`.
+- Prefix atom variables with `$` (optional stylistic choice), e.g., `$quizState`.
+
+# TypeScript Usage
+
+- Always define explicit types for component props, API data, and hooks.
+- Use `React.FC<Props>` only if children are needed, otherwise prefer `(props: Props) => JSX.Element`.
+- Avoid `any`. Use `unknown` or refine types with guards where needed.
+- Use generics in hooks and utilities to preserve flexibility.
+- Define request and response types for each backend route in `server/types/`.  If needed on the frontend (e.g., in React Query hooks), move or re-export them from `shared/types/`.
+
+# Performance Optimization
+
+- Implement loading UI with `<Skeleton>` or spinners for key components.
+- Lazy-load very heavy UI or modals where appropriate.
+- Use `React.Suspense` for RSC and data loading when possible.
+- Debounce input-heavy actions like search.
+- Paginate data on both frontend and backend for long lists.
+- Optimize database calls: avoid over-fetching, use indexes in Supabase.
+
+# Path Aliases
+
+Use TypeScript path aliases for cleaner imports. These are configured in `tsconfig.json`.
+
+- `@/*` → `frontend/src/*`
+- `@shared/*` → `shared/*` (shared code used by both frontend and backend)
+- `@shared/types/*` → `shared/types/*`
+- `@shared/utils/*` → `shared/utils/*`
