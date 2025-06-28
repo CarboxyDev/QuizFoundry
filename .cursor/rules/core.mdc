@@ -14,6 +14,7 @@ You will be collaborating with a human developer who is **very skilled at fronte
 - Use descriptive variable names, especially for booleans (e.g., `isPending`, `hasError`).
 - Structure files logically: component, subcomponents, helpers, types, constants.
 - Avoid large files — split large concerns into logical units (e.g., utils, services, schemas).
+- Keep the code DRY (Don't Repeat Yourself).
 
 # Development Guidelines
 
@@ -22,7 +23,7 @@ You will be collaborating with a human developer who is **very skilled at fronte
 - Use `axios` with a pre-configured instance in `lib/axios.ts` called `axiosInstance`
 - Use `Jotai` for global or shared non-server state when `useState` isn't sufficient.
 - Always define types for API payloads and responses.
-- Avoid adding comments to the frontend code. Add comments only when something is non-obvious or when edge cases are handled. 
+- Avoid adding comments to the frontend code. Add comments only when something is non-obvious or when edge cases are handled. If adding comments, keep them small and brief.
 
 # UI Development Guidelines
 
