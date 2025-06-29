@@ -97,6 +97,11 @@ backend/src/
 - Prefix custom hooks with `use`, e.g., `useQuizMutation`.
 - Prefix atom variables with `$` (optional stylistic choice), e.g., `$quizState`.
 
+# Testing
+
+- You can assume the backend is already running at localhost:2003 so no need to spin up new backends after killing existing backend process.
+- You can assume the frontend is already running at localhost:4000.
+
 # TypeScript Usage
 
 - Always define explicit types for component props, API data, and hooks.

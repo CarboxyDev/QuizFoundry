@@ -1,4 +1,4 @@
-import supabase from "../lib/supabase";
+import supabase, { supabaseAdmin } from "../lib/supabase";
 import { AppError } from "../errors/AppError";
 import type {
   CreateUserInput,
@@ -151,7 +151,7 @@ export async function signupUser(
 
   // Create user in Supabase Auth using admin client
   const { data: authData, error: authError } =
-    await supabase.auth.admin.createUser({
+    await supabaseAdmin.auth.admin.createUser({
       email,
       password,
       email_confirm: true, // Skip email confirmation
@@ -164,7 +164,8 @@ export async function signupUser(
     );
   }
 
-  const { data: profileData, error: profileError } = await supabase
+  // Use admin client to bypass RLS for profile creation
+  const { data: profileData, error: profileError } = await supabaseAdmin
     .from("profiles")
     .insert({
       id: authData.user.id,
@@ -177,7 +178,7 @@ export async function signupUser(
 
   // In case profile creation fails, clean up the auth user
   if (profileError) {
-    await supabase.auth.admin.deleteUser(authData.user.id);
+    await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
     throw new AppError(
       `Failed to create user profile: ${profileError.message}`,
       500
