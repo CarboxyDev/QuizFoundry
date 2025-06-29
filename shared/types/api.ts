@@ -33,3 +33,24 @@ export interface UserProfile {
   avatar_url: string | null;
   created_at: string;
 }
+
+export interface OnboardingProgress {
+  user_id: string;
+  flow_type: string;
+  current_step: number;
+  is_complete: boolean;
+  started_at: string;
+  completed_at?: string;
+}
+
+export interface OnboardingData {
+  name: string;
+  role: string;
+}
+
+export interface UpdateOnboardingInput {
+  flow_type: string;
+  current_step: number;
+  is_complete?: boolean;
+  onboarding_data?: OnboardingData;
+}

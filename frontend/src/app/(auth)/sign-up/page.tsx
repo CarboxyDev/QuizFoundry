@@ -45,11 +45,11 @@ export default function SignUpPage() {
       const result = await signupMutation.mutateAsync(formData);
 
       setIsSuccess(true);
-      toast.success("Account created successfully! Welcome aboard!");
+      toast.success("Account created successfully! Let's get you set up.");
 
       // Small delay to show success state before redirect
       setTimeout(() => {
-        router.push("/login");
+        router.push("/onboarding");
       }, 1500);
     } catch (error: any) {
       // Extract error message from the response
@@ -186,7 +186,7 @@ export default function SignUpPage() {
                       {isLoading
                         ? "Creating account..."
                         : isSuccess
-                          ? "Account created! Redirecting..."
+                          ? "Account created! Setting up..."
                           : "Get started"}
                     </Button>
                   </form>
