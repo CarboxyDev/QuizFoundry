@@ -6,6 +6,11 @@ export const signupSchema = z.object({
   name: z.string().min(1, "Name is required").optional(),
 });
 
+export const loginSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(1, "Password is required"),
+});
+
 export const createUserSchema = z.object({
   id: z.string().uuid(), // auth user id
   name: z.string().min(1).optional(),
@@ -20,5 +25,6 @@ export const updateUserSchema = z.object({
 });
 
 export type SignupInput = z.infer<typeof signupSchema>;
+export type LoginInput = z.infer<typeof loginSchema>;
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;

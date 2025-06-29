@@ -1,18 +1,32 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/app/hooks/auth/useAuth";
+import { Skeleton } from "@/components/ui/skeleton";
 
-export default function Home() {
-  const [data, setData] = useState<any>(null);
+export default function HomePage() {
+  const { isAuthenticated, isLoading } = useAuth();
+  const router = useRouter();
+
   useEffect(() => {
-    fetch("http://localhost:2003/test")
-      .then((res) => res.json())
-      .then((data) => setData(data));
-  }, []);
+    if (!isLoading) {
+      if (isAuthenticated) {
+        router.push("/dashboard");
+      } else {
+        router.push("/login");
+      }
+    }
+  }, [isAuthenticated, isLoading, router]);
 
+  // Show loading state while determining auth status
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <p>{data?.message}</p>
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="space-y-4 w-full max-w-md">
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-4 w-3/4" />
+        <Skeleton className="h-4 w-1/2" />
+      </div>
     </div>
   );
 }

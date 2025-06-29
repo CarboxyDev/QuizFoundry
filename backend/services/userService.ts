@@ -4,6 +4,7 @@ import type {
   CreateUserInput,
   UpdateUserInput,
   SignupInput,
+  LoginInput,
 } from "../schemas/userSchema";
 
 export interface UserProfile {
@@ -12,6 +13,15 @@ export interface UserProfile {
   role: string | null;
   avatar_url: string | null;
   created_at: string;
+}
+
+export interface LoginResponse {
+  user: UserProfile;
+  session: {
+    access_token: string;
+    refresh_token: string;
+    expires_at: number;
+  };
 }
 
 export async function getAllUsers(): Promise<UserProfile[]> {
@@ -91,6 +101,44 @@ export async function updateUserProfile(
   }
 
   return data;
+}
+
+/**
+ * Login user with email/password
+ */
+export async function loginUser(loginData: LoginInput): Promise<LoginResponse> {
+  const { email, password } = loginData;
+
+  // Authenticate user with Supabase Auth
+  const { data: authData, error: authError } =
+    await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+  if (authError || !authData.user || !authData.session) {
+    throw new AppError("Invalid email or password", 401);
+  }
+
+  // Get user profile
+  const { data: profileData, error: profileError } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", authData.user.id)
+    .single();
+
+  if (profileError) {
+    throw new AppError("User profile not found", 404);
+  }
+
+  return {
+    user: profileData,
+    session: {
+      access_token: authData.session.access_token,
+      refresh_token: authData.session.refresh_token,
+      expires_at: authData.session.expires_at || 0,
+    },
+  };
 }
 
 /**

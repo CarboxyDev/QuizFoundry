@@ -4,6 +4,7 @@ import {
   createUserSchema,
   updateUserSchema,
   signupSchema,
+  loginSchema,
 } from "../schemas/userSchema";
 import { AppError } from "../errors/AppError";
 import {
@@ -12,6 +13,7 @@ import {
   createUserProfile,
   updateUserProfile,
   signupUser,
+  loginUser,
 } from "../services/userService";
 
 const usersRouter = express.Router();
@@ -34,6 +36,28 @@ usersRouter.post(
       success: true,
       data: user,
       message: "User created successfully",
+    });
+  })
+);
+
+/**
+ * POST /users/login - Login user
+ */
+usersRouter.post(
+  "/login",
+  asyncHandler(async (req, res) => {
+    const validationResult = loginSchema.safeParse(req.body);
+
+    if (!validationResult.success) {
+      throw new AppError("Invalid input data", 400);
+    }
+
+    const loginResponse = await loginUser(validationResult.data);
+
+    res.json({
+      success: true,
+      data: loginResponse,
+      message: "Login successful",
     });
   })
 );

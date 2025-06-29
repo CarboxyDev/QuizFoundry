@@ -13,22 +13,23 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import {
   Eye,
   EyeOff,
   Mail,
   Lock,
   Sparkles,
-  ChartBar,
-  Users,
+  Brain,
+  TrendingUp,
 } from "lucide-react";
 import Link from "next/link";
-import { useSignup } from "@/app/hooks/auth/useSignup";
 import { toast } from "sonner";
+import { useLogin } from "@/app/hooks/auth/useLogin";
+import { useAuth } from "@/app/hooks/auth/useAuth";
 
-export default function SignUpPage() {
+export default function LoginPage() {
   const router = useRouter();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -36,35 +37,45 @@ export default function SignUpPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const signupMutation = useSignup();
+  const loginMutation = useLogin();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      const result = await signupMutation.mutateAsync(formData);
+      const result = await loginMutation.mutateAsync(formData);
 
       setIsSuccess(true);
-      toast.success("Account created successfully! Welcome aboard!");
+      toast.success("Welcome back!");
+
+      // Use auth context instead of direct localStorage
+      login(result.data.user, result.data.session);
 
       // Small delay to show success state before redirect
       setTimeout(() => {
-        router.push("/login");
+        router.push("/dashboard");
       }, 1500);
     } catch (error: any) {
       // Extract error message from the response
       const errorMessage =
         error?.response?.data?.message ||
         error?.message ||
-        "Failed to create account. Please try again.";
+        "Invalid email or password. Please try again.";
 
       toast.error(errorMessage);
     }
   };
 
-  const handleGoogleSignUp = () => {
-    // TODO: Implement Google sign-up
-    console.log("Google sign up");
+  const handleGoogleLogin = () => {
+    // TODO: Implement Google login
+    console.log("Google login");
+    toast.info("Google login coming soon!");
+  };
+
+  const handleForgotPassword = () => {
+    // TODO: Implement forgot password
+    console.log("Forgot password");
+    toast.info("Forgot password functionality coming soon!");
   };
 
   const containerVariants = {
@@ -77,12 +88,12 @@ export default function SignUpPage() {
     visible: { opacity: 1, y: 0 },
   };
 
-  const isLoading = signupMutation.isPending;
+  const isLoading = loginMutation.isPending;
   const isDisabled = isLoading || isSuccess;
 
   return (
     <div className="min-h-screen flex">
-      {/* Left Panel - Sign Up Form */}
+      {/* Left Panel - Login Form */}
       <motion.div
         className="flex-1 flex items-center justify-center p-8 lg:p-12"
         initial={{ opacity: 0, x: -50 }}
@@ -105,25 +116,25 @@ export default function SignUpPage() {
               className="text-center space-y-2"
             >
               <h1 className="text-3xl font-bold tracking-tight">
-                Create your account
+                Welcome back
               </h1>
               <p className="text-muted-foreground">
-                Start your 30-day free trial and join thousands of creators
+                Sign in to your account to continue creating amazing quizzes
               </p>
             </motion.div>
 
             <motion.div variants={itemVariants}>
               <Card className="border-2">
                 <CardHeader className="space-y-1 pb-4">
-                  <CardTitle className="text-2xl">Sign up</CardTitle>
+                  <CardTitle className="text-2xl">Sign in</CardTitle>
                   <CardDescription>
-                    Enter your details below to create your account
+                    Enter your credentials to access your account
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="email">Email*</Label>
+                      <Label htmlFor="email">Email</Label>
                       <div className="relative">
                         <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                         <Input
@@ -142,12 +153,22 @@ export default function SignUpPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="password">Password*</Label>
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="password">Password</Label>
+                        <button
+                          type="button"
+                          onClick={handleForgotPassword}
+                          className="text-xs text-primary hover:underline"
+                          disabled={isDisabled}
+                        >
+                          Forgot password?
+                        </button>
+                      </div>
                       <div className="relative">
                         <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                         <Input
                           id="password"
-                          placeholder="Create a password"
+                          placeholder="Enter your password"
                           type={showPassword ? "text" : "password"}
                           value={formData.password}
                           onChange={(e) =>
@@ -173,9 +194,6 @@ export default function SignUpPage() {
                           )}
                         </button>
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        Must be at least 6 characters.
-                      </p>
                     </div>
 
                     <Button
@@ -184,10 +202,10 @@ export default function SignUpPage() {
                       disabled={isDisabled}
                     >
                       {isLoading
-                        ? "Creating account..."
+                        ? "Signing in..."
                         : isSuccess
-                          ? "Account created! Redirecting..."
-                          : "Get started"}
+                          ? "Success! Redirecting..."
+                          : "Sign in"}
                     </Button>
                   </form>
 
@@ -198,7 +216,7 @@ export default function SignUpPage() {
                   </div>
                   <Button
                     variant="outline"
-                    onClick={handleGoogleSignUp}
+                    onClick={handleGoogleLogin}
                     className="w-full"
                     disabled={isDisabled}
                   >
@@ -220,16 +238,16 @@ export default function SignUpPage() {
                         fill="#EA4335"
                       />
                     </svg>
-                    Sign up with Google
+                    Sign in with Google
                   </Button>
 
                   <p className="text-center text-sm text-muted-foreground">
-                    Already have an account?{" "}
+                    Don&apos;t have an account?{" "}
                     <Link
-                      href="/login"
+                      href="/sign-up"
                       className="underline underline-offset-4 hover:text-primary"
                     >
-                      Log in
+                      Sign up
                     </Link>
                   </p>
                 </CardContent>
@@ -239,6 +257,7 @@ export default function SignUpPage() {
         </div>
       </motion.div>
 
+      {/* Right Panel - Marketing Content */}
       <motion.div
         className="hidden lg:flex flex-1 bg-gradient-to-br from-primary/10 via-primary/5 to-background items-center justify-center p-12"
         initial={{ opacity: 0, x: 50 }}
@@ -256,14 +275,14 @@ export default function SignUpPage() {
               <Sparkles className="h-10 w-10 text-white" />
             </div>
             <h2 className="text-4xl font-bold">
-              Create intelligent quizzes in{" "}
+              Welcome back to your{" "}
               <span className="bg-gradient-to-r from-purple-500 to-sky-500 bg-clip-text text-transparent">
-                seconds
+                quiz hub
               </span>
             </h2>
             <p className="text-xl text-muted-foreground leading-relaxed">
-              Harness the power of AI to generate engaging quizzes, share them
-              with the world, and track your progress like never before.
+              Continue building amazing quizzes with AI assistance. Your
+              creative workspace is waiting for you.
             </p>
           </motion.div>
 
@@ -275,20 +294,20 @@ export default function SignUpPage() {
           >
             <div className="text-center space-y-2">
               <div className="mx-auto w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                <ChartBar className="h-6 w-6 text-primary" />
+                <Brain className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="font-semibold">Smart Analytics</h3>
+              <h3 className="font-semibold">AI-Powered</h3>
               <p className="text-sm text-muted-foreground">
-                Track performance and get insights
+                Smart quiz generation at your fingertips
               </p>
             </div>
             <div className="text-center space-y-2">
               <div className="mx-auto w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                <Users className="h-6 w-6 text-primary" />
+                <TrendingUp className="h-6 w-6 text-primary" />
               </div>
-              <h3 className="font-semibold">Share & Collaborate</h3>
+              <h3 className="font-semibold">Track Progress</h3>
               <p className="text-sm text-muted-foreground">
-                Share quizzes publicly or privately
+                Monitor your quiz performance and growth
               </p>
             </div>
           </motion.div>
@@ -299,8 +318,8 @@ export default function SignUpPage() {
             transition={{ duration: 0.6, delay: 0.8 }}
             className="text-sm text-muted-foreground"
           >
-            Join <strong className="text-foreground">10,000+</strong> creators
-            already using our platform
+            Trusted by <strong className="text-foreground">10,000+</strong> quiz
+            creators worldwide
           </motion.div>
         </div>
       </motion.div>
