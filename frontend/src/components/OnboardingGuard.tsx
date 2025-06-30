@@ -3,72 +3,50 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useOnboardingProgress } from "@/app/hooks/auth/useOnboarding";
-import { useAuth } from "@/app/hooks/auth/useAuth";
+import { AuthGuard } from "./AuthGuard";
+import { SpinLoader } from "@/components/Loaders";
 
 interface OnboardingGuardProps {
   children: React.ReactNode;
-  redirectTo?: string; // Where to redirect if onboarding is needed
 }
 
-export function OnboardingGuard({
-  children,
-  redirectTo = "/onboarding",
-}: OnboardingGuardProps) {
+function OnboardingContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { user, isLoading: isAuthLoading } = useAuth();
-  const { data: onboardingData, isLoading: isOnboardingLoading } =
-    useOnboardingProgress();
+  const { data: onboardingData, isPending } = useOnboardingProgress();
 
   useEffect(() => {
-    // Wait for both auth and onboarding data to load
-    if (isAuthLoading || isOnboardingLoading) return;
-
-    // If user is not authenticated, let AuthGuard handle it
-    if (!user) return;
-
-    // If user exists but no onboarding data found, redirect to onboarding
-    if (!onboardingData?.data) {
-      router.push(redirectTo);
-      return;
+    // If onboarding is complete, redirect to dashboard
+    if (!isPending && onboardingData?.data?.is_complete) {
+      router.push("/dashboard");
     }
+  }, [onboardingData, isPending, router]);
 
-    // If onboarding exists but not complete, redirect to onboarding
-    if (!onboardingData.data.is_complete) {
-      router.push(redirectTo);
-      return;
-    }
-  }, [
-    user,
-    onboardingData,
-    isAuthLoading,
-    isOnboardingLoading,
-    router,
-    redirectTo,
-  ]);
-
-  // Show loading while checking
-  if (isAuthLoading || isOnboardingLoading) {
+  // Show loading while checking onboarding status
+  if (isPending) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <SpinLoader />
       </div>
     );
   }
 
-  // If user is not authenticated, render children (AuthGuard will handle)
-  if (!user) {
-    return <>{children}</>;
-  }
-
-  // If onboarding is incomplete, don't render children (redirect will happen)
-  if (!onboardingData?.data?.is_complete) {
+  // If onboarding is complete, show loading while redirecting
+  if (onboardingData?.data?.is_complete) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        <SpinLoader />
       </div>
     );
   }
 
-  // Onboarding is complete, render children
+  // Onboarding is not complete - render onboarding page
   return <>{children}</>;
+}
+
+export function OnboardingGuard({ children }: OnboardingGuardProps) {
+  return (
+    <AuthGuard shouldRedirectWhenAuthenticated={false}>
+      <OnboardingContent>{children}</OnboardingContent>
+    </AuthGuard>
+  );
 }

@@ -19,7 +19,7 @@ import {
 const usersRouter = express.Router();
 
 /**
- * POST /users/sign-up - Sign up new user
+ * POST /users/sign-up - Sign up new user and automatically log them in
  */
 usersRouter.post(
   "/sign-up",
@@ -30,11 +30,11 @@ usersRouter.post(
       throw new AppError("Invalid input data", 400);
     }
 
-    const user = await signupUser(validationResult.data);
+    const loginResponse = await signupUser(validationResult.data);
 
     res.status(201).json({
       success: true,
-      data: user,
+      data: loginResponse,
       message: "User created successfully",
     });
   })

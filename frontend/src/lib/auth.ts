@@ -34,6 +34,7 @@ export const getStoredAuth = (): {
 
     // Check if token is expired
     if (session.expires_at && session.expires_at * 1000 < Date.now()) {
+      console.log("Token expired, clearing auth");
       clearStoredAuth();
       return { user: null, session: null };
     }

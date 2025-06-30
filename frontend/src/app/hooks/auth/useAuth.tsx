@@ -37,6 +37,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Initialize auth state from localStorage on mount
     const { user, session } = getStoredAuth();
 
+    console.log("Auth initialized:", { user: !!user, session: !!session });
+
     setAuthState({
       user,
       session,

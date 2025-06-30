@@ -136,17 +136,19 @@ export async function loginUser(loginData: LoginInput): Promise<LoginResponse> {
     session: {
       access_token: authData.session.access_token,
       refresh_token: authData.session.refresh_token,
-      expires_at: authData.session.expires_at || 0,
+      expires_at:
+        authData.session.expires_at || Math.floor(Date.now() / 1000) + 3600, // Default to 1 hour from now
     },
   };
 }
 
 /**
  * Sign up a new user with email/password and create their profile
+ * Also logs them in automatically
  */
 export async function signupUser(
   signupData: SignupInput
-): Promise<UserProfile> {
+): Promise<LoginResponse> {
   const { email, password, name } = signupData;
 
   // Create user in Supabase Auth using admin client
@@ -185,5 +187,30 @@ export async function signupUser(
     );
   }
 
-  return profileData;
+  // Now sign in the user to create a session
+  const { data: signInData, error: signInError } =
+    await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+  if (signInError || !signInData.user || !signInData.session) {
+    // If sign-in fails, we should still clean up
+    await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
+    await supabaseAdmin.from("profiles").delete().eq("id", authData.user.id);
+    throw new AppError(
+      `Failed to sign in after signup: ${signInError?.message || "Unknown error"}`,
+      500
+    );
+  }
+
+  return {
+    user: profileData,
+    session: {
+      access_token: signInData.session.access_token,
+      refresh_token: signInData.session.refresh_token,
+      expires_at:
+        signInData.session.expires_at || Math.floor(Date.now() / 1000) + 3600, // Default to 1 hour from now
+    },
+  };
 }

@@ -11,8 +11,8 @@ This is a granular breakdown of the MVP features. Each task should represent a s
 - [-] Build login page with email/password
 - [-] Create auth context + hook (`useAuth`)
 - [ ] Redirect to onboarding if user has not completed it
-- [ ] Create onboarding Step 1 – collect name
-- [ ] Create onboarding Step 2 – collect role/preference
+- [-] Create onboarding Step 1 – collect name
+- [-] Create onboarding Step 2 – collect role/preference
 - [ ] Store onboarding progress in `profiles` table
 - [ ] Auto-complete onboarding if coming from Google
 

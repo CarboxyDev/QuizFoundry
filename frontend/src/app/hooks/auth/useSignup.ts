@@ -1,9 +1,13 @@
 import { useMutation } from "@tanstack/react-query";
 import { axiosInstance } from "@/lib/axios";
-import type { ApiResponse, SignupInput, UserProfile } from "@shared/types/api";
+import type {
+  ApiResponse,
+  SignupInput,
+  LoginResponse,
+} from "@shared/types/api";
 import { POST_SIGNUP } from "@/lib/api";
 
-type SignupResponse = UserProfile;
+type SignupResponse = LoginResponse;
 
 export function useSignup() {
   return useMutation({
