@@ -283,29 +283,6 @@ export default function SignUpPage() {
                 </CardContent>
               </Card>
             </motion.div>
-
-            {/* Footer */}
-            <motion.div
-              variants={itemVariants}
-              className="text-center text-sm text-muted-foreground"
-            >
-              <p>
-                By creating an account, you agree to our{" "}
-                <Link
-                  href="#"
-                  className="underline underline-offset-4 hover:text-primary transition-colors"
-                >
-                  Terms of Service
-                </Link>{" "}
-                and{" "}
-                <Link
-                  href="#"
-                  className="underline underline-offset-4 hover:text-primary transition-colors"
-                >
-                  Privacy Policy
-                </Link>
-              </p>
-            </motion.div>
           </motion.div>
         </motion.div>
       </div>

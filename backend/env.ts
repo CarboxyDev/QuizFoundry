@@ -19,4 +19,6 @@ if (!parsedEnv.success) {
   process.exit(1);
 }
 
+console.log(parsedEnv.data);
+
 export const env = parsedEnv.data;

@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
 import { AppError } from "../errors/AppError";
 import { getUserById } from "../services/userService";
 import { getOnboardingProgress } from "../services/onboardingService";
+import supabase from "../lib/supabase";
 
 // Extend Request type to include user
 declare global {
@@ -32,25 +32,28 @@ export const authMiddleware = async (
     }
 
     const token = authHeader.split(" ")[1];
-    const secret = process.env.SUPABASE_JWT_SECRET;
 
-    if (!secret) {
-      throw new AppError("JWT secret not configured", 500);
+    // Verify the Supabase JWT token
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser(token);
+
+    if (error || !user) {
+      throw new AppError("Invalid access token", 401);
     }
 
-    const decoded = jwt.verify(token, secret) as any;
-
     req.user = {
-      id: decoded.sub,
-      email: decoded.email,
+      id: user.id,
+      email: user.email || "",
     };
 
     next();
   } catch (error) {
-    if (error instanceof jwt.JsonWebTokenError) {
-      throw new AppError("Invalid access token", 401);
+    if (error instanceof AppError) {
+      throw error;
     }
-    throw error;
+    throw new AppError("Invalid access token", 401);
   }
 };
 
