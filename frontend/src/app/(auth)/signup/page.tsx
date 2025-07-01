@@ -7,20 +7,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
+
 import { Eye, EyeOff, Mail, Lock, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { toast } from "sonner";
-import { useLogin } from "@/app/hooks/auth/useLogin";
+import { useSignup } from "@/app/hooks/auth/useSignup";
 import { useAuth } from "@/app/hooks/auth/useAuth";
 import { AuthGuard } from "@/components/AuthGuard";
+import { toast } from "sonner";
 import { z } from "zod";
 
-const loginSchema = z.object({
+const signupSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
-  password: z.string().min(1, "Password is required"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
-export default function LoginPage() {
+export default function SignUpPage() {
   const router = useRouter();
   const { login } = useAuth();
   const [formData, setFormData] = useState({
@@ -31,11 +32,11 @@ export default function LoginPage() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const loginMutation = useLogin();
+  const signupMutation = useSignup();
 
   const validateForm = () => {
     try {
-      loginSchema.parse(formData);
+      signupSchema.parse(formData);
       setErrors({});
       return true;
     } catch (error: unknown) {
@@ -54,7 +55,7 @@ export default function LoginPage() {
 
   const isFormValid = () => {
     try {
-      loginSchema.parse(formData);
+      signupSchema.parse(formData);
       return true;
     } catch {
       return false;
@@ -69,39 +70,32 @@ export default function LoginPage() {
     }
 
     try {
-      const result = await loginMutation.mutateAsync(formData);
+      const result = await signupMutation.mutateAsync(formData);
 
       setIsSuccess(true);
-      toast.success("Welcome back!");
+      toast.success("Account created successfully! Let's get you set up.");
 
-      // Use auth context instead of direct localStorage
+      // Use auth context to log in the user with the session data
       login(result.data.user, result.data.session);
 
       // Small delay to show success state before redirect
       setTimeout(() => {
-        router.push("/dashboard");
+        router.push("/onboarding");
       }, 1500);
     } catch (error: any) {
       // Extract error message from the response
       const errorMessage =
         error?.response?.data?.message ||
         error?.message ||
-        "Invalid email or password. Please try again.";
+        "Failed to create account. Please try again.";
 
       toast.error(errorMessage);
     }
   };
 
-  const handleGoogleLogin = () => {
-    // TODO: Implement Google login
-    console.log("Google login");
-    toast.info("Google login coming soon!");
-  };
-
-  const handleForgotPassword = () => {
-    // TODO: Implement forgot password
-    console.log("Forgot password");
-    toast.info("Forgot password functionality coming soon!");
+  const handleGoogleSignUp = () => {
+    // TODO: Implement Google sign-up
+    console.log("Google sign up");
   };
 
   const containerVariants = {
@@ -114,7 +108,7 @@ export default function LoginPage() {
     visible: { opacity: 1, y: 0 },
   };
 
-  const isLoading = loginMutation.isPending;
+  const isLoading = signupMutation.isPending;
   const isSubmitDisabled = !isFormValid() || isLoading || isSuccess;
 
   return (
@@ -149,10 +143,10 @@ export default function LoginPage() {
               </div>
               <div className="space-y-2">
                 <h1 className="text-3xl font-bold tracking-tight">
-                  Welcome Back
+                  Create Your Account
                 </h1>
                 <p className="text-muted-foreground text-lg">
-                  Access your account and continue building
+                  Join thousands of creators building amazing quizzes
                 </p>
               </div>
             </motion.div>
@@ -163,7 +157,7 @@ export default function LoginPage() {
                 <CardContent className="space-y-4 pt-6">
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
+                      <Label htmlFor="email">Email*</Label>
                       <div className="relative">
                         <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                         <Input
@@ -187,21 +181,12 @@ export default function LoginPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="password">Password</Label>
-                        <button
-                          type="button"
-                          onClick={handleForgotPassword}
-                          className="text-xs text-primary hover:underline transition-colors"
-                        >
-                          Forgot password?
-                        </button>
-                      </div>
+                      <Label htmlFor="password">Password*</Label>
                       <div className="relative">
                         <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                         <Input
                           id="password"
-                          placeholder="Enter your password"
+                          placeholder="Create a password"
                           type={showPassword ? "text" : "password"}
                           value={formData.password}
                           onChange={(e) =>
@@ -230,6 +215,9 @@ export default function LoginPage() {
                           {errors.password}
                         </p>
                       )}
+                      <p className="text-xs text-muted-foreground">
+                        Must be at least 6 characters.
+                      </p>
                     </div>
 
                     <Button
@@ -238,10 +226,10 @@ export default function LoginPage() {
                       disabled={isSubmitDisabled}
                     >
                       {isLoading
-                        ? "Signing in..."
+                        ? "Creating account..."
                         : isSuccess
-                          ? "Success! Redirecting..."
-                          : "Sign In"}
+                          ? "Account created!"
+                          : "Create Account"}
                     </Button>
                   </form>
 
@@ -258,7 +246,7 @@ export default function LoginPage() {
 
                   <Button
                     variant="outline"
-                    onClick={handleGoogleLogin}
+                    onClick={handleGoogleSignUp}
                     className="w-full h-11"
                     disabled={isLoading || isSuccess}
                   >
@@ -280,16 +268,16 @@ export default function LoginPage() {
                         fill="#EA4335"
                       />
                     </svg>
-                    Sign in with Google
+                    Sign up with Google
                   </Button>
 
                   <p className="text-center text-sm text-muted-foreground">
-                    Don&apos;t have an account?{" "}
+                    Already have an account?{" "}
                     <Link
-                      href="/sign-up"
+                      href="/login"
                       className="underline underline-offset-4 hover:text-primary transition-colors"
                     >
-                      Create one here
+                      Sign in here
                     </Link>
                   </p>
                 </CardContent>
@@ -301,7 +289,22 @@ export default function LoginPage() {
               variants={itemVariants}
               className="text-center text-sm text-muted-foreground"
             >
-              <p>Secure sign-in protected by industry-standard encryption</p>
+              <p>
+                By creating an account, you agree to our{" "}
+                <Link
+                  href="#"
+                  className="underline underline-offset-4 hover:text-primary transition-colors"
+                >
+                  Terms of Service
+                </Link>{" "}
+                and{" "}
+                <Link
+                  href="#"
+                  className="underline underline-offset-4 hover:text-primary transition-colors"
+                >
+                  Privacy Policy
+                </Link>
+              </p>
             </motion.div>
           </motion.div>
         </motion.div>
