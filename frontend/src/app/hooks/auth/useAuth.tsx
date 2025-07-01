@@ -19,6 +19,8 @@ import {
 interface AuthContextType extends AuthState {
   login: (user: UserProfile, session: UserSession) => void;
   logout: () => void;
+  updateUser: (user: UserProfile) => void;
+  isOnboardingComplete: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -57,6 +59,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   };
 
+  const updateUser = (user: UserProfile) => {
+    if (authState.session) {
+      setStoredAuth(user, authState.session);
+      setAuthState((prev) => ({
+        ...prev,
+        user,
+      }));
+    }
+  };
+
   const logout = () => {
     clearStoredAuth();
     setAuthState({
@@ -68,10 +80,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     router.push("/login");
   };
 
+  const isOnboardingComplete = authState.user?.is_onboarding_complete ?? false;
+
   const value: AuthContextType = {
     ...authState,
     login,
     logout,
+    updateUser,
+    isOnboardingComplete,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -32,6 +32,7 @@ export interface UserProfile {
   role: string | null;
   avatar_url: string | null;
   created_at: string;
+  is_onboarding_complete: boolean;
 }
 
 export interface OnboardingProgress {

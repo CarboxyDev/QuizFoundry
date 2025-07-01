@@ -4,6 +4,7 @@ import type {
   UpdateOnboardingInput,
   CompleteOnboardingInput,
 } from "../schemas/onboardingSchemas";
+import type { UserProfile } from "./userService";
 
 export interface OnboardingProgress {
   user_id: string;
@@ -106,16 +107,18 @@ export async function updateOnboardingProgress(
 export async function completeOnboarding(
   userId: string,
   onboardingData: CompleteOnboardingInput
-): Promise<{ success: boolean }> {
+): Promise<UserProfile> {
   try {
     // Update user profile with onboarding data
-    const { error: profileError } = await supabaseAdmin
+    const { data: profileData, error: profileError } = await supabaseAdmin
       .from("profiles")
       .update({
         name: onboardingData.name,
         role: onboardingData.role,
       })
-      .eq("id", userId);
+      .eq("id", userId)
+      .select()
+      .single();
 
     if (profileError) {
       throw new AppError(
@@ -131,7 +134,10 @@ export async function completeOnboarding(
       is_complete: true,
     });
 
-    return { success: true };
+    return {
+      ...profileData,
+      is_onboarding_complete: true,
+    };
   } catch (error) {
     if (error instanceof AppError) {
       throw error;

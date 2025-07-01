@@ -10,7 +10,9 @@ import type {
   OnboardingProgress,
   OnboardingData,
   UpdateOnboardingInput,
+  UserProfile,
 } from "@shared/types/api";
+import { useAuth } from "./useAuth";
 
 export function useOnboardingProgress() {
   return useQuery({
@@ -38,16 +40,25 @@ export function useUpdateOnboarding() {
   });
 }
 
+interface CompleteOnboardingResponse {
+  user: UserProfile;
+}
+
 export function useCompleteOnboarding() {
+  const { updateUser } = useAuth();
+
   return useMutation({
-    mutationFn: async (
-      data: OnboardingData
-    ): Promise<ApiResponse<{ success: boolean }>> => {
-      const res = await axiosInstance.post<ApiResponse<{ success: boolean }>>(
-        POST_COMPLETE_ONBOARDING,
-        data
-      );
-      return res.data;
+    mutationFn: async (data: OnboardingData) => {
+      const response = await axiosInstance.post<
+        ApiResponse<CompleteOnboardingResponse>
+      >(POST_COMPLETE_ONBOARDING, data);
+      return response.data;
+    },
+    onSuccess: (response) => {
+      // Update the user in the auth context with the completed onboarding status
+      if (response.data.user) {
+        updateUser(response.data.user);
+      }
     },
   });
 }

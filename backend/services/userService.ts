@@ -6,6 +6,7 @@ import type {
   SignupInput,
   LoginInput,
 } from "../schemas/userSchema";
+import { getOnboardingProgress } from "./onboardingService";
 
 export interface UserProfile {
   id: string;
@@ -13,6 +14,7 @@ export interface UserProfile {
   role: string | null;
   avatar_url: string | null;
   created_at: string;
+  is_onboarding_complete: boolean;
 }
 
 export interface LoginResponse {
@@ -131,8 +133,15 @@ export async function loginUser(loginData: LoginInput): Promise<LoginResponse> {
     throw new AppError("User profile not found", 404);
   }
 
+  // Check onboarding status
+  const onboardingProgress = await getOnboardingProgress(authData.user.id);
+  const isOnboardingComplete = onboardingProgress?.is_complete || false;
+
   return {
-    user: profileData,
+    user: {
+      ...profileData,
+      is_onboarding_complete: isOnboardingComplete,
+    },
     session: {
       access_token: authData.session.access_token,
       refresh_token: authData.session.refresh_token,
@@ -172,7 +181,7 @@ export async function signupUser(
     .insert({
       id: authData.user.id,
       name: name || null,
-      role: null, // FIXME: Add roles in future
+      role: null, // Will be set during onboarding
       avatar_url: null,
     })
     .select()
@@ -205,7 +214,10 @@ export async function signupUser(
   }
 
   return {
-    user: profileData,
+    user: {
+      ...profileData,
+      is_onboarding_complete: false, // New users always need onboarding
+    },
     session: {
       access_token: signInData.session.access_token,
       refresh_token: signInData.session.refresh_token,

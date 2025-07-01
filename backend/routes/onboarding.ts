@@ -87,11 +87,13 @@ onboardingRouter.post(
       throw new AppError("Invalid input data", 400);
     }
 
-    const result = await completeOnboarding(userId, validationResult.data);
+    const updatedUser = await completeOnboarding(userId, validationResult.data);
 
     res.json({
       success: true,
-      data: result,
+      data: {
+        user: updatedUser,
+      },
       message: "Onboarding completed successfully",
     });
   })

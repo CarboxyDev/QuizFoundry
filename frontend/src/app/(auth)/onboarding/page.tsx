@@ -68,10 +68,6 @@ export default function OnboardingPage() {
     }
   };
 
-  const handleSkip = () => {
-    router.push("/dashboard");
-  };
-
   const handleComplete = async () => {
     if (!formData.role) {
       toast.error("Please select your role");
@@ -100,6 +96,11 @@ export default function OnboardingPage() {
     visible: { opacity: 1 },
   };
 
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 },
+  };
+
   const stepVariants = {
     hidden: { opacity: 0, x: 50 },
     visible: { opacity: 1, x: 0 },
@@ -108,36 +109,46 @@ export default function OnboardingPage() {
 
   return (
     <OnboardingGuard>
-      <div className="min-h-screen flex">
-        {/* Left Panel - Onboarding Form */}
+      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-muted/20 to-background">
+        {/* Subtle background pattern */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(120,119,198,0.1),transparent_25%),radial-gradient(circle_at_80%_80%,rgba(255,255,255,0.03),transparent_25%)]" />
+
         <motion.div
-          className="flex-1 flex items-center justify-center p-8 lg:p-12"
-          initial={{ opacity: 0, x: -50 }}
-          animate={{ opacity: 1, x: 0 }}
+          className="w-full max-w-md relative z-10"
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
-          <div className="w-full max-w-md">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            transition={{
+              staggerChildren: 0.1,
+              duration: 0.6,
+            }}
+            className="space-y-8"
+          >
+            {/* Header Section */}
             <motion.div
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-              transition={{
-                staggerChildren: 0.1,
-                duration: 0.6,
-              }}
-              className="space-y-8"
+              variants={itemVariants}
+              className="text-center space-y-4"
             >
-              {/* Header */}
-              <motion.div className="text-center space-y-2">
+              <div className="mx-auto w-16 h-16 bg-gradient-to-br from-primary/20 to-primary/10 rounded-2xl flex items-center justify-center border border-primary/20">
+                <Sparkles className="h-8 w-8 text-primary" />
+              </div>
+              <div className="space-y-2">
                 <h1 className="text-3xl font-bold tracking-tight">
                   Welcome to QuizAI
                 </h1>
-                <p className="text-muted-foreground">
-                  Let's personalize your experience in just 2 steps
+                <p className="text-muted-foreground text-lg">
+                  Let's get your account set up in just 2 steps
                 </p>
-              </motion.div>
+              </div>
+            </motion.div>
 
-              {/* Progress Indicator */}
+            {/* Progress Indicator */}
+            <motion.div variants={itemVariants}>
               <div className="flex items-center justify-center space-x-2">
                 {[1, 2].map((step) => (
                   <div key={step} className="flex items-center">
@@ -160,9 +171,11 @@ export default function OnboardingPage() {
                   </div>
                 ))}
               </div>
+            </motion.div>
 
-              {/* Step Content */}
-              <Card className="border-2">
+            {/* Form Section */}
+            <motion.div variants={itemVariants}>
+              <Card className="border-2 shadow-xl">
                 <motion.div
                   key={currentStep}
                   variants={stepVariants}
@@ -173,8 +186,8 @@ export default function OnboardingPage() {
                 >
                   {currentStep === 1 && (
                     <>
-                      <CardHeader className="space-y-1 pb-4">
-                        <CardTitle className="text-2xl flex items-center gap-2">
+                      <CardHeader className="text-center space-y-1 pb-4">
+                        <CardTitle className="text-2xl flex items-center justify-center gap-2">
                           <User className="h-6 w-6" />
                           What's your name?
                         </CardTitle>
@@ -208,32 +221,18 @@ export default function OnboardingPage() {
                             </div>
                           </div>
 
-                          <div className="flex gap-3">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              onClick={handleSkip}
-                              className="flex-1"
-                              disabled={
-                                completeOnboardingMutation.isPending ||
-                                completeOnboardingMutation.isSuccess
-                              }
-                            >
-                              Skip for now
-                            </Button>
-                            <Button
-                              type="submit"
-                              className="flex-1"
-                              disabled={
-                                !formData.name.trim() ||
-                                completeOnboardingMutation.isPending ||
-                                completeOnboardingMutation.isSuccess
-                              }
-                            >
-                              Next
-                              <ChevronRight className="ml-2 h-4 w-4" />
-                            </Button>
-                          </div>
+                          <Button
+                            type="submit"
+                            className="w-full"
+                            disabled={
+                              !formData.name.trim() ||
+                              completeOnboardingMutation.isPending ||
+                              completeOnboardingMutation.isSuccess
+                            }
+                          >
+                            Continue
+                            <ChevronRight className="ml-2 h-4 w-4" />
+                          </Button>
                         </Form>
                       </CardContent>
                     </>
@@ -241,22 +240,10 @@ export default function OnboardingPage() {
 
                   {currentStep === 2 && (
                     <>
-                      <CardHeader className="space-y-1 pb-4">
-                        <CardTitle className="text-2xl flex items-center gap-2">
+                      <CardHeader className="text-center space-y-1 pb-4">
+                        <CardTitle className="text-2xl flex items-center justify-center gap-2">
                           <Users className="h-6 w-6" />
                           What's your role?
-                          <Button
-                            onClick={handleBack}
-                            className="ml-auto p-1 hover:bg-muted rounded-lg transition-colors"
-                            variant="ghost"
-                            title="Go back"
-                            disabled={
-                              completeOnboardingMutation.isPending ||
-                              completeOnboardingMutation.isSuccess
-                            }
-                          >
-                            <ArrowLeft className="h-4 w-4" />
-                          </Button>
                         </CardTitle>
                         <CardDescription>
                           This helps us customize your quiz experience
@@ -320,14 +307,15 @@ export default function OnboardingPage() {
                             <Button
                               type="button"
                               variant="outline"
-                              onClick={handleSkip}
+                              onClick={handleBack}
                               className="flex-1"
                               disabled={
                                 completeOnboardingMutation.isPending ||
                                 completeOnboardingMutation.isSuccess
                               }
                             >
-                              Skip for now
+                              <ArrowLeft className="mr-2 h-4 w-4" />
+                              Back
                             </Button>
                             <Button
                               type="submit"
@@ -339,10 +327,10 @@ export default function OnboardingPage() {
                               }
                             >
                               {completeOnboardingMutation.isPending
-                                ? "Completing..."
+                                ? "Setting up..."
                                 : completeOnboardingMutation.isSuccess
                                   ? "Redirecting..."
-                                  : "Complete"}
+                                  : "Complete Setup"}
                               <ChevronRight className="ml-2 h-4 w-4" />
                             </Button>
                           </div>
@@ -353,47 +341,7 @@ export default function OnboardingPage() {
                 </motion.div>
               </Card>
             </motion.div>
-          </div>
-        </motion.div>
-
-        {/* Right Panel - Welcome Message */}
-        <motion.div
-          className="hidden lg:flex flex-1 bg-gradient-to-br from-primary/10 via-primary/5 to-background items-center justify-center p-12"
-          initial={{ opacity: 0, x: 50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
-        >
-          <div className="max-w-lg text-center space-y-8">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              className="space-y-4"
-            >
-              <div className="mx-auto w-20 h-20 bg-gradient-to-br from-purple-500 to-sky-500 rounded-2xl flex items-center justify-center">
-                <Sparkles className="h-10 w-10 text-white" />
-              </div>
-              <h2 className="text-4xl font-bold">
-                You're almost{" "}
-                <span className="bg-gradient-to-r from-purple-500 to-sky-500 bg-clip-text text-transparent">
-                  ready!
-                </span>
-              </h2>
-              <p className="text-xl text-muted-foreground leading-relaxed">
-                Just a couple quick questions to personalize your quiz creation
-                experience and get you started on the right foot.
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.8 }}
-              className="text-sm text-muted-foreground"
-            >
-              You can always update these preferences later in your settings
-            </motion.div>
-          </div>
+          </motion.div>
         </motion.div>
       </div>
     </OnboardingGuard>

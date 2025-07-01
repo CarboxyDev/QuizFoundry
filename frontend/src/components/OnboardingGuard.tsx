@@ -2,27 +2,32 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useOnboardingProgress } from "@/app/hooks/auth/useOnboarding";
-import { AuthGuard } from "./AuthGuard";
+import { useAuth } from "@/app/hooks/auth/useAuth";
 import { SpinLoader } from "@/components/Loaders";
 
 interface OnboardingGuardProps {
   children: React.ReactNode;
 }
 
-function OnboardingContent({ children }: { children: React.ReactNode }) {
+export function OnboardingGuard({ children }: OnboardingGuardProps) {
+  const { isAuthenticated, isOnboardingComplete, isLoading } = useAuth();
   const router = useRouter();
-  const { data: onboardingData, isPending } = useOnboardingProgress();
 
   useEffect(() => {
-    // If onboarding is complete, redirect to dashboard
-    if (!isPending && onboardingData?.data?.is_complete) {
-      router.push("/dashboard");
+    if (isLoading) return;
+
+    if (!isAuthenticated) {
+      router.push("/login");
+      return;
     }
-  }, [onboardingData, isPending, router]);
 
-  // Show loading while checking onboarding status
-  if (isPending) {
+    if (isOnboardingComplete) {
+      router.push("/dashboard");
+      return;
+    }
+  }, [isAuthenticated, isOnboardingComplete, isLoading, router]);
+
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <SpinLoader />
@@ -30,23 +35,9 @@ function OnboardingContent({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // If onboarding is complete, show loading while redirecting
-  if (onboardingData?.data?.is_complete) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <SpinLoader />
-      </div>
-    );
+  if (!isAuthenticated || isOnboardingComplete) {
+    return null; // Will redirect
   }
 
-  // Onboarding is not complete - render onboarding page
   return <>{children}</>;
-}
-
-export function OnboardingGuard({ children }: OnboardingGuardProps) {
-  return (
-    <AuthGuard shouldRedirectWhenAuthenticated={false}>
-      <OnboardingContent>{children}</OnboardingContent>
-    </AuthGuard>
-  );
 }
