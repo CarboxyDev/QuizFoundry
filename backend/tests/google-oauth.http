@@ -1,0 +1,10 @@
+### Test Google OAuth Profile Creation
+POST http://localhost:2003/api/auth/google-profile
+Content-Type: application/json
+Authorization: Bearer YOUR_GOOGLE_JWT_TOKEN_HERE
+
+# Note: This endpoint requires a valid Google OAuth JWT token from Supabase
+# You can get this token by:
+# 1. Signing up with Google through the frontend
+# 2. Copying the access_token from the browser's network tab
+# 3. Using that token in the Authorization header above 

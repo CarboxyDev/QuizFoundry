@@ -10,7 +10,7 @@ import {
   updateOnboardingProgress,
   completeOnboarding,
 } from "../services/onboardingService";
-import { authMiddleware } from "../middleware/auth";
+import { authMiddleware, AuthenticatedRequest } from "../middleware/auth";
 
 const onboardingRouter = express.Router();
 
@@ -22,7 +22,7 @@ onboardingRouter.use(authMiddleware);
  */
 onboardingRouter.get(
   "/progress",
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (req: AuthenticatedRequest, res) => {
     const userId = req.user?.id;
 
     if (!userId) {
@@ -43,7 +43,7 @@ onboardingRouter.get(
  */
 onboardingRouter.post(
   "/update",
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (req: AuthenticatedRequest, res) => {
     const userId = req.user?.id;
 
     if (!userId) {
@@ -74,7 +74,7 @@ onboardingRouter.post(
  */
 onboardingRouter.post(
   "/complete",
-  asyncHandler(async (req, res) => {
+  asyncHandler(async (req: AuthenticatedRequest, res) => {
     const userId = req.user?.id;
 
     if (!userId) {

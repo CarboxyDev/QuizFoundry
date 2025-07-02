@@ -12,6 +12,7 @@ import { Eye, EyeOff, Mail, Lock, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useSignup } from "@/app/hooks/auth/useSignup";
 import { useAuth } from "@/app/hooks/auth/useAuth";
+import { useGoogleAuth } from "@/app/hooks/auth/useGoogleAuth";
 import { AuthGuard } from "@/components/AuthGuard";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -33,6 +34,7 @@ export default function SignUpPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const signupMutation = useSignup();
+  const { signUpWithGoogle, isLoading: isGoogleLoading } = useGoogleAuth();
 
   const validateForm = () => {
     try {
@@ -93,9 +95,8 @@ export default function SignUpPage() {
     }
   };
 
-  const handleGoogleSignUp = () => {
-    // TODO: Implement Google sign-up
-    console.log("Google sign up");
+  const handleGoogleSignUp = async () => {
+    await signUpWithGoogle();
   };
 
   const containerVariants = {
@@ -109,7 +110,8 @@ export default function SignUpPage() {
   };
 
   const isLoading = signupMutation.isPending;
-  const isSubmitDisabled = !isFormValid() || isLoading || isSuccess;
+  const isSubmitDisabled =
+    !isFormValid() || isLoading || isSuccess || isGoogleLoading;
 
   return (
     <AuthGuard redirectTo="/dashboard">
@@ -248,7 +250,7 @@ export default function SignUpPage() {
                     variant="outline"
                     onClick={handleGoogleSignUp}
                     className="w-full h-11"
-                    disabled={isLoading || isSuccess}
+                    disabled={isLoading || isSuccess || isGoogleLoading}
                   >
                     <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                       <path
@@ -268,7 +270,9 @@ export default function SignUpPage() {
                         fill="#EA4335"
                       />
                     </svg>
-                    Sign up with Google
+                    {isGoogleLoading
+                      ? "Redirecting to Google..."
+                      : "Sign up with Google"}
                   </Button>
 
                   <p className="text-center text-sm text-muted-foreground">

@@ -4,23 +4,22 @@ import { getUserById } from "../services/userService";
 import { getOnboardingProgress } from "../services/onboardingService";
 import supabase from "../lib/supabase";
 
+// Type for authenticated user data
+export interface AuthenticatedUser {
+  id: string;
+  email: string;
+}
+
 // Extend Request type to include user
-declare global {
-  namespace Express {
-    interface Request {
-      user?: {
-        id: string;
-        email: string;
-      };
-    }
-  }
+export interface AuthenticatedRequest extends Request {
+  user?: AuthenticatedUser;
 }
 
 /**
  * Authentication middleware - verifies JWT token and sets req.user
  */
 export const authMiddleware = async (
-  req: Request,
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ) => {
@@ -62,7 +61,7 @@ export const authMiddleware = async (
  * Use this for routes that require completed onboarding
  */
 export const requireCompletedOnboarding = async (
-  req: Request,
+  req: AuthenticatedRequest,
   res: Response,
   next: NextFunction
 ) => {

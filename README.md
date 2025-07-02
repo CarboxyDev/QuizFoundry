@@ -36,9 +36,16 @@ supabase start # for full db + services
 supabase start --exclude edge-runtime,realtime,storage-api # for core db
 ```
 
-### URLs
+## Development URLs
 
 Frontend: http://localhost:4000
 Backend: http://localhost:2003
 Database: http://127.0.0.1:54321
 Database Studio: http://localhost:54323
+
+## Cloud URLs (Hosted)
+
+Frontend: ?
+Backend: ?
+Database: https://ejyfqvdatautcibfvagc.supabase.co
+Database Studio: https://supabase.com/dashboard/project/ejyfqvdatautcibfvagc/database/schemas

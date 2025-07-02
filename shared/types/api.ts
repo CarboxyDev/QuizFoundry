@@ -6,6 +6,10 @@ export interface ApiResponse<T = any> {
 
 export interface SignupInput {
   email: string;
+  /**
+   * Password requirements:
+   * - At least 6 characters
+   */
   password: string;
   name?: string;
 }
@@ -49,9 +53,14 @@ export interface OnboardingData {
   role: string;
 }
 
+export interface PartialOnboardingData {
+  name?: string;
+  role?: string;
+}
+
 export interface UpdateOnboardingInput {
   flow_type: string;
   current_step: number;
   is_complete?: boolean;
-  onboarding_data?: OnboardingData;
+  onboarding_data?: PartialOnboardingData;
 }

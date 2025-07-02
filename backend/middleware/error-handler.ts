@@ -11,6 +11,13 @@ export function errorHandler(
   const message =
     err instanceof AppError ? err.message : "Internal Server Error";
 
-  console.error(`[ERROR] ${err.name}: ${err.message}`);
+  // Log error with request context
+  console.error(`[ERROR] ${req.method} ${req.path}:`, {
+    error: err.message,
+    stack: process.env.NODE_ENV === "development" ? err.stack : undefined,
+    userId: (req as any).user?.id || "anonymous",
+    timestamp: new Date().toISOString(),
+  });
+
   res.status(statusCode).json({ success: false, error: message });
 }

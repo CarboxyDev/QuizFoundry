@@ -5,6 +5,7 @@ dotenv.config();
 
 const envSchema = z.object({
   PORT: z.string().transform(Number).default("2003"),
+  FRONTEND_URL: z.string().url(),
   SUPABASE_URL: z.string().url(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
 });
@@ -18,7 +19,5 @@ if (!parsedEnv.success) {
   );
   process.exit(1);
 }
-
-console.log(parsedEnv.data);
 
 export const env = parsedEnv.data;

@@ -8,13 +8,14 @@ import {
 } from "../schemas/userSchema";
 import { AppError } from "../errors/AppError";
 import {
-  getAllUsers,
+  getUsers,
   getUserById,
   createUserProfile,
   updateUserProfile,
   signupUser,
   loginUser,
 } from "../services/userService";
+import { authMiddleware } from "../middleware/auth";
 
 const usersRouter = express.Router();
 
@@ -27,7 +28,8 @@ usersRouter.post(
     const validationResult = signupSchema.safeParse(req.body);
 
     if (!validationResult.success) {
-      throw new AppError("Invalid input data", 400);
+      const errors = validationResult.error.errors.map((err) => err.message);
+      throw new AppError(errors.join("; "), 400);
     }
 
     const loginResponse = await signupUser(validationResult.data);
@@ -63,12 +65,13 @@ usersRouter.post(
 );
 
 /**
- * GET /users - List all users
+ * GET /users - List all users (Protected route)
  */
 usersRouter.get(
   "/",
+  authMiddleware,
   asyncHandler(async (req, res) => {
-    const users = await getAllUsers();
+    const users = await getUsers();
     res.json({
       success: true,
       data: users,
@@ -77,10 +80,11 @@ usersRouter.get(
 );
 
 /**
- * GET /users/:id - Get single user by ID
+ * GET /users/:id - Get single user by ID (Protected route)
  */
 usersRouter.get(
   "/:id",
+  authMiddleware,
   asyncHandler(async (req, res) => {
     const { id } = req.params;
 

@@ -14,11 +14,17 @@ export function useSignup() {
     mutationFn: async (
       signupData: Omit<SignupInput, "name">
     ): Promise<ApiResponse<SignupResponse>> => {
-      const res = await axiosInstance.post<ApiResponse<SignupResponse>>(
-        POST_SIGNUP,
-        signupData
-      );
-      return res.data;
+      try {
+        const res = await axiosInstance.post<ApiResponse<SignupResponse>>(
+          POST_SIGNUP,
+          signupData
+        );
+        return res.data;
+      } catch (error: any) {
+        // Enhanced error handling for validation errors
+        const errorMessage = error?.message || "Signup failed";
+        throw new Error(errorMessage);
+      }
     },
   });
 }

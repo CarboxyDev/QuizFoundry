@@ -4,7 +4,13 @@ import type {
   UpdateOnboardingInput,
   CompleteOnboardingInput,
 } from "../schemas/onboardingSchemas";
-import type { UserProfile } from "./userService";
+import type { UserProfile } from "../../shared/types/api";
+
+// Constants for onboarding configuration
+const ONBOARDING_DEFAULTS = {
+  FLOW_TYPE: "default",
+  FINAL_STEP: 2,
+} as const;
 
 export interface OnboardingProgress {
   user_id: string;
@@ -129,8 +135,8 @@ export async function completeOnboarding(
 
     // Mark onboarding as complete
     await updateOnboardingProgress(userId, {
-      flow_type: "default",
-      current_step: 2,
+      flow_type: ONBOARDING_DEFAULTS.FLOW_TYPE,
+      current_step: ONBOARDING_DEFAULTS.FINAL_STEP,
       is_complete: true,
     });
 

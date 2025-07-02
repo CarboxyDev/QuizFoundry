@@ -6,27 +6,10 @@ import type {
   SignupInput,
   LoginInput,
 } from "../schemas/userSchema";
+import type { UserProfile, LoginResponse } from "../../shared/types/api";
 import { getOnboardingProgress } from "./onboardingService";
 
-export interface UserProfile {
-  id: string;
-  name: string | null;
-  role: string | null;
-  avatar_url: string | null;
-  created_at: string;
-  is_onboarding_complete: boolean;
-}
-
-export interface LoginResponse {
-  user: UserProfile;
-  session: {
-    access_token: string;
-    refresh_token: string;
-    expires_at: number;
-  };
-}
-
-export async function getAllUsers(): Promise<UserProfile[]> {
+export async function getUsers(): Promise<UserProfile[]> {
   const { data, error } = await supabase
     .from("profiles")
     .select("*")
@@ -225,4 +208,32 @@ export async function signupUser(
         signInData.session.expires_at || Math.floor(Date.now() / 1000) + 3600, // Default to 1 hour from now
     },
   };
+}
+
+/**
+ * Create a new user profile for Google OAuth users
+ */
+export async function createGoogleUserProfile(userData: {
+  id: string;
+  email: string;
+}): Promise<UserProfile> {
+  const { data, error } = await supabaseAdmin
+    .from("profiles")
+    .insert({
+      id: userData.id,
+      name: null, // Will be set during onboarding
+      role: null, // Will be set during onboarding
+      avatar_url: null,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    throw new AppError(
+      `Failed to create Google user profile: ${error.message}`,
+      400
+    );
+  }
+
+  return data;
 }
