@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { AppError } from "../errors/AppError";
 import { getUserById } from "../services/userService";
 import { getOnboardingProgress } from "../services/onboardingService";
-import supabase from "../lib/supabase";
+import { supabaseAuth } from "../lib/supabase";
 
 // Type for authenticated user data
 export interface AuthenticatedUser {
@@ -36,7 +36,7 @@ export const authMiddleware = async (
     const {
       data: { user },
       error,
-    } = await supabase.auth.getUser(token);
+    } = await supabaseAuth.auth.getUser(token);
 
     if (error || !user) {
       throw new AppError("Invalid access token", 401);

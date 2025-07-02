@@ -1,8 +1,19 @@
 import { createClient } from "@supabase/supabase-js";
 
-// Service role client for backend operations
-// Note: We use the service role key for all backend operations
-// as we handle authentication manually via middleware
+// Auth client for verifying user JWT tokens from frontend
+// Uses anon key to properly verify tokens issued by Supabase Auth
+const supabaseAuth = createClient(
+  process.env.SUPABASE_URL!,
+  process.env.SUPABASE_ANON_KEY!,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  }
+);
+
+// Service role client for database operations with RLS
 const supabase = createClient(
   process.env.SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -25,4 +36,4 @@ const supabaseAdmin = createClient(
 );
 
 export default supabase;
-export { supabaseAdmin };
+export { supabaseAdmin, supabaseAuth };
