@@ -4,7 +4,7 @@ import { ProtectedRouteGuard } from "@/components/AuthGuard";
 import { useAuth } from "@/app/hooks/auth/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LogOut, User, Plus, Sparkles } from "lucide-react";
+import { LogOut, User, Plus, Sparkles, Users } from "lucide-react";
 import Link from "next/link";
 
 export default function DashboardPage() {
@@ -47,6 +47,15 @@ export default function DashboardPage() {
                   <Button className="w-full flex items-center gap-2 h-11">
                     <Sparkles className="w-4 h-4" />
                     Create AI Quiz
+                  </Button>
+                </Link>
+                <Link href="/quizzes">
+                  <Button
+                    variant="outline"
+                    className="w-full flex items-center gap-2 h-11"
+                  >
+                    <Users className="w-4 h-4" />
+                    Browse Public Quizzes
                   </Button>
                 </Link>
                 <Button

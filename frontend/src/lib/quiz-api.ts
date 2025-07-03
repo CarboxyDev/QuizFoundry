@@ -23,7 +23,7 @@ export interface Question {
   order_index: number;
   created_at: string;
   updated_at: string;
-  options?: QuestionOption[];
+  question_options?: QuestionOption[];
 }
 
 export interface QuestionOption {
