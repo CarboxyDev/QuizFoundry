@@ -1,9 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import { AppError } from "../errors/AppError";
-import type {
-  CreateQuizInput,
-  QuizWithQuestionsInput,
-} from "../schemas/quizSchemas";
+import type { CreateQuizInput } from "../schemas/quizSchemas";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
