@@ -135,8 +135,8 @@ export default function CreateQuizPage() {
               </div>
               <h1 className="text-4xl font-bold mb-4">Create Your Quiz</h1>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                Describe what you'd like your quiz to be about, and our AI will
-                generate engaging questions for you.
+                Describe what you&apos;d like your quiz to be about, and our AI
+                will generate engaging questions for you.
               </p>
             </motion.div>
 

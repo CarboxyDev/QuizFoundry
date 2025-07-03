@@ -71,8 +71,10 @@ export async function generateQuiz(formData: QuizFormData): Promise<Quiz> {
     }
   );
 
-  // The axios interceptor handles errors automatically
-  // If we reach here, the request was successful
+  if (!response.data.success) {
+    throw new Error(response.data.message || "Failed to generate quiz");
+  }
+
   return response.data.data.quiz;
 }
 
@@ -81,6 +83,11 @@ export async function generateQuiz(formData: QuizFormData): Promise<Quiz> {
  */
 export async function getUserQuizzes(): Promise<Quiz[]> {
   const response = await axiosInstance.get<GetQuizzesResponse>("/quizzes/my");
+
+  if (!response.data.success) {
+    throw new Error("Failed to fetch quizzes");
+  }
+
   return response.data.data.quizzes;
 }
 
@@ -95,6 +102,10 @@ export async function getPublicQuizzes(
     `/quizzes/public?limit=${limit}&offset=${offset}`
   );
 
+  if (!response.data.success) {
+    throw new Error("Failed to fetch public quizzes");
+  }
+
   return response.data.data.quizzes;
 }
 
@@ -103,6 +114,11 @@ export async function getPublicQuizzes(
  */
 export async function getQuizById(id: string): Promise<Quiz> {
   const response = await axiosInstance.get<GetQuizResponse>(`/quizzes/${id}`);
+
+  if (!response.data.success) {
+    throw new Error("Failed to fetch quiz");
+  }
+
   return response.data.data.quiz;
 }
 
@@ -120,6 +136,10 @@ export async function updateQuiz(
     updates
   );
 
+  if (!response.data.success) {
+    throw new Error(response.data.message || "Failed to update quiz");
+  }
+
   return response.data.data.quiz;
 }
 
@@ -127,5 +147,9 @@ export async function updateQuiz(
  * Delete a quiz
  */
 export async function deleteQuiz(id: string): Promise<void> {
-  await axiosInstance.delete(`/quizzes/${id}`);
+  const response = await axiosInstance.delete(`/quizzes/${id}`);
+
+  if (!response.data.success) {
+    throw new Error("Failed to delete quiz");
+  }
 }

@@ -142,7 +142,7 @@ export default function OnboardingPage() {
                   Welcome to QuizAI
                 </h1>
                 <p className="text-muted-foreground text-lg">
-                  Let's get your account set up in just 2 steps
+                  Let&apos;s get your account set up in just 2 steps
                 </p>
               </div>
             </motion.div>
@@ -189,7 +189,7 @@ export default function OnboardingPage() {
                       <CardHeader className="text-center space-y-1 pb-4">
                         <CardTitle className="text-2xl flex items-center justify-center gap-2">
                           <User className="h-6 w-6" />
-                          What's your name?
+                          What&apos;s your name?
                         </CardTitle>
                         <CardDescription>
                           Help us personalize your experience
@@ -243,7 +243,7 @@ export default function OnboardingPage() {
                       <CardHeader className="text-center space-y-1 pb-4">
                         <CardTitle className="text-2xl flex items-center justify-center gap-2">
                           <Users className="h-6 w-6" />
-                          What's your role?
+                          What&apos;s your role?
                         </CardTitle>
                         <CardDescription>
                           This helps us customize your quiz experience

@@ -127,8 +127,8 @@ export default function QuizPage() {
               <XCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
               <h2 className="text-2xl font-bold mb-3">Quiz Not Found</h2>
               <p className="text-muted-foreground mb-6">
-                The quiz you're looking for doesn't exist or you don't have
-                access to it.
+                The quiz you&apos;re looking for doesn&apos;t exist or you
+                don&apos;t have access to it.
               </p>
               <Link href="/quizzes">
                 <Button className="w-full">

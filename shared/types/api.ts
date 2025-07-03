@@ -1,8 +1,7 @@
 export interface ApiResponse<T = any> {
   success: boolean;
-  data?: T;
+  data: T;
   message?: string;
-  error?: string;
 }
 
 export interface SignupInput {
