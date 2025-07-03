@@ -1,4 +1,4 @@
-import express from "express";
+import express, { type Router } from "express";
 import asyncHandler from "express-async-handler";
 import { AppError } from "../errors/AppError";
 import { authMiddleware, AuthenticatedRequest } from "../middleware/auth";
@@ -6,7 +6,7 @@ import { getUserById, createGoogleUserProfile } from "../services/userService";
 import { getOnboardingProgress } from "../services/onboardingService";
 import type { UserProfile } from "../../shared/types/api";
 
-const authRouter = express.Router();
+const authRouter: Router = express.Router();
 
 /**
  * POST /auth/google-profile - Handle Google OAuth user profile creation

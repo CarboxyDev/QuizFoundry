@@ -1,7 +1,7 @@
-import express from "express";
+import express, { type Router } from "express";
 import asyncHandler from "express-async-handler";
 
-const metaRouter = express.Router();
+const metaRouter: Router = express.Router();
 
 metaRouter.get(
   "/test",

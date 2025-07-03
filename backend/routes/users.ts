@@ -16,8 +16,9 @@ import {
   loginUser,
 } from "../services/userService";
 import { authMiddleware } from "../middleware/auth";
+import type { Router } from "express";
 
-const usersRouter = express.Router();
+const usersRouter: Router = express.Router();
 
 /**
  * POST /users/sign-up - Sign up new user and automatically log them in

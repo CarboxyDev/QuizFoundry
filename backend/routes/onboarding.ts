@@ -11,8 +11,9 @@ import {
   completeOnboarding,
 } from "../services/onboardingService";
 import { authMiddleware, AuthenticatedRequest } from "../middleware/auth";
+import type { Router } from "express";
 
-const onboardingRouter = express.Router();
+const onboardingRouter: Router = express.Router();
 
 // Apply auth middleware to all routes
 onboardingRouter.use(authMiddleware);

@@ -21,8 +21,9 @@ import {
   requireCompletedOnboarding,
   AuthenticatedRequest,
 } from "../middleware/auth";
+import type { Router } from "express";
 
-const quizzesRouter = express.Router();
+const quizzesRouter: Router = express.Router();
 
 /**
  * POST /quizzes/generate - Generate a quiz using AI
