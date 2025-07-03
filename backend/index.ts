@@ -11,7 +11,7 @@ import authRouter from "./routes/auth";
 import quizzesRouter from "./routes/quizzes";
 
 const app = express();
-const port = env.PORT;
+const port = process.env.PORT || env.PORT || 8080;
 
 // Security middleware
 app.use(helmet());

@@ -1,5 +1,5 @@
 ### Generate Quiz with AI
-POST http://localhost:2003/api/quizzes/generate
+POST http://localhost:8080/api/quizzes/generate
 Content-Type: application/json
 Authorization: Bearer YOUR_JWT_TOKEN_HERE
 
@@ -13,24 +13,24 @@ Authorization: Bearer YOUR_JWT_TOKEN_HERE
 ###
 
 ### Get My Quizzes
-GET http://localhost:2003/api/quizzes/my
+GET http://localhost:8080/api/quizzes/my
 Authorization: Bearer YOUR_JWT_TOKEN_HERE
 
 ###
 
 ### Get Public Quizzes
-GET http://localhost:2003/api/quizzes/public?limit=10&offset=0
+GET http://localhost:8080/api/quizzes/public?limit=10&offset=0
 
 ###
 
 ### Get Specific Quiz by ID
-GET http://localhost:2003/api/quizzes/QUIZ_ID_HERE
+GET http://localhost:8080/api/quizzes/QUIZ_ID_HERE
 Authorization: Bearer YOUR_JWT_TOKEN_HERE
 
 ###
 
 ### Update Quiz
-PUT http://localhost:2003/api/quizzes/QUIZ_ID_HERE
+PUT http://localhost:8080/api/quizzes/QUIZ_ID_HERE
 Content-Type: application/json
 Authorization: Bearer YOUR_JWT_TOKEN_HERE
 
@@ -43,7 +43,7 @@ Authorization: Bearer YOUR_JWT_TOKEN_HERE
 ###
 
 ### Add Question to Quiz
-POST http://localhost:2003/api/quizzes/QUIZ_ID_HERE/questions
+POST http://localhost:8080/api/quizzes/QUIZ_ID_HERE/questions
 Content-Type: application/json
 Authorization: Bearer YOUR_JWT_TOKEN_HERE
 
@@ -78,12 +78,12 @@ Authorization: Bearer YOUR_JWT_TOKEN_HERE
 ###
 
 ### Delete Quiz
-DELETE http://localhost:2003/api/quizzes/QUIZ_ID_HERE
+DELETE http://localhost:8080/api/quizzes/QUIZ_ID_HERE
 Authorization: Bearer YOUR_JWT_TOKEN_HERE
 
 ###
 
 ### Test Health Check
-GET http://localhost:2003/health
+GET http://localhost:8080/health
 
 ### 

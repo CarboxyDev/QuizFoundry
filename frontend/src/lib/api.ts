@@ -1,4 +1,4 @@
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:2003/api";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
 
 export const GET_TEST = `${BASE_URL}/meta/test`;
 export const POST_SIGNUP = `${BASE_URL}/users/sign-up`;

@@ -24,12 +24,18 @@ RUN npm install -g pnpm
 
 WORKDIR /app
 
-# Copy built output from builder
+# Copy built JS
 COPY --from=builder /app/backend/dist ./dist
-COPY backend/package.json backend/pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile --prod
+
+# Copy package.json only (no lockfile here — it's already used in build stage)
+COPY backend/package.json ./
+
+# Install runtime deps only
+COPY backend/package.json ./
+RUN pnpm install --prod
 
 ENV PORT=8080
 EXPOSE 8080
 
 CMD ["node", "dist/index.js"]
+

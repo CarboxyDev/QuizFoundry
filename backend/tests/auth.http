@@ -1,5 +1,5 @@
 ### Sign Up User (Email/Password)
-POST http://localhost:2003/api/users/sign-up
+POST http://localhost:8080/api/users/sign-up
 Content-Type: application/json
 
 {

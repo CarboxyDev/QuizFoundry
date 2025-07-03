@@ -39,7 +39,7 @@ supabase start --exclude edge-runtime,realtime,storage-api # for core db
 ## Development URLs
 
 Frontend: http://localhost:4000
-Backend: http://localhost:2003
+Backend: http://localhost:8080
 Database: http://127.0.0.1:54321
 Database Studio: http://localhost:54323
 

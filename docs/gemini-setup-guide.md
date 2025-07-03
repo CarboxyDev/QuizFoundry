@@ -114,7 +114,7 @@ pnpm run dev
 Use your frontend or test with curl:
 
 ```bash
-curl -X POST http://localhost:2003/api/quizzes/generate \
+curl -X POST http://localhost:8080/api/quizzes/generate \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_USER_JWT_TOKEN" \
   -d '{
