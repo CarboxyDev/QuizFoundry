@@ -1,0 +1,89 @@
+### Generate Quiz with AI
+POST http://localhost:2003/api/quizzes/generate
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+{
+  "prompt": "Create a quiz about the solar system for middle school students, focusing on planets, their characteristics, and basic astronomy concepts",
+  "difficulty": "medium",
+  "optionsCount": 4,
+  "questionCount": 5
+}
+
+###
+
+### Get My Quizzes
+GET http://localhost:2003/api/quizzes/my
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+###
+
+### Get Public Quizzes
+GET http://localhost:2003/api/quizzes/public?limit=10&offset=0
+
+###
+
+### Get Specific Quiz by ID
+GET http://localhost:2003/api/quizzes/QUIZ_ID_HERE
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+###
+
+### Update Quiz
+PUT http://localhost:2003/api/quizzes/QUIZ_ID_HERE
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+{
+  "title": "Updated Quiz Title",
+  "description": "Updated description",
+  "is_public": true
+}
+
+###
+
+### Add Question to Quiz
+POST http://localhost:2003/api/quizzes/QUIZ_ID_HERE/questions
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+{
+  "question_text": "What is the largest planet in our solar system?",
+  "question_type": "multiple_choice",
+  "order_index": 0,
+  "options": [
+    {
+      "option_text": "Earth",
+      "is_correct": false,
+      "order_index": 0
+    },
+    {
+      "option_text": "Jupiter",
+      "is_correct": true,
+      "order_index": 1
+    },
+    {
+      "option_text": "Saturn",
+      "is_correct": false,
+      "order_index": 2
+    },
+    {
+      "option_text": "Mars",
+      "is_correct": false,
+      "order_index": 3
+    }
+  ]
+}
+
+###
+
+### Delete Quiz
+DELETE http://localhost:2003/api/quizzes/QUIZ_ID_HERE
+Authorization: Bearer YOUR_JWT_TOKEN_HERE
+
+###
+
+### Test Health Check
+GET http://localhost:2003/health
+
+### 

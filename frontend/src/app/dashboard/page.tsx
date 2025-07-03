@@ -4,7 +4,8 @@ import { ProtectedRouteGuard } from "@/components/AuthGuard";
 import { useAuth } from "@/app/hooks/auth/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LogOut, User } from "lucide-react";
+import { LogOut, User, Plus, Sparkles } from "lucide-react";
+import Link from "next/link";
 
 export default function DashboardPage() {
   const { user, logout } = useAuth();
@@ -36,6 +37,30 @@ export default function DashboardPage() {
                   Role: {user.role}
                 </p>
               )}
+            </div>
+
+            {/* Quick Actions */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-medium text-center">Quick Actions</h3>
+              <div className="grid gap-3">
+                <Link href="/create-quiz">
+                  <Button className="w-full flex items-center gap-2 h-11">
+                    <Sparkles className="w-4 h-4" />
+                    Create AI Quiz
+                  </Button>
+                </Link>
+                <Button
+                  variant="outline"
+                  className="w-full flex items-center gap-2"
+                  disabled
+                >
+                  <Plus className="w-4 h-4" />
+                  Create Manual Quiz
+                  <span className="ml-auto text-xs text-muted-foreground">
+                    Soon
+                  </span>
+                </Button>
+              </div>
             </div>
 
             <Button

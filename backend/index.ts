@@ -8,6 +8,7 @@ import metaRouter from "./routes/meta";
 import usersRouter from "./routes/users";
 import onboardingRouter from "./routes/onboarding";
 import authRouter from "./routes/auth";
+import quizzesRouter from "./routes/quizzes";
 
 const app = express();
 const port = env.PORT;
@@ -39,6 +40,7 @@ app.use("/api/meta", metaRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/onboarding", onboardingRouter);
 app.use("/api/auth", authRouter);
+app.use("/api/quizzes", quizzesRouter);
 
 // Global error handler
 app.use(errorHandler);

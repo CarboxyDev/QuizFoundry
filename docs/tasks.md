@@ -14,13 +14,14 @@ This is a granular breakdown of the MVP features. Each task should represent a s
 - [-] Create onboarding Step 1 – collect name
 - [-] Create onboarding Step 2 – collect role/preference
 - [-] Store onboarding progress in `profiles` table
-- [ ] Auto-complete onboarding if coming from Google
+- [-] Auto-complete onboarding if coming from Google
+- [-] Update onboarding related info on backend to reflect its mandatory nature
 
 ---
 
 ## ✅ AI Quiz Generation
 
-- [ ] Create prompt input form (topic, difficulty, etc.)
+- [ ] Create prompt input form (difficulty, option count, etc.)
 - [ ] Validate prompt input and sanitize
 - [ ] Call OpenAI API using Supabase Edge Function or direct client-side call
 - [ ] Show loading spinner or skeleton while generating
