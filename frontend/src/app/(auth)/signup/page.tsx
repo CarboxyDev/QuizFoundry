@@ -10,9 +10,9 @@ import { Card, CardContent } from "@/components/ui/card";
 
 import { Eye, EyeOff, Mail, Lock, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { useSignup } from "@/app/hooks/auth/useSignup";
-import { useAuth } from "@/app/hooks/auth/useAuth";
-import { useGoogleAuth } from "@/app/hooks/auth/useGoogleAuth";
+import { useSignup } from "@/hooks/auth/useSignup";
+import { useAuth } from "@/hooks/auth/useAuth";
+import { useGoogleAuth } from "@/hooks/auth/useGoogleAuth";
 import { AuthGuard } from "@/components/AuthGuard";
 import { toast } from "sonner";
 import { z } from "zod";

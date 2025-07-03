@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import type { ApiResponse } from "@shared/types/api";
+import type { ApiResponse } from "@backend/types/api";
 import { GET_TEST } from "@/lib/api";
 
 type TestResponse = {

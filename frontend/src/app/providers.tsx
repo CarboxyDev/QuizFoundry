@@ -3,7 +3,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/sonner";
 import { ReactNode, useState } from "react";
-import { AuthProvider } from "@/app/hooks/auth/useAuth";
+import { AuthProvider } from "@/hooks/auth/useAuth";
 
 export function Providers({ children }: { children: ReactNode }) {
   const [client] = useState(() => new QueryClient());

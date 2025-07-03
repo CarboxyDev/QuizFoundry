@@ -22,8 +22,8 @@
       "@/*": [
         "./src/*"
       ],
-      "@shared/*": [
-        "../shared/*"
+      "@backend/types/*": [
+        "../backend/types/*"
       ]
     },
     "plugins": [
@@ -40,14 +40,5 @@
   ],
   "exclude": [
     "node_modules"
-  ],
-  "references": [
-    {
-      "path": "../shared/utils"
-    },
-    {
-      "path": "../shared/types"
-    }
   ]
-  
 }

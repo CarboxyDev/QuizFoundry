@@ -11,7 +11,7 @@ import type {
   OnboardingData,
   UpdateOnboardingInput,
   UserProfile,
-} from "@shared/types/api";
+} from "@backend/types/api";
 import { useAuth } from "./useAuth";
 
 export function useOnboardingProgress() {

@@ -1,7 +1,5 @@
+import { validatePassword } from "utils/validation";
 import { z } from "zod";
-import { validatePassword } from "../../shared/utils/validation";
-// Re-export shared types for consistency
-export type { SignupInput, LoginInput } from "../../shared/types/api";
 
 export const signupSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -38,5 +36,8 @@ export const updateUserSchema = z.object({
   avatar_url: z.string().url().optional(),
 });
 
+// Export the inferred types
+export type SignupInput = z.infer<typeof signupSchema>;
+export type LoginInput = z.infer<typeof loginSchema>;
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;

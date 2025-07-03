@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { validatePassword, getPasswordRequirements } from "@shared/utils";
+import { validatePassword, getPasswordRequirements } from "@/lib/validation";
 
 export interface UsePasswordValidationResult {
   isValid: boolean;

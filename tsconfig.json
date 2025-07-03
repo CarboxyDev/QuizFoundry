@@ -6,21 +6,10 @@
         },
         {
             "path": "backend"
-        },
-        {
-            "path": "shared/types"
-        },
-        {
-            "path": "shared/utils"
         }
     ],
     "compilerOptions": {
         "baseUrl": ".",
-        "paths": {
-            "@shared/*": [
-                "shared/*"
-            ]
-        }
     },
     "exclude": [
         "./**/node_modules",

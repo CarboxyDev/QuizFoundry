@@ -6,7 +6,7 @@ import type {
   SignupInput,
   LoginInput,
 } from "../schemas/userSchema";
-import type { UserProfile, LoginResponse } from "../../shared/types/api";
+import type { UserProfile, LoginResponse, ApiResponse } from "../types/api";
 import { getOnboardingProgress } from "./onboardingService";
 
 export async function getUsers(): Promise<UserProfile[]> {

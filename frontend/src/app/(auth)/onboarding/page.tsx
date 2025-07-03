@@ -22,9 +22,9 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { toast } from "sonner";
-import { useCompleteOnboarding } from "@/app/hooks/auth/useOnboarding";
+import { useCompleteOnboarding } from "@/hooks/auth/useOnboarding";
 import { OnboardingGuard } from "@/components/OnboardingGuard";
-import type { OnboardingData } from "@shared/types/api";
+import type { OnboardingData } from "@backend/types/api";
 import { Form } from "@/components/ui/form";
 
 const roleOptions = [

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useGoogleAuth } from "@/app/hooks/auth/useGoogleAuth";
+import { useGoogleAuth } from "@/hooks/auth/useGoogleAuth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sparkles } from "lucide-react";

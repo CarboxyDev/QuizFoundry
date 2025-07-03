@@ -1,4 +1,4 @@
-import type { UserProfile, UserSession } from "@shared/types/api";
+import type { UserProfile, UserSession } from "@backend/types/api";
 
 export interface AuthState {
   user: UserProfile | null;

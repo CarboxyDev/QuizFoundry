@@ -8,7 +8,7 @@ import {
   ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
-import type { UserProfile, UserSession } from "@shared/types/api";
+import type { UserProfile, UserSession } from "@backend/types/api";
 import {
   getStoredAuth,
   setStoredAuth,

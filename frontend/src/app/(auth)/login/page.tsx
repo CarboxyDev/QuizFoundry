@@ -10,8 +10,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Eye, EyeOff, Mail, Lock, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { useLogin } from "@/app/hooks/auth/useLogin";
-import { useAuth } from "@/app/hooks/auth/useAuth";
+import { useLogin } from "@/hooks/auth/useLogin";
+import { useAuth } from "@/hooks/auth/useAuth";
 import { AuthGuard } from "@/components/AuthGuard";
 import { z } from "zod";
 

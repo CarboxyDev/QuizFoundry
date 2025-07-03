@@ -4,7 +4,7 @@ import { AppError } from "../errors/AppError";
 import { authMiddleware, AuthenticatedRequest } from "../middleware/auth";
 import { getUserById, createGoogleUserProfile } from "../services/userService";
 import { getOnboardingProgress } from "../services/onboardingService";
-import type { UserProfile } from "../../shared/types/api";
+import type { UserProfile } from "../types/api";
 
 const authRouter: Router = express.Router();
 

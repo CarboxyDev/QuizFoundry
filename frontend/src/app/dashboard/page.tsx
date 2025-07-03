@@ -1,7 +1,7 @@
 "use client";
 
 import { ProtectedRouteGuard } from "@/components/AuthGuard";
-import { useAuth } from "@/app/hooks/auth/useAuth";
+import { useAuth } from "@/hooks/auth/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LogOut, User, Plus, Sparkles, Users } from "lucide-react";

@@ -8,11 +8,6 @@
         "outDir": "dist",
         "baseUrl": ".",
         "composite": true,
-        "paths": {
-            "@shared/*": [
-                "../shared/*"
-            ]
-        }
     },
     "lib": [
         "ES2015"
@@ -24,12 +19,4 @@
         "node_modules",
         "dist"
     ],
-    "references": [
-        {
-            "path": "../shared/utils"
-        },
-        {
-            "path": "../shared/types"
-        }
-    ]
 }

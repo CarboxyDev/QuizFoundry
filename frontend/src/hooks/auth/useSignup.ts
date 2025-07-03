@@ -4,7 +4,7 @@ import type {
   ApiResponse,
   SignupInput,
   LoginResponse,
-} from "@shared/types/api";
+} from "@backend/types/api";
 import { POST_SIGNUP } from "@/lib/api";
 
 type SignupResponse = LoginResponse;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useTest } from "@/app/hooks/test/useTest";
+import { useTest } from "@/hooks/test/useTest";
 
 export default function TestPage() {
   const { data, isPending, error } = useTest();

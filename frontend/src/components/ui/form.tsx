@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useFormSubmission } from "@/app/hooks/useFormSubmission";
+import { useFormSubmission } from "@/hooks/useFormSubmission";
 import { cn } from "@/lib/utils";
 
 interface FormProps

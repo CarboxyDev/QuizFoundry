@@ -5,7 +5,7 @@ import { useAuth } from "./useAuth";
 import { axiosInstance } from "@/lib/axios";
 import { POST_GOOGLE_PROFILE } from "@/lib/api";
 import { toast } from "sonner";
-import type { ApiResponse, UserProfile } from "@shared/types/api";
+import type { ApiResponse, UserProfile } from "@backend/types/api";
 
 export function useGoogleAuth() {
   const [isLoading, setIsLoading] = useState(false);

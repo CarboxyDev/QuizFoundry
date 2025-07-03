@@ -4,7 +4,7 @@ import type {
   UpdateOnboardingInput,
   CompleteOnboardingInput,
 } from "../schemas/onboardingSchemas";
-import type { UserProfile } from "../../shared/types/api";
+import type { UserProfile } from "../types/api";
 
 // Constants for onboarding configuration
 const ONBOARDING_DEFAULTS = {
