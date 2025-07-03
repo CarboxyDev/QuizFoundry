@@ -1,12 +1,11 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 import { AppError } from "../errors/AppError";
 import type {
   CreateQuizInput,
   QuizWithQuestionsInput,
 } from "../schemas/quizSchemas";
 
-// Initialize Gemini AI
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 export interface GeneratedQuiz {
   title: string;
@@ -28,9 +27,6 @@ export interface GeneratedOption {
   order_index: number;
 }
 
-/**
- * Generate a quiz using Gemini AI
- */
 export async function generateQuizWithAI(
   input: CreateQuizInput
 ): Promise<GeneratedQuiz> {
@@ -39,32 +35,49 @@ export async function generateQuizWithAI(
   }
 
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
     const prompt = createQuizPrompt(input);
     console.log("Sending prompt to Gemini AI:", prompt);
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: prompt,
+    });
 
+    const text = response.text;
     console.log("Received response from Gemini AI:", text);
+
+    // Check if we have a valid response
+    if (!text) {
+      throw new AppError("No response from Gemini API", 500);
+    }
+
+    // Check if Gemini refused to generate content
+    if (isContentRefusal(text)) {
+      const reasoning = extractRefusalReasoning(text);
+      throw new AppError(
+        `Cannot generate quiz: ${reasoning}`,
+        400 // Use 400 for bad request due to inappropriate content
+      );
+    }
 
     // Parse the JSON response
     let parsedQuiz: any;
     try {
       // Extract JSON from the response (remove any markdown formatting)
       const jsonMatch =
-        text.match(/```json\s*([\s\S]*?)\s*```/) ||
-        text.match(/```\s*([\s\S]*?)\s*```/);
+        text?.match(/```json\s*([\s\S]*?)\s*```/) ||
+        text?.match(/```\s*([\s\S]*?)\s*```/);
       const jsonText = jsonMatch ? jsonMatch[1] : text;
+      if (!jsonText) {
+        throw new AppError("No JSON found in AI response", 500);
+      }
       parsedQuiz = JSON.parse(jsonText);
     } catch (parseError) {
       console.error("Failed to parse AI response:", parseError);
+      console.log("AI response:", text);
       throw new AppError("Failed to parse AI response. Please try again.", 500);
     }
 
-    // Validate and normalize the response
     const normalizedQuiz = normalizeAIResponse(parsedQuiz, input);
 
     return normalizedQuiz;
@@ -80,6 +93,85 @@ export async function generateQuizWithAI(
       500
     );
   }
+}
+
+/**
+ * Check if the AI response indicates content refusal
+ */
+function isContentRefusal(text: string): boolean {
+  if (!text) return false;
+
+  const refusalIndicators = [
+    "I cannot fulfill this request",
+    "I can't help with that",
+    "I cannot create",
+    "I cannot generate",
+    "I'm not able to",
+    "I cannot provide",
+    "This request is inappropriate",
+    "I cannot assist with",
+    "I'm unable to create",
+    "I won't be able to",
+    "I cannot comply",
+    "refuse to generate",
+    "against my guidelines",
+    "violates guidelines",
+    "harmful content",
+    "inappropriate content",
+    "offensive content",
+    "unethical",
+    "against my programming",
+  ];
+
+  const lowerText = text.toLowerCase();
+  return refusalIndicators.some((indicator) =>
+    lowerText.includes(indicator.toLowerCase())
+  );
+}
+
+/**
+ * Extract the reasoning from AI refusal response
+ */
+function extractRefusalReasoning(text: string): string {
+  if (!text) return "Content was deemed inappropriate";
+
+  // Try to extract the main reasoning from the response
+  // Usually comes after the refusal statement
+  const sentences = text.split(/[.!?]+/).filter((s) => s.trim().length > 0);
+
+  // Find sentences that contain reasoning keywords
+  const reasoningKeywords = [
+    "because",
+    "since",
+    "as",
+    "due to",
+    "reason",
+    "harmful",
+    "offensive",
+    "inappropriate",
+    "unethical",
+    "violates",
+    "against",
+    "promotes",
+    "includes",
+  ];
+
+  for (const sentence of sentences) {
+    const lowerSentence = sentence.toLowerCase();
+    if (reasoningKeywords.some((keyword) => lowerSentence.includes(keyword))) {
+      return sentence.trim();
+    }
+  }
+
+  // If no specific reasoning found, return the first substantial sentence
+  const substantialSentence = sentences.find((s) => s.trim().length > 30);
+  if (substantialSentence) {
+    return substantialSentence.trim();
+  }
+
+  // Fallback to first part of the response
+  const firstPart = text.substring(0, 200).trim();
+  return firstPart || "Content was deemed inappropriate by the AI";
 }
 
 /**
