@@ -21,9 +21,9 @@ This is a granular breakdown of the MVP features. Each task should represent a s
 
 ## ✅ AI Quiz Generation
 
-- [ ] Create prompt input form (difficulty, option count, etc.)
-- [ ] Validate prompt input and sanitize
-- [ ] Call OpenAI API using Supabase Edge Function or direct client-side call
+- [-] Create prompt input form (difficulty, option count, etc.)
+- [-] Validate prompt input and sanitize
+- [-] Call Gemini API for the quiz
 - [ ] Show loading spinner or skeleton while generating
 - [ ] Parse AI response into usable `Quiz` format
 - [ ] Display AI-generated questions in preview

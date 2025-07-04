@@ -1,8 +1,8 @@
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
 
 export const GET_TEST = `${BASE_URL}/meta/test`;
-export const POST_SIGNUP = `${BASE_URL}/users/sign-up`;
-export const POST_LOGIN = `${BASE_URL}/users/login`;
+export const POST_REGISTER = `${BASE_URL}/auth/register`;
+export const POST_LOGIN = `${BASE_URL}/auth/login`;
 
 // Auth endpoints
 export const POST_GOOGLE_PROFILE = `${BASE_URL}/auth/google-profile`;

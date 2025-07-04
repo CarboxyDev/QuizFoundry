@@ -5,7 +5,7 @@ import type {
   SignupInput,
   LoginResponse,
 } from "@backend/types/api";
-import { POST_SIGNUP } from "@/lib/api";
+import { POST_REGISTER } from "@/lib/api";
 
 type SignupResponse = LoginResponse;
 
@@ -16,7 +16,7 @@ export function useSignup() {
     ): Promise<ApiResponse<SignupResponse>> => {
       try {
         const res = await axiosInstance.post<ApiResponse<SignupResponse>>(
-          POST_SIGNUP,
+          POST_REGISTER,
           signupData
         );
         return res.data;

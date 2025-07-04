@@ -54,12 +54,21 @@ export async function createQuizWithAI(
   input: CreateQuizInput
 ): Promise<QuizWithQuestions> {
   try {
-    // Generate quiz using AI
-    const generatedQuiz = await generateQuizWithAI(input);
-
+    // Instruct Gemini to derive keywords and generate a concise title
+    const geminiPrompt = `Derive the main keywords from the following prompt and generate a quiz. The quiz title must be concise (max 8 words). Prompt: ${input.prompt}`;
+    const generatedQuiz = await generateQuizWithAI({
+      ...input,
+      prompt: geminiPrompt,
+    });
+    // Optionally, trim the title if too long
+    if (generatedQuiz.title.split(" ").length > 8) {
+      generatedQuiz.title = generatedQuiz.title
+        .split(" ")
+        .slice(0, 8)
+        .join(" ");
+    }
     // Save to database
     const quiz = await saveGeneratedQuiz(userId, input, generatedQuiz);
-
     return quiz;
   } catch (error) {
     console.error("Error creating quiz with AI:", error);

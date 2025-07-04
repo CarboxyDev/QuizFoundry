@@ -14,6 +14,8 @@ import {
   setStoredAuth,
   clearStoredAuth,
   type AuthState,
+  refreshAuthSession,
+  isTokenExpired,
 } from "@/lib/auth";
 
 interface AuthContextType extends AuthState {
@@ -38,15 +40,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Initialize auth state from localStorage on mount
     const { user, session } = getStoredAuth();
-
-    console.log("Auth initialized:", { user: !!user, session: !!session });
-
-    setAuthState({
-      user,
-      session,
-      isAuthenticated: !!user && !!session,
-      isLoading: false,
-    });
+    const checkAndRefresh = async () => {
+      if (session && isTokenExpired(session.expires_at)) {
+        const refreshed = await refreshAuthSession();
+        setAuthState({
+          user: refreshed.user,
+          session: refreshed.session,
+          isAuthenticated: !!refreshed.user && !!refreshed.session,
+          isLoading: false,
+        });
+        return;
+      }
+      setAuthState({
+        user,
+        session,
+        isAuthenticated: !!user && !!session,
+        isLoading: false,
+      });
+    };
+    checkAndRefresh();
   }, []);
 
   const login = (user: UserProfile, session: UserSession) => {

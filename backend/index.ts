@@ -11,14 +11,14 @@ import authRouter from "./routes/auth";
 import quizzesRouter from "./routes/quizzes";
 
 const app = express();
-const port = process.env.PORT || env.PORT || 8080;
+const port = env.PORT || 8080;
 
 // Security middleware
 app.use(helmet());
 
 app.use(
   cors({
-    origin: true,
+    origin: [env.FRONTEND_URL, "http://localhost:3000"],
     credentials: true,
   })
 );

@@ -1,4 +1,5 @@
 import type { UserProfile, UserSession } from "@backend/types/api";
+import { supabase } from "@/lib/supabase";
 
 export interface AuthState {
   user: UserProfile | null;
@@ -70,4 +71,40 @@ export const clearStoredAuth = (): void => {
 
 export const isTokenExpired = (expiresAt: number): boolean => {
   return expiresAt * 1000 < Date.now();
+};
+
+export const refreshAuthSession = async (): Promise<{
+  user: UserProfile | null;
+  session: UserSession | null;
+}> => {
+  if (typeof window === "undefined") {
+    return { user: null, session: null };
+  }
+  const refreshToken = localStorage.getItem("refresh_token");
+  if (!refreshToken) {
+    clearStoredAuth();
+    return { user: null, session: null };
+  }
+  try {
+    const { data, error } = await supabase.auth.refreshSession({
+      refresh_token: refreshToken,
+    });
+    if (error || !data.session || !data.user) {
+      clearStoredAuth();
+      return { user: null, session: null };
+    }
+    // Optionally fetch user profile from backend if needed
+    const user = JSON.parse(localStorage.getItem("user") || "null");
+    const session: UserSession = {
+      access_token: data.session.access_token,
+      refresh_token: data.session.refresh_token,
+      expires_at:
+        data.session.expires_at || Math.floor(Date.now() / 1000) + 3600,
+    };
+    setStoredAuth(user, session);
+    return { user, session };
+  } catch (error) {
+    clearStoredAuth();
+    return { user: null, session: null };
+  }
 };

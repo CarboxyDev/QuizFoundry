@@ -25,6 +25,42 @@ import type { Router } from "express";
 
 const quizzesRouter: Router = express.Router();
 
+// Helper utilities to prevent exposing correct answers to the client
+
+type OptionWithoutAnswer = Omit<
+  {
+    id: string;
+    question_id: string;
+    option_text: string;
+    order_index: number;
+    created_at?: string;
+  },
+  "is_correct"
+>;
+
+function stripAnswersFromQuestion<QuestionType extends { options?: any[] }>(
+  question: QuestionType
+) {
+  if (!question.options) return question;
+  const sanitizedOptions: OptionWithoutAnswer[] = question.options.map(
+    ({ is_correct, ...rest }) => rest
+  );
+  return {
+    ...question,
+    options: sanitizedOptions,
+  };
+}
+
+function stripAnswersFromQuiz<QuizType extends { questions: any[] }>(
+  quiz: QuizType
+) {
+  const sanitizedQuestions = quiz.questions.map(stripAnswersFromQuestion);
+  return {
+    ...quiz,
+    questions: sanitizedQuestions,
+  };
+}
+
 /**
  * POST /quizzes/generate - Generate a quiz using AI
  * Requires authentication and completed onboarding
@@ -49,10 +85,13 @@ quizzesRouter.post(
 
     const quiz = await createQuizWithAI(userId, validationResult.data);
 
+    // Do not expose correct answers to the client
+    const sanitizedQuiz = stripAnswersFromQuiz(quiz);
+
     res.status(201).json({
       success: true,
       data: {
-        quiz,
+        quiz: sanitizedQuiz,
       },
       message: "Quiz generated successfully",
     });
@@ -145,10 +184,12 @@ quizzesRouter.get(
       throw new AppError("Quiz not found", 404);
     }
 
+    const sanitizedQuiz = stripAnswersFromQuiz(quiz);
+
     res.json({
       success: true,
       data: {
-        quiz,
+        quiz: sanitizedQuiz,
       },
     });
   })
@@ -251,10 +292,12 @@ quizzesRouter.post(
 
     const question = await createQuestion(userId, validationResult.data);
 
+    const sanitizedQuestion = stripAnswersFromQuestion(question);
+
     res.status(201).json({
       success: true,
       data: {
-        question,
+        question: sanitizedQuestion,
       },
       message: "Question added successfully",
     });
