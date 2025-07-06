@@ -14,6 +14,7 @@ import { useLogin } from "@/hooks/auth/useLogin";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { AuthGuard } from "@/components/AuthGuard";
 import { z } from "zod";
+import { useGoogleAuth } from "@/hooks/auth/useGoogleAuth";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -32,6 +33,7 @@ export default function LoginPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const loginMutation = useLogin();
+  const { signInWithGoogle, isLoading: isGoogleLoading } = useGoogleAuth();
 
   const validateForm = () => {
     try {
@@ -92,10 +94,8 @@ export default function LoginPage() {
     }
   };
 
-  const handleGoogleLogin = () => {
-    // TODO: Implement Google login
-    console.log("Google login");
-    toast.info("Google login coming soon!");
+  const handleGoogleLogin = async () => {
+    await signInWithGoogle();
   };
 
   const handleForgotPassword = () => {
@@ -262,7 +262,7 @@ export default function LoginPage() {
                     variant="outline"
                     onClick={handleGoogleLogin}
                     className="w-full h-11"
-                    disabled={isLoading || isSuccess}
+                    disabled={isLoading || isSuccess || isGoogleLoading}
                   >
                     <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                       <path
@@ -282,7 +282,9 @@ export default function LoginPage() {
                         fill="#EA4335"
                       />
                     </svg>
-                    Sign in with Google
+                    {isGoogleLoading
+                      ? "Redirecting to Google..."
+                      : "Sign in with Google"}
                   </Button>
 
                   <p className="text-center text-sm text-muted-foreground">

@@ -19,7 +19,7 @@ export function useGoogleAuth() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo: `${window.location.origin}/auth/callback?flow=signup`,
           queryParams: {
             access_type: "offline",
             prompt: "consent",
@@ -36,6 +36,31 @@ export function useGoogleAuth() {
     } catch (error: any) {
       console.error("Google sign-up error:", error);
       toast.error(error.message || "Failed to sign up with Google");
+      setIsLoading(false);
+    }
+  };
+
+  const signInWithGoogle = async () => {
+    try {
+      setIsLoading(true);
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback?flow=login`,
+          queryParams: {
+            access_type: "offline",
+            prompt: "consent",
+          },
+        },
+      });
+
+      if (error) {
+        throw error;
+      }
+    } catch (error: any) {
+      console.error("Google sign-in error:", error);
+      toast.error(error.message || "Failed to sign in with Google");
       setIsLoading(false);
     }
   };
@@ -105,6 +130,7 @@ export function useGoogleAuth() {
 
   return {
     signUpWithGoogle,
+    signInWithGoogle,
     handleAuthCallback,
     isLoading,
   };

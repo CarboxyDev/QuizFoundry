@@ -1,15 +1,29 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useGoogleAuth } from "@/hooks/auth/useGoogleAuth";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sparkles } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 
 export default function AuthCallbackPage() {
   const { handleAuthCallback, isLoading } = useGoogleAuth();
+  const searchParams = useSearchParams();
+  const flow = searchParams.get("flow");
+  const [title, setTitle] = useState("Completing Sign Up...");
+  const [subtitle, setSubtitle] = useState(
+    "Please wait while we set up your account"
+  );
 
   useEffect(() => {
+    if (flow === "login") {
+      setTitle("Signing you in...");
+      setSubtitle("Please wait while we sign you in");
+    } else {
+      setTitle("Completing Sign Up...");
+      setSubtitle("Please wait while we set up your account");
+    }
     handleAuthCallback();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -27,12 +41,8 @@ export default function AuthCallbackPage() {
                 <Sparkles className="h-8 w-8 text-primary animate-pulse" />
               </div>
               <div className="space-y-2">
-                <h1 className="text-2xl font-bold tracking-tight">
-                  Completing Sign Up...
-                </h1>
-                <p className="text-muted-foreground">
-                  Please wait while we set up your account
-                </p>
+                <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+                <p className="text-muted-foreground">{subtitle}</p>
               </div>
             </div>
 
