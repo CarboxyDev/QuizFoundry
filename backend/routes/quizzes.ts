@@ -17,6 +17,7 @@ import {
   updateQuiz,
   deleteQuiz,
   createQuestion,
+  getCreativeQuizPrompt,
 } from "../services/quizService";
 import {
   authMiddleware,
@@ -24,6 +25,7 @@ import {
   AuthenticatedRequest,
 } from "../middleware/auth";
 import type { Router } from "express";
+import { GoogleGenAI } from "@google/genai";
 
 const quizzesRouter: Router = express.Router();
 
@@ -364,6 +366,37 @@ quizzesRouter.post(
       },
       message: "Question added successfully",
     });
+  })
+);
+
+/**
+ * POST /quizzes/surprise-me - Generate a creative quiz prompt using AI
+ */
+quizzesRouter.post(
+  "/surprise-me",
+  authMiddleware,
+  requireCompletedOnboarding,
+  asyncHandler(async (req: AuthenticatedRequest, res) => {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      throw new AppError("User not authenticated", 401);
+    }
+
+    try {
+      const prompt = await getCreativeQuizPrompt();
+      res.json({
+        success: true,
+        data: { prompt },
+        message: "Creative quiz prompt generated successfully",
+      });
+    } catch (error) {
+      console.error("[Surprise Me] Error generating prompt:", error);
+      throw new AppError(
+        "Failed to generate creative quiz prompt. Please try again.",
+        500
+      );
+    }
   })
 );
 

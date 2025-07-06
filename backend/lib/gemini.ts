@@ -496,3 +496,56 @@ function getDifficultyGuidelines(difficulty: string): string {
       return "   - Adjust difficulty appropriately for the target audience";
   }
 }
+
+/**
+ * Generate a creative quiz prompt (for "Surprise Me")
+ */
+export async function generateCreativeQuizPrompt(): Promise<string> {
+  if (!process.env.GEMINI_API_KEY) {
+    throw new AppError("Gemini API key is not configured", 500);
+  }
+
+  const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+  const prompt = `Generate a creative and engaging quiz topic with description. 
+  The response should be a fun, educational, and interesting quiz idea that would make for great trivia.
+  
+  Consider topics like:
+  - Pop culture and entertainment
+  - Science and nature mysteries  
+  - Historical events and figures
+  - Geography and world cultures
+  - Food and cooking traditions
+  - Technology and innovations
+  - Art and literature
+  - Sports and games
+  - Mythology and legends
+  - Fun facts and trivia
+
+  
+  Return ONLY a brief text (ideally 1 sentence, at most 2 sentences) of the quiz topic that would be perfect for generating engaging multiple choice questions.
+  Make it specific enough to create good questions, but broad enough to be interesting.
+  Do not include the word "quiz" in the response.
+  Do not include markdown or any other formatting in the response.
+  The response must be simple without any filler words.
+  Keep the response simple and concise.
+
+  Examples of good responses:
+  "Food cultures from around the world",
+  "Iconic video game soundtracks",
+  "Popular mythological creatures from around the world",
+  "Solar system planets and their characteristics",
+  
+  `;
+
+  const response = await ai.models.generateContent({
+    model: "gemini-2.0-flash",
+    contents: prompt,
+  });
+
+  const generatedPrompt = response.text?.trim();
+  if (!generatedPrompt) {
+    throw new AppError("Failed to generate quiz prompt", 500);
+  }
+  return generatedPrompt;
+}

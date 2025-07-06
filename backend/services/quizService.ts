@@ -4,6 +4,7 @@ import {
   generateQuizWithAI,
   type GeneratedQuiz,
   type QuizGenerationInput,
+  generateCreativeQuizPrompt,
 } from "../lib/gemini";
 import type {
   CreateQuizExpressModeInput,
@@ -545,4 +546,15 @@ export async function createQuestion(
     ...questionData,
     options: [],
   };
+}
+
+// =============================================
+// SURPRISE ME - Generate a creative quiz prompt
+// =============================================
+
+/**
+ * Generate a creative quiz prompt (for "Surprise Me")
+ */
+export async function getCreativeQuizPrompt(): Promise<string> {
+  return generateCreativeQuizPrompt();
 }

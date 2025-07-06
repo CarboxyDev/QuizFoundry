@@ -72,6 +72,14 @@ export interface GetQuizResponse {
   };
 }
 
+export interface SurpriseMeResponse {
+  success: boolean;
+  data: {
+    prompt: string;
+  };
+  message: string;
+}
+
 /**
  * Create a quiz using Express Mode (defaults: 5 questions, 4 options, medium difficulty)
  */
@@ -196,4 +204,21 @@ export async function deleteQuiz(id: string): Promise<void> {
   if (!response.data.success) {
     throw new Error("Failed to delete quiz");
   }
+}
+
+/**
+ * Generate a creative quiz prompt using AI
+ */
+export async function surpriseMe(): Promise<string> {
+  const response = await axiosInstance.post<SurpriseMeResponse>(
+    "/quizzes/surprise-me"
+  );
+
+  if (!response.data.success) {
+    throw new Error(
+      response.data.message || "Failed to generate surprise prompt"
+    );
+  }
+
+  return response.data.data.prompt;
 }

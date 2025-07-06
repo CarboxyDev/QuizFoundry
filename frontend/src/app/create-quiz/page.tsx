@@ -18,11 +18,22 @@ import {
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, ArrowLeft, Loader2, Settings2, Edit3 } from "lucide-react";
+import {
+  Sparkles,
+  ArrowLeft,
+  Loader2,
+  Settings2,
+  Edit3,
+  Wand2,
+} from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { ProtectedRouteGuard } from "@/components/AuthGuard";
-import { createQuizExpress, createQuizAdvanced } from "@/lib/quiz-api";
+import {
+  createQuizExpress,
+  createQuizAdvanced,
+  surpriseMe,
+} from "@/lib/quiz-api";
 
 interface QuizFormData {
   prompt: string;
@@ -42,6 +53,7 @@ export default function CreateQuizPage() {
     isManual: false,
   });
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSurpriseLoading, setIsSurpriseLoading] = useState(false);
   const router = useRouter();
 
   const handleModeChange = (checked: boolean) => {
@@ -112,6 +124,21 @@ export default function CreateQuizPage() {
     }
   };
 
+  const handleSurpriseMe = async () => {
+    setIsSurpriseLoading(true);
+
+    try {
+      const surprisePrompt = await surpriseMe();
+      setFormData((prev) => ({ ...prev, prompt: surprisePrompt }));
+      toast.success("Surprise! Your creative quiz prompt is ready!");
+    } catch (error) {
+      console.error("Error getting surprise prompt:", error);
+      toast.error("Failed to generate surprise prompt. Please try again.");
+    } finally {
+      setIsSurpriseLoading(false);
+    }
+  };
+
   const canSubmit = formData.prompt.trim().length > 0;
 
   return (
@@ -168,13 +195,60 @@ export default function CreateQuizPage() {
                 <CardContent className="space-y-8">
                   {/* Quiz Prompt */}
                   <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="prompt" className="text-base font-medium">
-                        Quiz Topic & Description
-                      </Label>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Describe what you want your quiz to be about
-                      </p>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <Label
+                          htmlFor="prompt"
+                          className="text-base font-medium"
+                        >
+                          Quiz Topic & Description
+                        </Label>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Describe what you want your quiz to be about
+                        </p>
+                      </div>
+                      {/* Surprise Me Button (moved above textarea, right-aligned) */}
+                      <motion.div
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={handleSurpriseMe}
+                          disabled={isGenerating || isSurpriseLoading}
+                          className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border-purple-200 hover:from-purple-500/20 hover:to-pink-500/20 hover:border-purple-300 transition-all duration-300 gap-2 h-8 px-3"
+                        >
+                          {isSurpriseLoading ? (
+                            <>
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                              <span className="text-xs font-medium">
+                                Generating...
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <motion.div
+                                animate={{
+                                  rotate: [0, 15, -15, 0],
+                                  scale: [1, 1.1, 1],
+                                }}
+                                transition={{
+                                  duration: 2,
+                                  repeat: Infinity,
+                                  repeatDelay: 3,
+                                }}
+                              >
+                                <Wand2 className="w-3 h-3 text-purple-600" />
+                              </motion.div>
+                              <span className="text-xs font-medium bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                                Surprise Me
+                              </span>
+                            </>
+                          )}
+                        </Button>
+                      </motion.div>
                     </div>
 
                     <Textarea
@@ -183,7 +257,7 @@ export default function CreateQuizPage() {
                       value={formData.prompt}
                       onChange={(e) => handlePromptChange(e.target.value)}
                       className="min-h-[120px] text-base resize-none"
-                      disabled={isGenerating}
+                      disabled={isGenerating || isSurpriseLoading}
                     />
 
                     <div className="flex items-center justify-between text-sm">
