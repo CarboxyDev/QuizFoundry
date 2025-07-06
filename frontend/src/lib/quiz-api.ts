@@ -39,8 +39,23 @@ export interface CreateQuizResponse {
   success: boolean;
   data: {
     quiz: Quiz;
+    mode: "express" | "advanced";
+    redirect_to: string;
+    is_manual_mode?: boolean;
   };
   message: string;
+}
+
+export interface CreateQuizExpressInput {
+  prompt: string;
+}
+
+export interface CreateQuizAdvancedInput {
+  prompt: string;
+  difficulty: "easy" | "medium" | "hard";
+  questionCount: number;
+  optionsCount: number;
+  isManualMode: boolean;
 }
 
 export interface GetQuizzesResponse {
@@ -58,24 +73,53 @@ export interface GetQuizResponse {
 }
 
 /**
- * Generate a quiz using AI
+ * Create a quiz using Express Mode (defaults: 5 questions, 4 options, medium difficulty)
  */
-export async function generateQuiz(formData: QuizFormData): Promise<Quiz> {
+export async function createQuizExpress(
+  input: CreateQuizExpressInput
+): Promise<{
+  quiz: Quiz;
+  redirectTo: string;
+}> {
   const response = await axiosInstance.post<CreateQuizResponse>(
-    "/quizzes/generate",
-    {
-      prompt: formData.prompt,
-      difficulty: formData.difficulty,
-      optionsCount: formData.optionsCount,
-      questionCount: formData.questionCount,
-    }
+    "/quizzes/create/express",
+    input
   );
 
   if (!response.data.success) {
-    throw new Error(response.data.message || "Failed to generate quiz");
+    throw new Error(response.data.message || "Failed to create quiz");
   }
 
-  return response.data.data.quiz;
+  return {
+    quiz: response.data.data.quiz,
+    redirectTo: response.data.data.redirect_to,
+  };
+}
+
+/**
+ * Create a quiz using Advanced Mode (custom settings)
+ */
+export async function createQuizAdvanced(
+  input: CreateQuizAdvancedInput
+): Promise<{
+  quiz: Quiz;
+  redirectTo: string;
+  isManualMode: boolean;
+}> {
+  const response = await axiosInstance.post<CreateQuizResponse>(
+    "/quizzes/create/advanced",
+    input
+  );
+
+  if (!response.data.success) {
+    throw new Error(response.data.message || "Failed to create quiz");
+  }
+
+  return {
+    quiz: response.data.data.quiz,
+    redirectTo: response.data.data.redirect_to,
+    isManualMode: response.data.data.is_manual_mode || false,
+  };
 }
 
 /**

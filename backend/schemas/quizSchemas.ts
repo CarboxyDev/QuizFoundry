@@ -1,34 +1,47 @@
 import { z } from "zod";
 
-// Schema for creating a quiz via AI generation
-export const createQuizSchema = z.object({
+// =============================================
+// CREATE QUIZ SCHEMAS
+// =============================================
+
+// Express Mode Schema - Simple quiz creation with defaults
+export const createQuizExpressModeSchema = z.object({
   prompt: z
     .string()
     .min(10, "Prompt must be at least 10 characters")
     .max(2000, "Prompt must be less than 2000 characters")
     .transform((str) => str.trim()),
-  difficulty: z.enum(["easy", "medium", "hard"], {
-    required_error: "Difficulty is required",
-    invalid_type_error: "Difficulty must be easy, medium, or hard",
-  }),
+});
+
+// Advanced Mode Schema - Custom settings with optional Manual Mode
+export const createQuizAdvancedModeSchema = z.object({
+  prompt: z
+    .string()
+    .min(10, "Prompt must be at least 10 characters")
+    .max(2000, "Prompt must be less than 2000 characters")
+    .transform((str) => str.trim()),
+  questionCount: z
+    .number()
+    .int()
+    .min(3, "Must have at least 3 questions")
+    .max(20, "Cannot have more than 20 questions"),
   optionsCount: z
     .number()
     .int()
     .min(2, "Must have at least 2 options")
     .max(8, "Cannot have more than 8 options"),
-  questionCount: z
-    .number()
-    .int()
-    .min(1, "Must have at least 1 question")
-    .max(20, "Cannot have more than 20 questions"),
-  title: z
-    .string()
-    .min(1, "Title is required")
-    .max(200, "Title must be less than 200 characters")
-    .optional(),
+  difficulty: z.enum(["easy", "medium", "hard"], {
+    required_error: "Difficulty is required",
+    invalid_type_error: "Difficulty must be easy, medium, or hard",
+  }),
+  isManualMode: z.boolean().default(false),
 });
 
-// Schema for manually creating a quiz
+// =============================================
+// MANUAL QUIZ CREATION SCHEMAS
+// =============================================
+
+// Schema for manually creating a quiz (separate from AI generation)
 export const createManualQuizSchema = z.object({
   title: z
     .string()
@@ -39,10 +52,13 @@ export const createManualQuizSchema = z.object({
     .max(1000, "Description must be less than 1000 characters")
     .optional(),
   difficulty: z.enum(["easy", "medium", "hard"]),
-  is_public: z.boolean().default(true), // Default to public
+  is_public: z.boolean().default(true),
 });
 
-// Schema for updating quiz metadata
+// =============================================
+// QUIZ UPDATE SCHEMAS
+// =============================================
+
 export const updateQuizSchema = z.object({
   title: z
     .string()
@@ -57,7 +73,10 @@ export const updateQuizSchema = z.object({
   is_public: z.boolean().optional(),
 });
 
-// Schema for a question option
+// =============================================
+// QUESTION AND OPTION SCHEMAS
+// =============================================
+
 export const questionOptionSchema = z.object({
   option_text: z
     .string()
@@ -67,7 +86,6 @@ export const questionOptionSchema = z.object({
   order_index: z.number().int().min(0),
 });
 
-// Schema for a question
 export const questionSchema = z.object({
   question_text: z
     .string()
@@ -84,30 +102,27 @@ export const questionSchema = z.object({
     .optional(),
 });
 
-// Schema for creating a question
 export const createQuestionSchema = questionSchema.extend({
   quiz_id: z.string().uuid("Invalid quiz ID"),
 });
 
-// Schema for updating a question
 export const updateQuestionSchema = questionSchema.partial().extend({
   id: z.string().uuid("Invalid question ID"),
 });
 
-// Schema for quiz with questions (for AI generation response)
-export const quizWithQuestionsSchema = z.object({
-  title: z.string(),
-  description: z.string().optional(),
-  difficulty: z.enum(["easy", "medium", "hard"]),
-  questions: z.array(questionSchema),
-});
+// =============================================
+// TYPE EXPORTS
+// =============================================
 
-// Type exports for use in services
-export type CreateQuizInput = z.infer<typeof createQuizSchema>;
+export type CreateQuizExpressModeInput = z.infer<
+  typeof createQuizExpressModeSchema
+>;
+export type CreateQuizAdvancedModeInput = z.infer<
+  typeof createQuizAdvancedModeSchema
+>;
 export type CreateManualQuizInput = z.infer<typeof createManualQuizSchema>;
 export type UpdateQuizInput = z.infer<typeof updateQuizSchema>;
 export type QuestionInput = z.infer<typeof questionSchema>;
 export type CreateQuestionInput = z.infer<typeof createQuestionSchema>;
 export type UpdateQuestionInput = z.infer<typeof updateQuestionSchema>;
-export type QuizWithQuestionsInput = z.infer<typeof quizWithQuestionsSchema>;
 export type QuestionOptionInput = z.infer<typeof questionOptionSchema>;

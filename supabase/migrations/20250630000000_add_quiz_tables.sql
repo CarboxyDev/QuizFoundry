@@ -5,8 +5,9 @@ create table quizzes (
   title text not null,
   description text,
   difficulty text not null check (difficulty in ('easy', 'medium', 'hard')),
-  is_public boolean default false,
+  is_public boolean default true,
   is_ai_generated boolean default true,
+  is_manual boolean default false,
   original_prompt text,
   created_at timestamptz default now(),
   updated_at timestamptz default now()

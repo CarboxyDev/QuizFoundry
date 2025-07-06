@@ -66,3 +66,8 @@ This document defines the behavior and flow for the **Create Quiz** page in the 
 - Edit Quiz page should support previewing and submitting the manually created quiz.
 
 ---
+
+## Backend Notes
+
+- The backend must not return the answers ever. They will always be kept in the backend safely.
+- Make sure you store created_by field for the quizzes

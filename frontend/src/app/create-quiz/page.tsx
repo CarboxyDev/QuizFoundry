@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ import { Sparkles, ArrowLeft, Loader2, Settings2, Edit3 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { ProtectedRouteGuard } from "@/components/AuthGuard";
+import { createQuizExpress, createQuizAdvanced } from "@/lib/quiz-api";
 
 interface QuizFormData {
   prompt: string;
@@ -40,6 +42,7 @@ export default function CreateQuizPage() {
     isManual: false,
   });
   const [isGenerating, setIsGenerating] = useState(false);
+  const router = useRouter();
 
   const handleModeChange = (checked: boolean) => {
     setIsAdvancedMode(checked);
@@ -78,18 +81,29 @@ export default function CreateQuizPage() {
         formData,
       });
 
-      // TODO: Implement actual API call
-      await new Promise((resolve) => setTimeout(resolve, 2000)); // Simulate API call
+      let result;
+      if (isAdvancedMode) {
+        // Map form data to advanced API input
+        const advancedInput = {
+          prompt: formData.prompt,
+          difficulty: formData.difficulty,
+          questionCount: formData.questionCount,
+          optionsCount: formData.optionsCount,
+          isManualMode: formData.isManual,
+        };
+        result = await createQuizAdvanced(advancedInput);
+      } else {
+        // Map form data to express API input
+        const expressInput = {
+          prompt: formData.prompt,
+        };
+        result = await createQuizExpress(expressInput);
+      }
 
       toast.success("Quiz generated successfully!");
 
-      if (isAdvancedMode && formData.isManual) {
-        // TODO: Redirect to edit quiz page
-        console.log("Would redirect to edit quiz page");
-      } else {
-        // TODO: Redirect to quiz view page
-        console.log("Would redirect to quiz view page");
-      }
+      // Navigate to the page specified by the backend
+      router.push(result.redirectTo);
     } catch (error) {
       console.error("Error generating quiz:", error);
       toast.error("Failed to generate quiz. Please try again.");

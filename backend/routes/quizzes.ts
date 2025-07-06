@@ -1,13 +1,15 @@
 import express from "express";
 import asyncHandler from "express-async-handler";
 import {
-  createQuizSchema,
+  createQuizExpressModeSchema,
+  createQuizAdvancedModeSchema,
   updateQuizSchema,
   createQuestionSchema,
 } from "../schemas/quizSchemas";
 import { AppError } from "../errors/AppError";
 import {
-  createQuizWithAI,
+  createQuizExpressMode,
+  createQuizAdvancedMode,
   createManualQuiz,
   getQuizById,
   getUserQuizzes,
@@ -25,8 +27,6 @@ import type { Router } from "express";
 
 const quizzesRouter: Router = express.Router();
 
-// Helper utilities to prevent exposing correct answers to the client
-
 type OptionWithoutAnswer = Omit<
   {
     id: string;
@@ -38,22 +38,31 @@ type OptionWithoutAnswer = Omit<
   "is_correct"
 >;
 
-function stripAnswersFromQuestion<QuestionType extends { options?: any[] }>(
-  question: QuestionType
-) {
-  if (!question.options) return question;
-  const sanitizedOptions: OptionWithoutAnswer[] = question.options.map(
-    ({ is_correct, ...rest }) => rest
+function stripAnswersFromQuestion(question: any) {
+  // Handle both possible field names for options
+  const optionsField = question.question_options || question.options;
+  if (!optionsField) return question;
+
+  const sanitizedOptions: OptionWithoutAnswer[] = optionsField.map(
+    ({ is_correct, ...rest }: any) => rest
   );
-  return {
-    ...question,
-    options: sanitizedOptions,
-  };
+
+  // Return with the same field name structure as input
+  if (question.question_options) {
+    return {
+      ...question,
+      question_options: sanitizedOptions,
+    };
+  } else {
+    return {
+      ...question,
+      options: sanitizedOptions,
+    };
+  }
 }
 
-function stripAnswersFromQuiz<QuizType extends { questions: any[] }>(
-  quiz: QuizType
-) {
+function stripAnswersFromQuiz(quiz: any) {
+  if (!quiz.questions) return quiz;
   const sanitizedQuestions = quiz.questions.map(stripAnswersFromQuestion);
   return {
     ...quiz,
@@ -61,12 +70,17 @@ function stripAnswersFromQuiz<QuizType extends { questions: any[] }>(
   };
 }
 
+// =============================================
+// CREATE QUIZ ENDPOINTS
+// =============================================
+
 /**
- * POST /quizzes/generate - Generate a quiz using AI
- * Requires authentication and completed onboarding
+ * POST /quizzes/create/express - Create quiz using Express Mode
+ * Uses defaults: 5 questions, 4 options, medium difficulty
+ * Generates immediately and redirects to quiz view
  */
 quizzesRouter.post(
-  "/generate",
+  "/create/express",
   authMiddleware,
   requireCompletedOnboarding,
   asyncHandler(async (req: AuthenticatedRequest, res) => {
@@ -76,24 +90,73 @@ quizzesRouter.post(
       throw new AppError("User not authenticated", 401);
     }
 
-    const validationResult = createQuizSchema.safeParse(req.body);
+    const validationResult = createQuizExpressModeSchema.safeParse(req.body);
 
     if (!validationResult.success) {
       const errors = validationResult.error.errors.map((err) => err.message);
       throw new AppError(errors.join("; "), 400);
     }
 
-    const quiz = await createQuizWithAI(userId, validationResult.data);
+    const quiz = await createQuizExpressMode(userId, validationResult.data);
 
-    // Do not expose correct answers to the client
+    // Strip answers from response
     const sanitizedQuiz = stripAnswersFromQuiz(quiz);
 
     res.status(201).json({
       success: true,
       data: {
         quiz: sanitizedQuiz,
+        mode: "express",
+        redirect_to: `/quiz/${quiz.id}`, // Frontend should redirect here
       },
-      message: "Quiz generated successfully",
+      message: "Quiz created successfully in Express Mode",
+    });
+  })
+);
+
+/**
+ * POST /quizzes/create/advanced - Create quiz using Advanced Mode
+ * Uses custom settings with optional Manual Mode
+ * Behavior depends on isManualMode flag
+ */
+quizzesRouter.post(
+  "/create/advanced",
+  authMiddleware,
+  requireCompletedOnboarding,
+  asyncHandler(async (req: AuthenticatedRequest, res) => {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      throw new AppError("User not authenticated", 401);
+    }
+
+    const validationResult = createQuizAdvancedModeSchema.safeParse(req.body);
+
+    if (!validationResult.success) {
+      const errors = validationResult.error.errors.map((err) => err.message);
+      throw new AppError(errors.join("; "), 400);
+    }
+
+    const quiz = await createQuizAdvancedMode(userId, validationResult.data);
+
+    // Strip answers from response
+    const sanitizedQuiz = stripAnswersFromQuiz(quiz);
+
+    // Determine redirect based on Manual Mode
+    const isManualMode = validationResult.data.isManualMode;
+    const redirectTo = isManualMode
+      ? `/quiz/${quiz.id}/edit` // Edit page for manual mode
+      : `/quiz/${quiz.id}`; // View page for auto mode
+
+    res.status(201).json({
+      success: true,
+      data: {
+        quiz: sanitizedQuiz,
+        mode: "advanced",
+        is_manual_mode: isManualMode,
+        redirect_to: redirectTo,
+      },
+      message: `Quiz created successfully in Advanced Mode${isManualMode ? " (Manual editing enabled)" : ""}`,
     });
   })
 );
