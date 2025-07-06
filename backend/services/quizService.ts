@@ -14,6 +14,11 @@ import type {
   CreateQuestionInput,
   UpdateQuestionInput,
 } from "../schemas/quizSchemas";
+import type {
+  SubmitQuizRequest,
+  SubmitQuizResult,
+  SubmitQuizQuestionResult,
+} from "../types/api";
 
 // =============================================
 // TYPES
@@ -548,9 +553,84 @@ export async function createQuestion(
   };
 }
 
-// =============================================
-// SURPRISE ME - Generate a creative quiz prompt
-// =============================================
+/**
+ * Submit a quiz attempt, validate answers, compute score, and store attempt/answers
+ */
+export async function submitQuizAttempt(
+  userId: string,
+  quizId: string,
+  req: SubmitQuizRequest
+): Promise<SubmitQuizResult> {
+  // Fetch quiz with questions and options
+  const quiz = await getQuizById(quizId, userId);
+  if (!quiz) throw new AppError("Quiz not found", 404);
+  if (!quiz.questions || quiz.questions.length === 0)
+    throw new AppError("Quiz has no questions", 400);
+
+  // Map answers for quick lookup
+  const answerMap = new Map(req.answers.map((a) => [a.questionId, a.optionId]));
+
+  // Prepare per-question results
+  const results: SubmitQuizQuestionResult[] = [];
+  let correctCount = 0;
+
+  for (const question of quiz.questions) {
+    const selectedOptionId = answerMap.get(question.id) || null;
+    // Support both question_options and options for compatibility
+    const options =
+      (question as any).question_options || (question as any).options;
+    const correctOption = options?.find((o: any) => o.is_correct);
+    if (!correctOption)
+      throw new AppError("Question missing correct answer", 500);
+    const isCorrect = selectedOptionId === correctOption.id;
+    if (isCorrect) correctCount++;
+    results.push({
+      questionId: question.id,
+      selectedOptionId,
+      correctOptionId: correctOption.id,
+      isCorrect,
+    });
+  }
+
+  const score = correctCount;
+  const percentage = (score / quiz.questions.length) * 100;
+
+  // Insert quiz_attempts row
+  const { data: attempt, error: attemptError } = await supabase
+    .from("quiz_attempts")
+    .insert({
+      user_id: userId,
+      quiz_id: quizId,
+      score,
+      percentage,
+      started_at: new Date().toISOString(),
+      completed_at: new Date().toISOString(),
+    })
+    .select()
+    .single();
+  if (attemptError || !attempt)
+    throw new AppError("Failed to record attempt", 500);
+
+  // Insert quiz_attempt_answers rows
+  const answerRows = results.map((r) => ({
+    attempt_id: attempt.id,
+    question_id: r.questionId,
+    selected_option_id: r.selectedOptionId,
+    is_correct: r.isCorrect,
+  }));
+  const { error: answersError } = await supabase
+    .from("quiz_attempt_answers")
+    .insert(answerRows);
+  if (answersError) throw new AppError("Failed to record answers", 500);
+
+  return {
+    attemptId: attempt.id,
+    score,
+    percentage,
+    results,
+    completedAt: attempt.completed_at,
+  };
+}
 
 /**
  * Generate a creative quiz prompt (for "Surprise Me")

@@ -87,15 +87,19 @@ export interface SubmitQuizInput {
   }>;
 }
 
+export interface SubmitQuizQuestionResult {
+  questionId: string;
+  selectedOptionId: string | null;
+  correctOptionId: string;
+  isCorrect: boolean;
+}
+
 export interface SubmitQuizResult {
+  attemptId: string;
   score: number;
   percentage: number;
-  results: Array<{
-    questionId: string;
-    isCorrect: boolean;
-    correctOptionId: string;
-    selectedOptionId: string | null;
-  }>;
+  results: SubmitQuizQuestionResult[];
+  completedAt: string;
 }
 
 /**

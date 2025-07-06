@@ -18,6 +18,7 @@ import {
   deleteQuiz,
   createQuestion,
   getCreativeQuizPrompt,
+  submitQuizAttempt,
 } from "../services/quizService";
 import {
   authMiddleware,
@@ -26,6 +27,8 @@ import {
 } from "../middleware/auth";
 import type { Router } from "express";
 import { GoogleGenAI } from "@google/genai";
+import { z } from "zod";
+import type { SubmitQuizRequest } from "../types/api";
 
 const quizzesRouter: Router = express.Router();
 
@@ -397,6 +400,44 @@ quizzesRouter.post(
         500
       );
     }
+  })
+);
+
+/**
+ * POST /quizzes/:id/submit - Submit answers for a quiz and get result
+ */
+quizzesRouter.post(
+  "/:id/submit",
+  authMiddleware,
+  requireCompletedOnboarding,
+  asyncHandler(async (req: AuthenticatedRequest, res) => {
+    const { id } = req.params;
+    const userId = req.user?.id;
+    if (!userId) throw new AppError("User not authenticated", 401);
+    if (!id || typeof id !== "string")
+      throw new AppError("Quiz ID is required", 400);
+
+    // Validate request body
+    const schema = z.object({
+      answers: z.array(
+        z.object({
+          questionId: z.string(),
+          optionId: z.string(),
+        })
+      ),
+    });
+    const parseResult = schema.safeParse(req.body);
+    if (!parseResult.success) {
+      const errors = parseResult.error.errors.map((err) => err.message);
+      throw new AppError(errors.join("; "), 400);
+    }
+    const submitReq: SubmitQuizRequest = parseResult.data;
+
+    const result = await submitQuizAttempt(userId, id, submitReq);
+    res.json({
+      success: true,
+      data: result,
+    });
   })
 );
 

@@ -229,6 +229,14 @@ export default function QuizPage() {
                   <p className={`text-lg font-semibold ${getScoreColor()}`}>
                     {getScorePercentage()}% Score
                   </p>
+                  <p className="text-xs text-muted-foreground">
+                    Attempt ID:{" "}
+                    <span className="font-mono">{result.attemptId}</span>
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Completed at:{" "}
+                    {new Date(result.completedAt).toLocaleString()}
+                  </p>
                   {getScorePercentage() >= 80 && (
                     <p className="text-primary font-medium">
                       Excellent work! 🎉

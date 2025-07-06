@@ -64,3 +64,29 @@ export interface UpdateOnboardingInput {
   is_complete?: boolean;
   onboarding_data?: PartialOnboardingData;
 }
+
+// ========== Quiz Submission Types ==========
+
+export interface SubmitQuizAnswer {
+  questionId: string;
+  optionId: string;
+}
+
+export interface SubmitQuizRequest {
+  answers: SubmitQuizAnswer[];
+}
+
+export interface SubmitQuizQuestionResult {
+  questionId: string;
+  selectedOptionId: string | null;
+  correctOptionId: string;
+  isCorrect: boolean;
+}
+
+export interface SubmitQuizResult {
+  attemptId: string;
+  score: number;
+  percentage: number;
+  results: SubmitQuizQuestionResult[];
+  completedAt: string;
+}
