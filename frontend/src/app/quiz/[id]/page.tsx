@@ -8,6 +8,8 @@ import {
   type Quiz,
   type Question,
   type QuestionOption,
+  submitQuiz,
+  type SubmitQuizResult,
 } from "@/lib/quiz-api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,7 +37,8 @@ export default function QuizPage() {
 
   const [userAnswers, setUserAnswers] = useState<UserAnswers>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [score, setScore] = useState<number | null>(null);
+  const [result, setResult] = useState<SubmitQuizResult | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     data: quiz,
@@ -55,27 +58,27 @@ export default function QuizPage() {
     }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!quiz?.questions) return;
-
-    let correctCount = 0;
-    quiz.questions.forEach((question) => {
-      const selectedOptionId = userAnswers[question.id];
-      const selectedOption = question.question_options?.find(
-        (opt) => opt.id === selectedOptionId
-      );
-      if (selectedOption?.is_correct) {
-        correctCount++;
-      }
-    });
-
-    setScore(correctCount);
-    setIsSubmitted(true);
+    setIsSubmitting(true);
+    try {
+      const answers = quiz.questions.map((q) => ({
+        questionId: q.id,
+        optionId: userAnswers[q.id],
+      }));
+      const res = await submitQuiz(quizId, { answers });
+      setResult(res);
+      setIsSubmitted(true);
+    } catch (err) {
+      // TODO: show error toast
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const getScorePercentage = () => {
-    if (score === null || !quiz?.questions) return 0;
-    return Math.round((score / quiz.questions.length) * 100);
+    if (!result) return 0;
+    return Math.round(result.percentage);
   };
 
   const getScoreColor = () => {
@@ -164,13 +167,6 @@ export default function QuizPage() {
                   Browse More Quizzes
                 </Button>
               </Link>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => router.push("/dashboard")}
-              >
-                Dashboard
-              </Button>
             </div>
 
             <div className="text-center space-y-4">
@@ -178,7 +174,13 @@ export default function QuizPage() {
                 <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
                   {quiz.title}
                 </h1>
-                <Badge variant="secondary" className="capitalize text-sm">
+                <Badge
+                  className={`capitalize text-sm
+                    ${quiz.difficulty === "easy" ? "bg-green-100 text-green-700 border border-green-400" : ""}
+                    ${quiz.difficulty === "medium" ? "bg-yellow-100 text-yellow-800 border border-yellow-400" : ""}
+                    ${quiz.difficulty === "hard" ? "bg-red-100 text-red-700 border border-red-400" : ""}
+                  `}
+                >
                   {quiz.difficulty}
                 </Badge>
               </div>
@@ -213,7 +215,7 @@ export default function QuizPage() {
           </div>
 
           {/* Results Summary */}
-          {isSubmitted && score !== null && (
+          {isSubmitted && result && (
             <Card className="mb-8 border-primary/20 bg-gradient-to-r from-primary/10 to-primary/5">
               <CardContent className="pt-6 text-center">
                 <Trophy className="h-16 w-16 text-primary mx-auto mb-4" />
@@ -222,7 +224,7 @@ export default function QuizPage() {
                 </h2>
                 <div className="space-y-2">
                   <p className={`text-2xl font-bold ${getScoreColor()}`}>
-                    {score} / {quiz.questions?.length || 0}
+                    {result.score} / {quiz.questions?.length || 0}
                   </p>
                   <p className={`text-lg font-semibold ${getScoreColor()}`}>
                     {getScorePercentage()}% Score
@@ -249,26 +251,35 @@ export default function QuizPage() {
           <div className="space-y-8">
             {quiz.questions?.map((question, index) => {
               const selectedOptionId = userAnswers[question.id];
-              const selectedOption = question.question_options?.find(
-                (opt) => opt.id === selectedOptionId
-              );
               const isAnswered = !!selectedOptionId;
-              const isCorrect = isSubmitted && selectedOption?.is_correct;
-              const isIncorrect =
-                isSubmitted && selectedOptionId && !selectedOption?.is_correct;
+              let isCorrect = false;
+              let isIncorrect = false;
+              let correctOptionId: string | null = null;
+              if (isSubmitted && result) {
+                const qResult = result.results.find(
+                  (r) => r.questionId === question.id
+                );
+                isCorrect = qResult?.isCorrect ?? false;
+                isIncorrect = !isCorrect && qResult?.selectedOptionId != null;
+                correctOptionId = qResult?.correctOptionId ?? null;
+              }
+
+              let cardBorder = "border-primary/30";
+              let cardBg = "";
+              if (isSubmitted) {
+                if (isCorrect) {
+                  cardBorder = "border-green-500";
+                  cardBg = "bg-green-500/5";
+                } else if (isIncorrect) {
+                  cardBorder = "border-red-500";
+                  cardBg = "bg-red-500/5";
+                }
+              }
 
               return (
                 <Card
                   key={question.id}
-                  className={`transition-all duration-200 ${
-                    isSubmitted
-                      ? isCorrect
-                        ? "border-green-500/50 bg-green-500/5"
-                        : isIncorrect
-                          ? "border-red-500/50 bg-red-500/5"
-                          : "border-muted"
-                      : "border-muted hover:border-muted-foreground/50"
-                  }`}
+                  className={`transition-all duration-200 shadow-sm border-1 ${cardBorder} ${cardBg} ${!isSubmitted ? "hover:border-primary/60" : ""}`}
                 >
                   <CardHeader className="pb-4">
                     <div className="flex items-start justify-between gap-4">
@@ -299,18 +310,23 @@ export default function QuizPage() {
                               Unanswered
                             </Badge>
                           )
-                        ) : isAnswered ? (
-                          <>
-                            <CheckCircle className="h-5 w-5 text-primary" />
-                            <Badge className="bg-primary text-white text-xs">
-                              Answered
-                            </Badge>
-                          </>
                         ) : null}
                       </div>
                     </div>
                   </CardHeader>
                   <CardContent>
+                    {/* Answered badge below question, always occupies space */}
+                    <div className="mb-2 min-h-[28px] flex items-center">
+                      <Badge
+                        className="bg-primary text-white text-xs transition-opacity duration-200 flex items-center gap-1"
+                        style={{
+                          visibility: isAnswered ? "visible" : "hidden",
+                        }}
+                      >
+                        <CheckCircle className="h-4 w-4 mr-1" />
+                        Answered
+                      </Badge>
+                    </div>
                     <RadioGroup
                       value={selectedOptionId || ""}
                       onValueChange={(value) =>
@@ -323,16 +339,16 @@ export default function QuizPage() {
                         ?.sort((a, b) => a.order_index - b.order_index)
                         .map((option) => {
                           const isSelected = selectedOptionId === option.id;
-                          const isCorrectOption = option.is_correct;
-
                           let optionClasses =
                             "group relative p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer ";
-
-                          if (isSubmitted) {
-                            if (isCorrectOption) {
+                          if (isSubmitted && result) {
+                            if (option.id === correctOptionId) {
                               optionClasses +=
                                 "border-green-500 bg-green-500/10 text-green-700 dark:text-green-300";
-                            } else if (isSelected && !isCorrectOption) {
+                            } else if (
+                              isSelected &&
+                              option.id !== correctOptionId
+                            ) {
                               optionClasses +=
                                 "border-red-500 bg-red-500/10 text-red-700 dark:text-red-300";
                             } else {
@@ -348,7 +364,6 @@ export default function QuizPage() {
                                 "border-muted hover:border-primary/50 hover:bg-primary/5 hover:shadow-sm";
                             }
                           }
-
                           return (
                             <div
                               key={option.id}
@@ -365,22 +380,21 @@ export default function QuizPage() {
                                   id={option.id}
                                   disabled={isSubmitted}
                                 />
-
                                 <Label
                                   htmlFor={option.id}
                                   className="font-medium text-base flex-1 cursor-pointer"
                                 >
                                   {option.option_text}
                                 </Label>
-
-                                {isSubmitted && (
+                                {isSubmitted && result && (
                                   <>
-                                    {isCorrectOption && (
+                                    {option.id === correctOptionId && (
                                       <CheckCircle className="h-5 w-5 text-green-600" />
                                     )}
-                                    {isSelected && !isCorrectOption && (
-                                      <XCircle className="h-5 w-5 text-red-600" />
-                                    )}
+                                    {isSelected &&
+                                      option.id !== correctOptionId && (
+                                        <XCircle className="h-5 w-5 text-red-600" />
+                                      )}
                                   </>
                                 )}
                               </div>
@@ -400,11 +414,11 @@ export default function QuizPage() {
               <>
                 <Button
                   onClick={handleSubmit}
-                  disabled={!canSubmit()}
+                  disabled={!canSubmit() || isSubmitting}
                   size="lg"
                   className="px-12 py-3 text-lg font-semibold"
                 >
-                  Submit Quiz
+                  {isSubmitting ? "Submitting..." : "Submit Quiz"}
                 </Button>
                 {!canSubmit() && (
                   <p className="text-sm text-muted-foreground">
@@ -418,7 +432,7 @@ export default function QuizPage() {
                   onClick={() => {
                     setUserAnswers({});
                     setIsSubmitted(false);
-                    setScore(null);
+                    setResult(null);
                     window.scrollTo({ top: 0, behavior: "smooth" });
                   }}
                   variant="outline"
@@ -431,12 +445,6 @@ export default function QuizPage() {
                   <Link href="/quizzes">
                     <Button variant="ghost">Browse More Quizzes</Button>
                   </Link>
-                  <Button
-                    variant="ghost"
-                    onClick={() => router.push("/dashboard")}
-                  >
-                    Go to Dashboard
-                  </Button>
                 </div>
               </div>
             )}

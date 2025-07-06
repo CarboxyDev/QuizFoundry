@@ -80,6 +80,24 @@ export interface SurpriseMeResponse {
   message: string;
 }
 
+export interface SubmitQuizInput {
+  answers: Array<{
+    questionId: string;
+    optionId: string;
+  }>;
+}
+
+export interface SubmitQuizResult {
+  score: number;
+  percentage: number;
+  results: Array<{
+    questionId: string;
+    isCorrect: boolean;
+    correctOptionId: string;
+    selectedOptionId: string | null;
+  }>;
+}
+
 /**
  * Create a quiz using Express Mode (defaults: 5 questions, 4 options, medium difficulty)
  */
@@ -221,4 +239,19 @@ export async function surpriseMe(): Promise<string> {
   }
 
   return response.data.data.prompt;
+}
+
+export async function submitQuiz(
+  quizId: string,
+  input: SubmitQuizInput
+): Promise<SubmitQuizResult> {
+  const response = await axiosInstance.post<{
+    success: boolean;
+    data: SubmitQuizResult;
+    message?: string;
+  }>(`/quizzes/${quizId}/submit`, input);
+  if (!response.data.success) {
+    throw new Error(response.data.message || "Failed to submit quiz");
+  }
+  return response.data.data;
 }
