@@ -24,8 +24,8 @@ This is a granular breakdown of the MVP features. Each task should represent a s
 - [-] Create prompt input form (difficulty, option count, etc.)
 - [-] Validate prompt input and sanitize
 - [-] Call Gemini API for the quiz
-- [ ] Show loading spinner or skeleton while generating
-- [ ] Parse AI response into usable `Quiz` format
+- [-] Show loading spinner or skeleton while generating
+- [-] Parse AI response into usable `Quiz` format
 - [ ] Display AI-generated questions in preview
 - [ ] Add "Regenerate" and "Edit" buttons per quiz
 - [ ] Allow user to tweak individual questions before saving
