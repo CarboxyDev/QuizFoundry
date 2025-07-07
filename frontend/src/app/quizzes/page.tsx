@@ -158,14 +158,29 @@ export default function PublicQuizzesPage() {
         <div className="container mx-auto max-w-7xl px-4 py-8">
           {/* Header */}
           <div className="mb-8">
-            <Button
-              variant="ghost"
-              onClick={() => router.push("/dashboard")}
-              className="hover:bg-accent mb-6"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Dashboard
-            </Button>
+            <div className="mb-6 flex items-center justify-between">
+              <Button
+                variant="ghost"
+                onClick={() => router.push("/dashboard")}
+                className="hover:bg-accent"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Dashboard
+              </Button>
+
+              <Link href="/create-quiz">
+                <Button
+                  className={cn(
+                    "bg-primary hover:bg-primary/90",
+                    "shadow-sm hover:shadow-md",
+                    "transition-all duration-200",
+                  )}
+                >
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Create Quiz
+                </Button>
+              </Link>
+            </div>
 
             <div className="from-primary to-primary/80 text-primary-foreground relative overflow-hidden rounded-2xl bg-gradient-to-r p-8 shadow-xl">
               <div className="relative z-10">

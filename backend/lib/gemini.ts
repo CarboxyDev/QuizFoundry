@@ -460,6 +460,8 @@ QUALITY GUIDELINES:
 6. Ensure all content relates to: "${input.prompt}"
 7. Number order_index starting from 0
 8. Generate exactly ${input.questionCount} questions with ${input.optionsCount} options each
+9. Do not include any other text in the response.
+10. Make sure you do not include "quiz" or "quiz on" or "Create a quiz on" in the title. The quiz title must consist of the key topic keywords only.
 
 Generate the quiz now:`;
 }
