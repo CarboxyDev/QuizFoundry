@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getQuizById, submitQuiz, type SubmitQuizResult } from "@/lib/quiz-api";
+import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, CheckCircle, Clock, Trophy, XCircle } from "lucide-react";
 import Link from "next/link";
@@ -160,11 +161,6 @@ export default function QuizPage() {
                 <h1 className="from-primary to-primary/70 bg-gradient-to-r bg-clip-text text-4xl font-bold text-transparent">
                   {quiz.title}
                 </h1>
-                <Badge
-                  className={`text-sm capitalize ${quiz.difficulty === "easy" ? "border border-green-400 bg-green-100 text-green-700" : ""} ${quiz.difficulty === "medium" ? "border border-yellow-400 bg-yellow-100 text-yellow-800" : ""} ${quiz.difficulty === "hard" ? "border border-red-400 bg-red-100 text-red-700" : ""} `}
-                >
-                  {quiz.difficulty}
-                </Badge>
               </div>
 
               {quiz.description && (
@@ -178,6 +174,19 @@ export default function QuizPage() {
                   <Clock className="text-primary h-4 w-4" />
                   <span>{quiz.questions?.length || 0} questions</span>
                 </div>
+                <Badge
+                  className={cn(
+                    "rounded-2xl border px-3 py-1 text-xs font-medium capitalize shadow-sm hover:bg-transparent",
+                    quiz.difficulty === "easy" &&
+                      "border-green-600 bg-green-600/20 text-green-600",
+                    quiz.difficulty === "medium" &&
+                      "border-amber-500 bg-amber-500/20 text-amber-500",
+                    quiz.difficulty === "hard" &&
+                      "border-red-600 bg-red-600/20 text-red-600",
+                  )}
+                >
+                  {quiz.difficulty}
+                </Badge>
                 {quiz.is_ai_generated && (
                   <Badge variant="outline" className="text-xs">
                     AI Generated
@@ -196,7 +205,6 @@ export default function QuizPage() {
             </div>
           </div>
 
-          {/* Results Summary */}
           {isSubmitted && result && (
             <Card className="border-primary/20 from-primary/10 to-primary/5 mb-8 bg-gradient-to-r">
               <CardContent className="pt-6 text-center">
@@ -237,7 +245,6 @@ export default function QuizPage() {
             </Card>
           )}
 
-          {/* Questions */}
           <div className="space-y-8">
             {quiz.questions?.map((question, index) => {
               const selectedOptionId = userAnswers[question.id];
@@ -254,22 +261,21 @@ export default function QuizPage() {
                 correctOptionId = qResult?.correctOptionId ?? null;
               }
 
-              let cardBorder = "border-primary/30";
-              let cardBg = "";
-              if (isSubmitted) {
-                if (isCorrect) {
-                  cardBorder = "border-green-500";
-                  cardBg = "bg-green-500/5";
-                } else if (isIncorrect) {
-                  cardBorder = "border-red-500";
-                  cardBg = "bg-red-500/5";
-                }
-              }
-
               return (
                 <Card
                   key={question.id}
-                  className={`border-1 shadow-sm transition-all duration-200 ${cardBorder} ${cardBg} ${!isSubmitted ? "hover:border-primary/60" : ""}`}
+                  className={cn(
+                    "border-1 shadow-sm transition-all duration-200",
+                    !isSubmitted && "border-muted-foreground/20",
+                    isSubmitted &&
+                      isCorrect &&
+                      "border-green-500 bg-green-500/5",
+                    isSubmitted && isIncorrect && "border-red-500 bg-red-500/5",
+                    isSubmitted &&
+                      !isCorrect &&
+                      !isIncorrect &&
+                      "border-primary/30",
+                  )}
                 >
                   <CardHeader className="pb-4">
                     <div className="flex items-start justify-between gap-4">
@@ -305,13 +311,13 @@ export default function QuizPage() {
                     </div>
                   </CardHeader>
                   <CardContent>
-                    {/* Answered badge below question, always occupies space */}
                     <div className="mb-2 flex min-h-[28px] items-center">
                       <Badge
-                        className="bg-primary flex items-center gap-1 text-xs text-white transition-opacity duration-200"
-                        style={{
-                          visibility: isAnswered ? "visible" : "hidden",
-                        }}
+                        className={cn(
+                          "bg-primary flex items-center gap-1 text-xs text-white transition-opacity duration-200",
+                          { visible: isAnswered, invisible: !isAnswered },
+                        )}
+                        style={{ visibility: undefined }}
                       >
                         <CheckCircle className="mr-1 h-4 w-4" />
                         Answered
@@ -329,35 +335,36 @@ export default function QuizPage() {
                         ?.sort((a, b) => a.order_index - b.order_index)
                         .map((option) => {
                           const isSelected = selectedOptionId === option.id;
-                          let optionClasses =
-                            "group relative p-4 rounded-lg border-2 transition-all duration-200 cursor-pointer ";
-                          if (isSubmitted && result) {
-                            if (option.id === correctOptionId) {
-                              optionClasses +=
-                                "border-green-500 bg-green-500/10 text-green-700 dark:text-green-300";
-                            } else if (
-                              isSelected &&
-                              option.id !== correctOptionId
-                            ) {
-                              optionClasses +=
-                                "border-red-500 bg-red-500/10 text-red-700 dark:text-red-300";
-                            } else {
-                              optionClasses +=
-                                "border-muted bg-muted/30 text-muted-foreground";
-                            }
-                          } else {
-                            if (isSelected) {
-                              optionClasses +=
-                                "border-primary bg-primary/10 text-primary shadow-md transform scale-[1.02]";
-                            } else {
-                              optionClasses +=
-                                "border-muted hover:border-primary/50 hover:bg-primary/5 hover:shadow-sm";
-                            }
-                          }
                           return (
                             <div
                               key={option.id}
-                              className={optionClasses}
+                              className={cn(
+                                "group relative cursor-pointer rounded-lg border-2 p-4 transition-all duration-200",
+                                isSubmitted &&
+                                  result &&
+                                  option.id === correctOptionId &&
+                                  "border-green-500 bg-green-500/10 text-green-700 dark:text-green-300",
+                                isSubmitted &&
+                                  result &&
+                                  isSelected &&
+                                  option.id !== correctOptionId &&
+                                  "border-red-500 bg-red-500/10 text-red-700 dark:text-red-300",
+                                isSubmitted &&
+                                  result &&
+                                  option.id !== correctOptionId &&
+                                  (!isSelected || isSelected) &&
+                                  !(option.id === correctOptionId) &&
+                                  !(
+                                    isSelected && option.id !== correctOptionId
+                                  ) &&
+                                  "border-muted bg-muted/30 text-muted-foreground",
+                                !isSubmitted &&
+                                  isSelected &&
+                                  "border-primary bg-primary/10 text-primary scale-[1.02] transform shadow-md",
+                                !isSubmitted &&
+                                  !isSelected &&
+                                  "border-muted hover:border-primary/50 hover:bg-primary/5 hover:shadow-sm",
+                              )}
                               onClick={() => {
                                 if (!isSubmitted) {
                                   handleAnswerChange(question.id, option.id);
@@ -398,7 +405,6 @@ export default function QuizPage() {
             })}
           </div>
 
-          {/* Action Buttons */}
           <div className="mt-12 space-y-4 text-center">
             {!isSubmitted ? (
               <>
