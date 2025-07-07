@@ -1,23 +1,23 @@
-import { useMutation } from "@tanstack/react-query";
+import { POST_REGISTER } from "@/lib/api";
 import { axiosInstance } from "@/lib/axios";
 import type {
   ApiResponse,
-  SignupInput,
   LoginResponse,
+  SignupInput,
 } from "@backend/types/api";
-import { POST_REGISTER } from "@/lib/api";
+import { useMutation } from "@tanstack/react-query";
 
 type SignupResponse = LoginResponse;
 
 export function useSignup() {
   return useMutation({
     mutationFn: async (
-      signupData: Omit<SignupInput, "name">
+      signupData: Omit<SignupInput, "name">,
     ): Promise<ApiResponse<SignupResponse>> => {
       try {
         const res = await axiosInstance.post<ApiResponse<SignupResponse>>(
           POST_REGISTER,
-          signupData
+          signupData,
         );
         return res.data;
       } catch (error: any) {

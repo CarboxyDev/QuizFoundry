@@ -1,13 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ProtectedRouteGuard } from "@/components/AuthGuard";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -15,25 +13,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 import {
-  Sparkles,
+  createQuizAdvanced,
+  createQuizExpress,
+  surpriseMe,
+} from "@/lib/quiz-api";
+import { AnimatePresence, motion } from "framer-motion";
+import {
   ArrowLeft,
+  Edit3,
   Loader2,
   Settings2,
-  Edit3,
+  Sparkles,
   Wand2,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
-import { ProtectedRouteGuard } from "@/components/AuthGuard";
-import {
-  createQuizExpress,
-  createQuizAdvanced,
-  surpriseMe,
-} from "@/lib/quiz-api";
 
 interface QuizFormData {
   prompt: string;
@@ -143,7 +143,7 @@ export default function CreateQuizPage() {
 
   return (
     <ProtectedRouteGuard>
-      <div className="min-h-screen bg-gradient-to-br from-background via-muted/10 to-background">
+      <div className="from-background via-muted/10 to-background min-h-screen bg-gradient-to-br">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(120,119,198,0.08),transparent_50%),radial-gradient(circle_at_70%_70%,rgba(255,255,255,0.02),transparent_50%)]" />
 
         <div className="relative z-10 container mx-auto px-4 py-8">
@@ -151,30 +151,30 @@ export default function CreateQuizPage() {
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-4 mb-8"
+            className="mb-8 flex items-center gap-4"
           >
             <Link href="/dashboard">
               <Button variant="outline" size="sm" className="gap-2">
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="h-4 w-4" />
                 Back to Dashboard
               </Button>
             </Link>
           </motion.div>
 
           {/* Main content */}
-          <div className="max-w-4xl mx-auto">
+          <div className="mx-auto max-w-4xl">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-center mb-12"
+              className="mb-12 text-center"
             >
-              <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-full text-sm font-medium mb-4">
-                <Sparkles className="w-4 h-4" />
+              <div className="bg-primary/10 text-primary mb-4 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium">
+                <Sparkles className="h-4 w-4" />
                 AI Quiz Generator
               </div>
-              <h1 className="text-4xl font-bold mb-4">Create Your Quiz</h1>
-              <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              <h1 className="mb-4 text-4xl font-bold">Create Your Quiz</h1>
+              <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
                 Describe what you want your quiz to be about, and our AI will
                 generate engaging questions for you.
               </p>
@@ -185,10 +185,10 @@ export default function CreateQuizPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <Card className="max-w-3xl mx-auto shadow-lg">
+              <Card className="mx-auto max-w-3xl shadow-lg">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <Sparkles className="w-5 h-5" />
+                    <Sparkles className="h-5 w-5" />
                     Quiz Configuration
                   </CardTitle>
                 </CardHeader>
@@ -203,7 +203,7 @@ export default function CreateQuizPage() {
                         >
                           Quiz Topic & Description
                         </Label>
-                        <p className="text-sm text-muted-foreground mt-1">
+                        <p className="text-muted-foreground mt-1 text-sm">
                           Describe what you want your quiz to be about
                         </p>
                       </div>
@@ -218,11 +218,11 @@ export default function CreateQuizPage() {
                           size="sm"
                           onClick={handleSurpriseMe}
                           disabled={isGenerating || isSurpriseLoading}
-                          className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border-purple-200 hover:from-purple-500/20 hover:to-pink-500/20 hover:border-purple-300 transition-all duration-300 gap-2 h-8 px-3"
+                          className="h-8 gap-2 border-purple-200 bg-gradient-to-r from-purple-500/10 to-pink-500/10 px-3 transition-all duration-300 hover:border-purple-300 hover:from-purple-500/20 hover:to-pink-500/20"
                         >
                           {isSurpriseLoading ? (
                             <>
-                              <Loader2 className="w-3 h-3 animate-spin" />
+                              <Loader2 className="h-3 w-3 animate-spin" />
                               <span className="text-xs font-medium">
                                 Generating...
                               </span>
@@ -240,9 +240,9 @@ export default function CreateQuizPage() {
                                   repeatDelay: 3,
                                 }}
                               >
-                                <Wand2 className="w-3 h-3 text-purple-600" />
+                                <Wand2 className="h-3 w-3 text-purple-600" />
                               </motion.div>
-                              <span className="text-xs font-medium bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                              <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-xs font-medium text-transparent">
                                 Surprise Me
                               </span>
                             </>
@@ -256,7 +256,7 @@ export default function CreateQuizPage() {
                       placeholder="e.g., Create a quiz about the solar system for middle school students, focusing on planets, their characteristics, and basic astronomy concepts..."
                       value={formData.prompt}
                       onChange={(e) => handlePromptChange(e.target.value)}
-                      className="min-h-[120px] text-base resize-none"
+                      className="min-h-[120px] resize-none text-base"
                       disabled={isGenerating || isSurpriseLoading}
                     />
 
@@ -289,7 +289,7 @@ export default function CreateQuizPage() {
                       >
                         {isAdvancedMode ? "Advanced Mode" : "Express Mode"}
                       </Label>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-muted-foreground text-sm">
                         {isAdvancedMode
                           ? "Customize question count, difficulty, and options"
                           : "Quick generation with default settings (5 questions, medium difficulty)"}
@@ -313,13 +313,13 @@ export default function CreateQuizPage() {
                         className="space-y-6"
                       >
                         <div className="flex items-center gap-2">
-                          <Settings2 className="w-5 h-5 text-primary" />
+                          <Settings2 className="text-primary h-5 w-5" />
                           <h3 className="text-lg font-semibold">
                             Advanced Settings
                           </h3>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                           <div className="space-y-3">
                             <Label
                               htmlFor="difficulty"
@@ -345,19 +345,19 @@ export default function CreateQuizPage() {
                               <SelectContent>
                                 <SelectItem value="easy">
                                   <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 rounded-full bg-green-500" />
+                                    <div className="h-2 w-2 rounded-full bg-green-500" />
                                     Easy
                                   </div>
                                 </SelectItem>
                                 <SelectItem value="medium">
                                   <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 rounded-full bg-yellow-500" />
+                                    <div className="h-2 w-2 rounded-full bg-yellow-500" />
                                     Medium
                                   </div>
                                 </SelectItem>
                                 <SelectItem value="hard">
                                   <div className="flex items-center gap-2">
-                                    <div className="w-2 h-2 rounded-full bg-red-500" />
+                                    <div className="h-2 w-2 rounded-full bg-red-500" />
                                     Hard
                                   </div>
                                 </SelectItem>
@@ -439,12 +439,12 @@ export default function CreateQuizPage() {
                             <div className="space-y-1">
                               <Label
                                 htmlFor="manual"
-                                className="text-sm font-medium cursor-pointer flex items-center gap-2"
+                                className="flex cursor-pointer items-center gap-2 text-sm font-medium"
                               >
-                                <Edit3 className="w-4 h-4" />
+                                <Edit3 className="h-4 w-4" />
                                 Manual Mode
                               </Label>
-                              <p className="text-xs text-muted-foreground">
+                              <p className="text-muted-foreground text-xs">
                                 Generate a prototype quiz that you can edit
                                 before saving
                               </p>
@@ -460,17 +460,17 @@ export default function CreateQuizPage() {
                     <Button
                       onClick={handleGenerateQuiz}
                       disabled={!canSubmit || isGenerating}
-                      className="w-full h-12 text-base font-medium gap-2"
+                      className="h-12 w-full gap-2 text-base font-medium"
                       size="lg"
                     >
                       {isGenerating ? (
                         <>
-                          <Loader2 className="w-5 h-5 animate-spin" />
+                          <Loader2 className="h-5 w-5 animate-spin" />
                           Generating Quiz...
                         </>
                       ) : (
                         <>
-                          <Sparkles className="w-5 h-5" />
+                          <Sparkles className="h-5 w-5" />
                           {isAdvancedMode && formData.isManual
                             ? "Create Prototype Quiz"
                             : "Generate Quiz"}

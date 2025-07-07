@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/auth/useAuth";
 import { SpinLoader } from "@/components/Loaders";
+import { useAuth } from "@/hooks/auth/useAuth";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 interface OnboardingGuardProps {
   children: React.ReactNode;
@@ -29,7 +29,7 @@ export function OnboardingGuard({ children }: OnboardingGuardProps) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center">
         <SpinLoader />
       </div>
     );

@@ -1,26 +1,26 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
-import { getPublicQuizzes, type Quiz } from "@/lib/quiz-api";
 import { ProtectedRouteGuard } from "@/components/AuthGuard";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getPublicQuizzes } from "@/lib/quiz-api";
+import { useQuery } from "@tanstack/react-query";
 import {
   ArrowLeft,
-  Search,
-  Users,
-  Clock,
   Brain,
-  Play,
   ChevronLeft,
   ChevronRight,
+  Clock,
+  Play,
+  Search,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 const QUIZZES_PER_PAGE = 12;
 
@@ -43,7 +43,7 @@ export default function PublicQuizzesPage() {
   const filteredQuizzes = quizzes.filter(
     (quiz) =>
       quiz.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      quiz.description?.toLowerCase().includes(searchTerm.toLowerCase())
+      quiz.description?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const getDifficultyColor = (difficulty: string) => {
@@ -70,11 +70,11 @@ export default function PublicQuizzesPage() {
   if (error) {
     return (
       <ProtectedRouteGuard>
-        <div className="container mx-auto px-4 py-8 max-w-6xl">
+        <div className="container mx-auto max-w-6xl px-4 py-8">
           <Card>
             <CardContent className="pt-6">
               <div className="text-center">
-                <p className="text-lg text-muted-foreground mb-4">
+                <p className="text-muted-foreground mb-4 text-lg">
                   Failed to load public quizzes. Please try again.
                 </p>
                 <Button onClick={() => window.location.reload()}>Retry</Button>
@@ -88,7 +88,7 @@ export default function PublicQuizzesPage() {
 
   return (
     <ProtectedRouteGuard>
-      <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <div className="container mx-auto max-w-6xl px-4 py-8">
         {/* Header */}
         <div className="mb-8">
           <Button
@@ -96,12 +96,12 @@ export default function PublicQuizzesPage() {
             onClick={() => router.push("/dashboard")}
             className="mb-4"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Dashboard
           </Button>
 
-          <div className="flex items-center gap-3 mb-2">
-            <Users className="h-8 w-8 text-primary" />
+          <div className="mb-2 flex items-center gap-3">
+            <Users className="text-primary h-8 w-8" />
             <h1 className="text-3xl font-bold">Public Quizzes</h1>
           </div>
           <p className="text-muted-foreground text-lg">
@@ -112,7 +112,7 @@ export default function PublicQuizzesPage() {
         {/* Search Bar */}
         <div className="mb-6">
           <div className="relative max-w-md">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+            <Search className="text-muted-foreground absolute top-3 left-3 h-4 w-4" />
             <Input
               placeholder="Search quizzes..."
               value={searchTerm}
@@ -124,7 +124,7 @@ export default function PublicQuizzesPage() {
 
         {/* Loading State */}
         {isLoading && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, i) => (
               <Card key={i}>
                 <CardHeader>
@@ -149,8 +149,8 @@ export default function PublicQuizzesPage() {
               <Card>
                 <CardContent className="pt-6">
                   <div className="text-center">
-                    <Brain className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">
+                    <Brain className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
+                    <h3 className="mb-2 text-lg font-semibold">
                       {searchTerm
                         ? "No quizzes found"
                         : "No public quizzes yet"}
@@ -169,15 +169,15 @@ export default function PublicQuizzesPage() {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {filteredQuizzes.map((quiz) => (
                   <Card
                     key={quiz.id}
-                    className="hover:shadow-lg transition-shadow cursor-pointer group"
+                    className="group cursor-pointer transition-shadow hover:shadow-lg"
                   >
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between">
-                        <CardTitle className="text-lg line-clamp-2 group-hover:text-primary transition-colors">
+                        <CardTitle className="group-hover:text-primary line-clamp-2 text-lg transition-colors">
                           {quiz.title}
                         </CardTitle>
                         <Badge
@@ -188,13 +188,13 @@ export default function PublicQuizzesPage() {
                         </Badge>
                       </div>
                       {quiz.description && (
-                        <p className="text-sm text-muted-foreground line-clamp-2">
+                        <p className="text-muted-foreground line-clamp-2 text-sm">
                           {quiz.description}
                         </p>
                       )}
                     </CardHeader>
                     <CardContent>
-                      <div className="flex items-center justify-between text-sm text-muted-foreground mb-4">
+                      <div className="text-muted-foreground mb-4 flex items-center justify-between text-sm">
                         <div className="flex items-center gap-4">
                           <span className="flex items-center gap-1">
                             <Brain className="h-3 w-3" />
@@ -208,7 +208,7 @@ export default function PublicQuizzesPage() {
                         </div>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                        <span className="text-muted-foreground flex items-center gap-1 text-xs">
                           <Clock className="h-3 w-3" />
                           {formatDate(quiz.created_at)}
                         </span>
@@ -228,7 +228,7 @@ export default function PublicQuizzesPage() {
             {/* Pagination */}
             {filteredQuizzes.length > 0 &&
               quizzes.length === QUIZZES_PER_PAGE && (
-                <div className="flex items-center justify-center gap-2 mt-8">
+                <div className="mt-8 flex items-center justify-center gap-2">
                   <Button
                     variant="outline"
                     size="sm"
@@ -240,7 +240,7 @@ export default function PublicQuizzesPage() {
                     <ChevronLeft className="h-4 w-4" />
                     Previous
                   </Button>
-                  <span className="text-sm text-muted-foreground px-4">
+                  <span className="text-muted-foreground px-4 text-sm">
                     Page {currentPage}
                   </span>
                   <Button

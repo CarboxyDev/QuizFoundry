@@ -1,24 +1,26 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent } from "@/components/ui/card";
+import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
-import { Eye, EyeOff, Mail, Lock, Sparkles } from "lucide-react";
-import Link from "next/link";
-import { useSignup } from "@/hooks/auth/useSignup";
-import { useAuth } from "@/hooks/auth/useAuth";
-import { useGoogleAuth } from "@/hooks/auth/useGoogleAuth";
-import { AuthGuard } from "@/components/AuthGuard";
-import { toast } from "sonner";
-import { z } from "zod";
+import AuthBackgroundPattern from "@/components/auth/AuthBackgroundPattern";
+import AuthSparklesIcon from "@/components/auth/AuthSparklesIcon";
+import FormDivider from "@/components/auth/FormDivider";
 import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
 import PasswordInput from "@/components/auth/PasswordInput";
-import FormDivider from "@/components/auth/FormDivider";
+import { AuthGuard } from "@/components/AuthGuard";
+import { useAuth } from "@/hooks/auth/useAuth";
+import { useGoogleAuth } from "@/hooks/auth/useGoogleAuth";
+import { useSignup } from "@/hooks/auth/useSignup";
+import { Mail } from "lucide-react";
+import Link from "next/link";
+import { toast } from "sonner";
+import { z } from "zod";
 
 const signupSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -118,12 +120,10 @@ export default function SignUpPage() {
 
   return (
     <AuthGuard redirectTo="/dashboard">
-      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-muted/20 to-background">
-        {/* Subtle background pattern */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(120,119,198,0.1),transparent_25%),radial-gradient(circle_at_80%_80%,rgba(255,255,255,0.03),transparent_25%)]" />
-
+      <div className="from-background via-muted/20 to-background flex min-h-screen items-center justify-center bg-gradient-to-br p-4">
+        <AuthBackgroundPattern />
         <motion.div
-          className="w-full max-w-md relative z-10"
+          className="relative z-10 w-full max-w-md"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
@@ -141,16 +141,14 @@ export default function SignUpPage() {
             {/* Header Section */}
             <motion.div
               variants={itemVariants}
-              className="text-center space-y-4"
+              className="space-y-4 text-center"
             >
-              <div className="mx-auto w-16 h-16 bg-gradient-to-br from-primary/20 to-primary/10 rounded-2xl flex items-center justify-center border border-primary/20">
-                <Sparkles className="h-8 w-8 text-primary" />
-              </div>
+              <AuthSparklesIcon />
               <div className="space-y-2">
-                <h1 className="text-3xl font-bold tracking-tight">
-                  Create Your QuizForge Account
+                <h1 className="text-2xl font-bold tracking-tight">
+                  Create Your QuizFoundry Account
                 </h1>
-                <p className="text-muted-foreground text-lg">
+                <p className="text-muted-foreground">
                   Start creating amazing quizzes in seconds
                 </p>
               </div>
@@ -171,7 +169,7 @@ export default function SignUpPage() {
                     <div className="space-y-2">
                       <Label htmlFor="email">Email*</Label>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Mail className="text-muted-foreground absolute top-3 left-3 h-4 w-4" />
                         <Input
                           id="email"
                           placeholder="Enter your email"
@@ -205,14 +203,14 @@ export default function SignUpPage() {
                         required
                         error={errors.password}
                       />
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-muted-foreground text-xs">
                         Must be at least 6 characters.
                       </p>
                     </div>
 
                     <Button
                       type="submit"
-                      className="w-full h-11"
+                      className="h-11 w-full"
                       disabled={isSubmitDisabled}
                     >
                       {isLoading
@@ -222,11 +220,11 @@ export default function SignUpPage() {
                           : "Create Account"}
                     </Button>
                   </form>
-                  <p className="text-center text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-center text-sm">
                     Already have an account?{" "}
                     <Link
                       href="/login"
-                      className="underline underline-offset-4 hover:text-primary transition-colors"
+                      className="hover:text-primary underline underline-offset-4 transition-colors"
                     >
                       Sign in here
                     </Link>

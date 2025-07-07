@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/auth/useAuth";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/hooks/auth/useAuth";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function HomePage() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -21,8 +21,8 @@ export default function HomePage() {
 
   // Show loading state while determining auth status
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="space-y-4 w-full max-w-md">
+    <div className="flex min-h-screen items-center justify-center">
+      <div className="w-full max-w-md space-y-4">
         <Skeleton className="h-8 w-full" />
         <Skeleton className="h-4 w-3/4" />
         <Skeleton className="h-4 w-1/2" />

@@ -1,5 +1,5 @@
-import type { UserProfile, UserSession } from "@backend/types/api";
 import { supabase } from "@/lib/supabase";
+import type { UserProfile, UserSession } from "@backend/types/api";
 
 export interface AuthState {
   user: UserProfile | null;
@@ -50,7 +50,7 @@ export const getStoredAuth = (): {
 
 export const setStoredAuth = (
   user: UserProfile,
-  session: UserSession
+  session: UserSession,
 ): void => {
   if (typeof window === "undefined") return;
 

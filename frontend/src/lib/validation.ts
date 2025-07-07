@@ -18,7 +18,7 @@ export function validateQuizForm(data: QuizFormData): ValidationResult {
     errors.push("Please enter a quiz prompt");
   } else if (data.prompt.trim().length < 10) {
     errors.push(
-      "Please provide a more detailed prompt (at least 10 characters)"
+      "Please provide a more detailed prompt (at least 10 characters)",
     );
   } else if (data.prompt.trim().length > 2000) {
     errors.push("Prompt is too long (maximum 2000 characters)");
@@ -76,13 +76,13 @@ export const DEFAULT_PASSWORD_REQUIREMENTS: PasswordRequirements = {
  */
 export function validatePassword(
   password: string,
-  requirements: PasswordRequirements = DEFAULT_PASSWORD_REQUIREMENTS
+  requirements: PasswordRequirements = DEFAULT_PASSWORD_REQUIREMENTS,
 ): PasswordValidationResult {
   const errors: string[] = [];
 
   if (password.length < requirements.minLength) {
     errors.push(
-      `Password must be at least ${requirements.minLength} characters`
+      `Password must be at least ${requirements.minLength} characters`,
     );
   }
 
@@ -108,7 +108,7 @@ export function validatePassword(
  * Returns a user-friendly list of password requirements
  */
 export function getPasswordRequirements(
-  requirements: PasswordRequirements = DEFAULT_PASSWORD_REQUIREMENTS
+  requirements: PasswordRequirements = DEFAULT_PASSWORD_REQUIREMENTS,
 ): string[] {
   const reqs: string[] = [];
 

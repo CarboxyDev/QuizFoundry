@@ -26,7 +26,7 @@ export function useFormSubmission({
         throw error;
       }
     },
-    [onSubmit, disabled]
+    [onSubmit, disabled],
   );
 
   const handleKeyDown = useCallback(
@@ -36,7 +36,7 @@ export function useFormSubmission({
         onSubmit();
       }
     },
-    [onSubmit, disabled]
+    [onSubmit, disabled],
   );
 
   return {

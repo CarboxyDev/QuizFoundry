@@ -20,7 +20,7 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
   <Button
     variant="outline"
     onClick={onClick}
-    className={cn("w-full h-11", className)}
+    className={cn("h-11 w-full", className)}
     disabled={disabled}
     type="button"
   >

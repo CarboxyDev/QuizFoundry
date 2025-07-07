@@ -1,7 +1,7 @@
-import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
-import { Eye, EyeOff, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Eye, EyeOff, Lock } from "lucide-react";
+import React, { useState } from "react";
 
 interface PasswordInputProps {
   value: string;
@@ -27,20 +27,20 @@ export const PasswordInput: React.FC<PasswordInputProps> = ({
   return (
     <div className="space-y-1">
       <div className="relative">
-        <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+        <Lock className="text-muted-foreground absolute top-3 left-3 h-4 w-4" />
         <Input
           id={id}
           placeholder={placeholder}
           type={showPassword ? "text" : "password"}
           value={value}
           onChange={onChange}
-          className={cn("pl-10 pr-10", className)}
+          className={cn("pr-10 pl-10", className)}
           required={required}
         />
         <button
           type="button"
           onClick={() => setShowPassword((v) => !v)}
-          className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+          className="text-muted-foreground hover:text-foreground absolute top-3 right-3"
           tabIndex={-1}
         >
           {showPassword ? (

@@ -1,11 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
+import { OnboardingGuard } from "@/components/OnboardingGuard";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -13,19 +9,23 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  User,
-  GraduationCap,
-  Users,
-  Sparkles,
-  ChevronRight,
-  ArrowLeft,
-} from "lucide-react";
-import { toast } from "sonner";
-import { useCompleteOnboarding } from "@/hooks/auth/useOnboarding";
-import { OnboardingGuard } from "@/components/OnboardingGuard";
-import type { OnboardingData } from "@backend/types/api";
 import { Form } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useCompleteOnboarding } from "@/hooks/auth/useOnboarding";
+import type { OnboardingData } from "@backend/types/api";
+import { motion } from "framer-motion";
+import {
+  ArrowLeft,
+  ChevronRight,
+  GraduationCap,
+  Sparkles,
+  User,
+  Users,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
 
 const roleOptions = [
   {
@@ -109,12 +109,12 @@ export default function OnboardingPage() {
 
   return (
     <OnboardingGuard>
-      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background via-muted/20 to-background">
+      <div className="from-background via-muted/20 to-background flex min-h-screen items-center justify-center bg-gradient-to-br p-4">
         {/* Subtle background pattern */}
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(120,119,198,0.1),transparent_25%),radial-gradient(circle_at_80%_80%,rgba(255,255,255,0.03),transparent_25%)]" />
 
         <motion.div
-          className="w-full max-w-md relative z-10"
+          className="relative z-10 w-full max-w-md"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
@@ -132,10 +132,10 @@ export default function OnboardingPage() {
             {/* Header Section */}
             <motion.div
               variants={itemVariants}
-              className="text-center space-y-4"
+              className="space-y-4 text-center"
             >
-              <div className="mx-auto w-16 h-16 bg-gradient-to-br from-primary/20 to-primary/10 rounded-2xl flex items-center justify-center border border-primary/20">
-                <Sparkles className="h-8 w-8 text-primary" />
+              <div className="from-primary/20 to-primary/10 border-primary/20 mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border bg-gradient-to-br">
+                <Sparkles className="text-primary h-8 w-8" />
               </div>
               <div className="space-y-2">
                 <h1 className="text-3xl font-bold tracking-tight">
@@ -153,7 +153,7 @@ export default function OnboardingPage() {
                 {[1, 2].map((step) => (
                   <div key={step} className="flex items-center">
                     <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-colors ${
+                      className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium transition-colors ${
                         step <= currentStep
                           ? "bg-primary text-primary-foreground"
                           : "bg-muted text-muted-foreground"
@@ -163,7 +163,7 @@ export default function OnboardingPage() {
                     </div>
                     {step < 2 && (
                       <div
-                        className={`w-8 h-0.5 mx-2 transition-colors ${
+                        className={`mx-2 h-0.5 w-8 transition-colors ${
                           step < currentStep ? "bg-primary" : "bg-muted"
                         }`}
                       />
@@ -186,8 +186,8 @@ export default function OnboardingPage() {
                 >
                   {currentStep === 1 && (
                     <>
-                      <CardHeader className="text-center space-y-1 pb-4">
-                        <CardTitle className="text-2xl flex items-center justify-center gap-2">
+                      <CardHeader className="space-y-1 pb-4 text-center">
+                        <CardTitle className="flex items-center justify-center gap-2 text-2xl">
                           <User className="h-6 w-6" />
                           What&apos;s your name?
                         </CardTitle>
@@ -204,7 +204,7 @@ export default function OnboardingPage() {
                           <div className="space-y-2">
                             <Label htmlFor="name">Full Name*</Label>
                             <div className="relative">
-                              <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                              <User className="text-muted-foreground absolute top-3 left-3 h-4 w-4" />
                               <Input
                                 id="name"
                                 placeholder="Enter your full name"
@@ -240,8 +240,8 @@ export default function OnboardingPage() {
 
                   {currentStep === 2 && (
                     <>
-                      <CardHeader className="text-center space-y-1 pb-4">
-                        <CardTitle className="text-2xl flex items-center justify-center gap-2">
+                      <CardHeader className="space-y-1 pb-4 text-center">
+                        <CardTitle className="flex items-center justify-center gap-2 text-2xl">
                           <Users className="h-6 w-6" />
                           What&apos;s your role?
                         </CardTitle>
@@ -271,7 +271,7 @@ export default function OnboardingPage() {
                                       role: option.value,
                                     })
                                   }
-                                  className={`flex items-center space-x-3 p-4 border-2 rounded-lg cursor-pointer transition-all hover:bg-accent ${
+                                  className={`hover:bg-accent flex cursor-pointer items-center space-x-3 rounded-lg border-2 p-4 transition-all ${
                                     isSelected
                                       ? "border-primary bg-primary/5"
                                       : "border-muted"
@@ -286,7 +286,7 @@ export default function OnboardingPage() {
                                       }`}
                                     />
                                   </div>
-                                  <div className="flex-1 min-w-0">
+                                  <div className="min-w-0 flex-1">
                                     <div
                                       className={`font-medium ${
                                         isSelected ? "text-primary" : ""
@@ -294,7 +294,7 @@ export default function OnboardingPage() {
                                     >
                                       {option.label}
                                     </div>
-                                    <div className="text-sm text-muted-foreground">
+                                    <div className="text-muted-foreground text-sm">
                                       {option.description}
                                     </div>
                                   </div>

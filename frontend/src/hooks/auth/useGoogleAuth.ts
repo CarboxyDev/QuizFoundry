@@ -1,11 +1,11 @@
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
-import { useAuth } from "./useAuth";
-import { axiosInstance } from "@/lib/axios";
 import { POST_GOOGLE_PROFILE } from "@/lib/api";
-import { toast } from "sonner";
+import { axiosInstance } from "@/lib/axios";
+import { supabase } from "@/lib/supabase";
 import type { ApiResponse, UserProfile } from "@backend/types/api";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
+import { useAuth } from "./useAuth";
 
 export function useGoogleAuth() {
   const [isLoading, setIsLoading] = useState(false);
@@ -96,7 +96,7 @@ export function useGoogleAuth() {
             headers: {
               Authorization: `Bearer ${session.access_token}`,
             },
-          }
+          },
         );
 
         const userProfile = response.data.data.user;

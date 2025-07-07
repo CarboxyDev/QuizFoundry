@@ -1,32 +1,18 @@
 "use client";
 
-import { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
-import {
-  getQuizById,
-  type Quiz,
-  type Question,
-  type QuestionOption,
-  submitQuiz,
-  type SubmitQuizResult,
-} from "@/lib/quiz-api";
+import { ProtectedRouteGuard } from "@/components/AuthGuard";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  ArrowLeft,
-  CheckCircle,
-  XCircle,
-  Users,
-  Clock,
-  Trophy,
-} from "lucide-react";
-import { ProtectedRouteGuard } from "@/components/AuthGuard";
+import { getQuizById, submitQuiz, type SubmitQuizResult } from "@/lib/quiz-api";
+import { useQuery } from "@tanstack/react-query";
+import { ArrowLeft, CheckCircle, Clock, Trophy, XCircle } from "lucide-react";
 import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
 
 type UserAnswers = Record<string, string>;
 
@@ -96,8 +82,8 @@ export default function QuizPage() {
   if (isLoading) {
     return (
       <ProtectedRouteGuard>
-        <div className="min-h-screen bg-gradient-to-br from-primary/5 to-background">
-          <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="from-primary/5 to-background min-h-screen bg-gradient-to-br">
+          <div className="container mx-auto max-w-4xl px-4 py-8">
             <div className="space-y-8">
               <div className="space-y-4">
                 <Skeleton className="h-8 w-48" />
@@ -106,7 +92,7 @@ export default function QuizPage() {
               </div>
               {[1, 2, 3].map((i) => (
                 <Card key={i} className="p-6">
-                  <Skeleton className="h-6 w-full mb-6" />
+                  <Skeleton className="mb-6 h-6 w-full" />
                   <div className="space-y-4">
                     {[1, 2, 3, 4].map((j) => (
                       <Skeleton key={j} className="h-14 w-full" />
@@ -124,18 +110,18 @@ export default function QuizPage() {
   if (error) {
     return (
       <ProtectedRouteGuard>
-        <div className="min-h-screen bg-gradient-to-br from-primary/5 to-background flex items-center justify-center">
-          <Card className="max-w-md w-full mx-4">
+        <div className="from-primary/5 to-background flex min-h-screen items-center justify-center bg-gradient-to-br">
+          <Card className="mx-4 w-full max-w-md">
             <CardContent className="pt-6 text-center">
-              <XCircle className="h-16 w-16 text-red-500 mx-auto mb-4" />
-              <h2 className="text-2xl font-bold mb-3">Quiz Not Found</h2>
+              <XCircle className="mx-auto mb-4 h-16 w-16 text-red-500" />
+              <h2 className="mb-3 text-2xl font-bold">Quiz Not Found</h2>
               <p className="text-muted-foreground mb-6">
                 The quiz you&apos;re looking for doesn&apos;t exist or you
                 don&apos;t have access to it.
               </p>
               <Link href="/quizzes">
                 <Button className="w-full">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  <ArrowLeft className="mr-2 h-4 w-4" />
                   Browse More Quizzes
                 </Button>
               </Link>
@@ -156,44 +142,40 @@ export default function QuizPage() {
 
   return (
     <ProtectedRouteGuard>
-      <div className="min-h-screen bg-gradient-to-br from-primary/5 to-background">
-        <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="from-primary/5 to-background min-h-screen bg-gradient-to-br">
+        <div className="container mx-auto max-w-4xl px-4 py-8">
           {/* Header */}
           <div className="mb-8">
-            <div className="flex items-center justify-between mb-6">
+            <div className="mb-6 flex items-center justify-between">
               <Link href="/quizzes">
                 <Button variant="ghost" size="sm">
-                  <ArrowLeft className="h-4 w-4 mr-2" />
+                  <ArrowLeft className="mr-2 h-4 w-4" />
                   Browse More Quizzes
                 </Button>
               </Link>
             </div>
 
-            <div className="text-center space-y-4">
+            <div className="space-y-4 text-center">
               <div className="flex items-center justify-center gap-3">
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
+                <h1 className="from-primary to-primary/70 bg-gradient-to-r bg-clip-text text-4xl font-bold text-transparent">
                   {quiz.title}
                 </h1>
                 <Badge
-                  className={`capitalize text-sm
-                    ${quiz.difficulty === "easy" ? "bg-green-100 text-green-700 border border-green-400" : ""}
-                    ${quiz.difficulty === "medium" ? "bg-yellow-100 text-yellow-800 border border-yellow-400" : ""}
-                    ${quiz.difficulty === "hard" ? "bg-red-100 text-red-700 border border-red-400" : ""}
-                  `}
+                  className={`text-sm capitalize ${quiz.difficulty === "easy" ? "border border-green-400 bg-green-100 text-green-700" : ""} ${quiz.difficulty === "medium" ? "border border-yellow-400 bg-yellow-100 text-yellow-800" : ""} ${quiz.difficulty === "hard" ? "border border-red-400 bg-red-100 text-red-700" : ""} `}
                 >
                   {quiz.difficulty}
                 </Badge>
               </div>
 
               {quiz.description && (
-                <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
                   {quiz.description}
                 </p>
               )}
 
               <div className="flex items-center justify-center gap-6 text-sm">
                 <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-primary" />
+                  <Clock className="text-primary h-4 w-4" />
                   <span>{quiz.questions?.length || 0} questions</span>
                 </div>
                 {quiz.is_ai_generated && (
@@ -202,7 +184,7 @@ export default function QuizPage() {
                   </Badge>
                 )}
                 {!isSubmitted && (
-                  <div className="flex items-center gap-2 text-primary font-medium">
+                  <div className="text-primary flex items-center gap-2 font-medium">
                     <Trophy className="h-4 w-4" />
                     <span>
                       {Object.keys(userAnswers).length}/
@@ -216,10 +198,10 @@ export default function QuizPage() {
 
           {/* Results Summary */}
           {isSubmitted && result && (
-            <Card className="mb-8 border-primary/20 bg-gradient-to-r from-primary/10 to-primary/5">
+            <Card className="border-primary/20 from-primary/10 to-primary/5 mb-8 bg-gradient-to-r">
               <CardContent className="pt-6 text-center">
-                <Trophy className="h-16 w-16 text-primary mx-auto mb-4" />
-                <h2 className="text-3xl font-bold mb-2 text-primary">
+                <Trophy className="text-primary mx-auto mb-4 h-16 w-16" />
+                <h2 className="text-primary mb-2 text-3xl font-bold">
                   Quiz Completed!
                 </h2>
                 <div className="space-y-2">
@@ -229,11 +211,11 @@ export default function QuizPage() {
                   <p className={`text-lg font-semibold ${getScoreColor()}`}>
                     {getScorePercentage()}% Score
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     Attempt ID:{" "}
                     <span className="font-mono">{result.attemptId}</span>
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-muted-foreground text-xs">
                     Completed at:{" "}
                     {new Date(result.completedAt).toLocaleString()}
                   </p>
@@ -243,10 +225,10 @@ export default function QuizPage() {
                     </p>
                   )}
                   {getScorePercentage() >= 60 && getScorePercentage() < 80 && (
-                    <p className="text-yellow-600 font-medium">Good job! 👍</p>
+                    <p className="font-medium text-yellow-600">Good job! 👍</p>
                   )}
                   {getScorePercentage() < 60 && (
-                    <p className="text-red-600 font-medium">
+                    <p className="font-medium text-red-600">
                       Keep practicing! 💪
                     </p>
                   )}
@@ -265,7 +247,7 @@ export default function QuizPage() {
               let correctOptionId: string | null = null;
               if (isSubmitted && result) {
                 const qResult = result.results.find(
-                  (r) => r.questionId === question.id
+                  (r) => r.questionId === question.id,
                 );
                 isCorrect = qResult?.isCorrect ?? false;
                 isIncorrect = !isCorrect && qResult?.selectedOptionId != null;
@@ -287,22 +269,22 @@ export default function QuizPage() {
               return (
                 <Card
                   key={question.id}
-                  className={`transition-all duration-200 shadow-sm border-1 ${cardBorder} ${cardBg} ${!isSubmitted ? "hover:border-primary/60" : ""}`}
+                  className={`border-1 shadow-sm transition-all duration-200 ${cardBorder} ${cardBg} ${!isSubmitted ? "hover:border-primary/60" : ""}`}
                 >
                   <CardHeader className="pb-4">
                     <div className="flex items-start justify-between gap-4">
                       <CardTitle className="text-lg leading-relaxed">
-                        <span className="text-primary font-bold mr-3">
+                        <span className="text-primary mr-3 font-bold">
                           {index + 1}.
                         </span>
                         {question.question_text}
                       </CardTitle>
-                      <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="flex flex-shrink-0 items-center gap-2">
                         {isSubmitted ? (
                           isCorrect ? (
                             <>
                               <CheckCircle className="h-5 w-5 text-green-600" />
-                              <Badge className="bg-green-600 text-white text-xs">
+                              <Badge className="bg-green-600 text-xs text-white">
                                 Correct
                               </Badge>
                             </>
@@ -324,14 +306,14 @@ export default function QuizPage() {
                   </CardHeader>
                   <CardContent>
                     {/* Answered badge below question, always occupies space */}
-                    <div className="mb-2 min-h-[28px] flex items-center">
+                    <div className="mb-2 flex min-h-[28px] items-center">
                       <Badge
-                        className="bg-primary text-white text-xs transition-opacity duration-200 flex items-center gap-1"
+                        className="bg-primary flex items-center gap-1 text-xs text-white transition-opacity duration-200"
                         style={{
                           visibility: isAnswered ? "visible" : "hidden",
                         }}
                       >
-                        <CheckCircle className="h-4 w-4 mr-1" />
+                        <CheckCircle className="mr-1 h-4 w-4" />
                         Answered
                       </Badge>
                     </div>
@@ -390,7 +372,7 @@ export default function QuizPage() {
                                 />
                                 <Label
                                   htmlFor={option.id}
-                                  className="font-medium text-base flex-1 cursor-pointer"
+                                  className="flex-1 cursor-pointer text-base font-medium"
                                 >
                                   {option.option_text}
                                 </Label>
@@ -417,7 +399,7 @@ export default function QuizPage() {
           </div>
 
           {/* Action Buttons */}
-          <div className="mt-12 text-center space-y-4">
+          <div className="mt-12 space-y-4 text-center">
             {!isSubmitted ? (
               <>
                 <Button
@@ -429,7 +411,7 @@ export default function QuizPage() {
                   {isSubmitting ? "Submitting..." : "Submit Quiz"}
                 </Button>
                 {!canSubmit() && (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Please answer all questions before submitting
                   </p>
                 )}

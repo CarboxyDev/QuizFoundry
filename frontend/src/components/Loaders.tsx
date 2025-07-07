@@ -1,8 +1,8 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { Loader2, MoreHorizontal } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface LoaderProps {
   className?: string;
@@ -45,7 +45,7 @@ export const PulseLoader = ({ className, size = "md", color }: LoaderProps) => {
         "rounded-full",
         sizeClasses[size],
         color || "bg-primary",
-        className
+        className,
       )}
       animate={{
         scale: [1, 1.2, 1],
@@ -78,7 +78,7 @@ export const BouncingDotsLoader = ({
           className={cn(
             "rounded-full",
             dotSizeClasses[size],
-            color || "bg-primary"
+            color || "bg-primary",
           )}
           variants={dotVariants}
           initial="initial"
@@ -110,9 +110,9 @@ export const ProgressLoader = ({
   return (
     <div
       className={cn(
-        "w-full bg-muted rounded-full overflow-hidden",
+        "bg-muted w-full overflow-hidden rounded-full",
         heightClasses[size],
-        className
+        className,
       )}
     >
       <motion.div
@@ -155,7 +155,7 @@ export const CircularLoader = ({
       <svg
         width={circleSize}
         height={circleSize}
-        className="transform -rotate-90"
+        className="-rotate-90 transform"
       >
         {/* Background circle */}
         <circle
@@ -220,7 +220,7 @@ export const TypingLoader = ({
             className={cn(
               "rounded-full",
               dotSizeClasses[size],
-              color || "bg-primary"
+              color || "bg-primary",
             )}
             animate={{ scale: [1, 1.2, 1] }}
             transition={{
@@ -289,7 +289,7 @@ export const LoaderWithText = ({
     <div className={cn("flex flex-col items-center gap-3", className)}>
       {renderLoader()}
       <motion.p
-        className="text-sm text-muted-foreground"
+        className="text-muted-foreground text-sm"
         animate={{ opacity: [1, 0.7, 1] }}
         transition={{ duration: 2, repeat: Infinity }}
       >

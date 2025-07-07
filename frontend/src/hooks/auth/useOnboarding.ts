@@ -1,17 +1,17 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { axiosInstance } from "@/lib/axios";
 import {
   GET_ONBOARDING_PROGRESS,
-  POST_UPDATE_ONBOARDING,
   POST_COMPLETE_ONBOARDING,
+  POST_UPDATE_ONBOARDING,
 } from "@/lib/api";
+import { axiosInstance } from "@/lib/axios";
 import type {
   ApiResponse,
-  OnboardingProgress,
   OnboardingData,
+  OnboardingProgress,
   UpdateOnboardingInput,
   UserProfile,
 } from "@backend/types/api";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useAuth } from "./useAuth";
 
 export function useOnboardingProgress() {
@@ -29,11 +29,11 @@ export function useOnboardingProgress() {
 export function useUpdateOnboarding() {
   return useMutation({
     mutationFn: async (
-      data: UpdateOnboardingInput
+      data: UpdateOnboardingInput,
     ): Promise<ApiResponse<OnboardingProgress>> => {
       const res = await axiosInstance.post<ApiResponse<OnboardingProgress>>(
         POST_UPDATE_ONBOARDING,
-        data
+        data,
       );
       return res.data;
     },

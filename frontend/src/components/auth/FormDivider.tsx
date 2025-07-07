@@ -1,5 +1,5 @@
-import React from "react";
 import { cn } from "@/lib/utils";
+import React from "react";
 
 interface FormDividerProps {
   children: React.ReactNode;
@@ -15,7 +15,7 @@ export const FormDivider: React.FC<FormDividerProps> = ({
       <span className="w-full border-t" />
     </div>
     <div className="relative flex justify-center text-xs uppercase">
-      <span className="px-2 text-muted-foreground bg-card">{children}</span>
+      <span className="text-muted-foreground bg-card px-2">{children}</span>
     </div>
   </div>
 );

@@ -1,5 +1,4 @@
 import { axiosInstance } from "./axios";
-import type { QuizFormData } from "./validation";
 
 export interface Quiz {
   id: string;
@@ -106,14 +105,14 @@ export interface SubmitQuizResult {
  * Create a quiz using Express Mode (defaults: 5 questions, 4 options, medium difficulty)
  */
 export async function createQuizExpress(
-  input: CreateQuizExpressInput
+  input: CreateQuizExpressInput,
 ): Promise<{
   quiz: Quiz;
   redirectTo: string;
 }> {
   const response = await axiosInstance.post<CreateQuizResponse>(
     "/quizzes/create/express",
-    input
+    input,
   );
 
   if (!response.data.success) {
@@ -130,7 +129,7 @@ export async function createQuizExpress(
  * Create a quiz using Advanced Mode (custom settings)
  */
 export async function createQuizAdvanced(
-  input: CreateQuizAdvancedInput
+  input: CreateQuizAdvancedInput,
 ): Promise<{
   quiz: Quiz;
   redirectTo: string;
@@ -138,7 +137,7 @@ export async function createQuizAdvanced(
 }> {
   const response = await axiosInstance.post<CreateQuizResponse>(
     "/quizzes/create/advanced",
-    input
+    input,
   );
 
   if (!response.data.success) {
@@ -170,10 +169,10 @@ export async function getUserQuizzes(): Promise<Quiz[]> {
  */
 export async function getPublicQuizzes(
   limit: number = 50,
-  offset: number = 0
+  offset: number = 0,
 ): Promise<Quiz[]> {
   const response = await axiosInstance.get<GetQuizzesResponse>(
-    `/quizzes/public?limit=${limit}&offset=${offset}`
+    `/quizzes/public?limit=${limit}&offset=${offset}`,
   );
 
   if (!response.data.success) {
@@ -203,11 +202,11 @@ export async function updateQuiz(
   id: string,
   updates: Partial<
     Pick<Quiz, "title" | "description" | "difficulty" | "is_public">
-  >
+  >,
 ): Promise<Quiz> {
   const response = await axiosInstance.put<CreateQuizResponse>(
     `/quizzes/${id}`,
-    updates
+    updates,
   );
 
   if (!response.data.success) {
@@ -233,12 +232,12 @@ export async function deleteQuiz(id: string): Promise<void> {
  */
 export async function surpriseMe(): Promise<string> {
   const response = await axiosInstance.post<SurpriseMeResponse>(
-    "/quizzes/surprise-me"
+    "/quizzes/surprise-me",
   );
 
   if (!response.data.success) {
     throw new Error(
-      response.data.message || "Failed to generate surprise prompt"
+      response.data.message || "Failed to generate surprise prompt",
     );
   }
 
@@ -247,7 +246,7 @@ export async function surpriseMe(): Promise<string> {
 
 export async function submitQuiz(
   quizId: string,
-  input: SubmitQuizInput
+  input: SubmitQuizInput,
 ): Promise<SubmitQuizResult> {
   const response = await axiosInstance.post<{
     success: boolean;

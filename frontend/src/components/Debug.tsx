@@ -1,7 +1,7 @@
 export const DebugCard = () => {
   return (
-    <div className="w-100 h-24 border border-red-500 bg-red-500/50 rounded-lg p-4 flex items-center justify-center">
-      <h1 className="text-red-500 text-lg font-semibold">Debug Card</h1>
+    <div className="flex h-24 w-100 items-center justify-center rounded-lg border border-red-500 bg-red-500/50 p-4">
+      <h1 className="text-lg font-semibold text-red-500">Debug Card</h1>
     </div>
   );
 };

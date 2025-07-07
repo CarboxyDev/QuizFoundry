@@ -1,5 +1,5 @@
+import { getPasswordRequirements, validatePassword } from "@/lib/validation";
 import { useMemo } from "react";
-import { validatePassword, getPasswordRequirements } from "@/lib/validation";
 
 export interface UsePasswordValidationResult {
   isValid: boolean;
@@ -12,7 +12,7 @@ export interface UsePasswordValidationResult {
 }
 
 export function usePasswordValidation(
-  password: string
+  password: string,
 ): UsePasswordValidationResult {
   return useMemo(() => {
     const validation = validatePassword(password);

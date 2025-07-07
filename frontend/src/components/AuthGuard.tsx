@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/auth/useAuth";
-import { Skeleton } from "@/components/ui/skeleton";
 import { SpinLoader } from "@/components/Loaders";
+import { useAuth } from "@/hooks/auth/useAuth";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -51,7 +50,7 @@ export function AuthGuard({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center">
         <SpinLoader />
       </div>
     );
@@ -103,7 +102,7 @@ export function ProtectedRouteGuard({
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center">
         <SpinLoader />
       </div>
     );

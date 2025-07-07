@@ -1,22 +1,22 @@
 "use client";
 
 import {
+  clearStoredAuth,
+  getStoredAuth,
+  isTokenExpired,
+  refreshAuthSession,
+  setStoredAuth,
+  type AuthState,
+} from "@/lib/auth";
+import type { UserProfile, UserSession } from "@backend/types/api";
+import { useRouter } from "next/navigation";
+import {
   createContext,
+  ReactNode,
   useContext,
   useEffect,
   useState,
-  ReactNode,
 } from "react";
-import { useRouter } from "next/navigation";
-import type { UserProfile, UserSession } from "@backend/types/api";
-import {
-  getStoredAuth,
-  setStoredAuth,
-  clearStoredAuth,
-  type AuthState,
-  refreshAuthSession,
-  isTokenExpired,
-} from "@/lib/auth";
 
 interface AuthContextType extends AuthState {
   login: (user: UserProfile, session: UserSession) => void;
