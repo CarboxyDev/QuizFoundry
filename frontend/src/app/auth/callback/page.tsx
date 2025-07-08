@@ -5,9 +5,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useGoogleAuth } from "@/hooks/auth/useGoogleAuth";
 import { Sparkles } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 
 export default function AuthCallbackPage() {
+  return (
+    <Suspense fallback={<AuthCallbackFallback />}>
+      <AuthCallbackContent />
+    </Suspense>
+  );
+}
+
+function AuthCallbackContent() {
   const { handleAuthCallback, isLoading } = useGoogleAuth();
   const searchParams = useSearchParams();
   const flow = searchParams.get("flow");
@@ -54,6 +62,14 @@ export default function AuthCallbackPage() {
           </CardContent>
         </Card>
       </div>
+    </div>
+  );
+}
+
+function AuthCallbackFallback() {
+  return (
+    <div className="flex min-h-screen items-center justify-center">
+      <Skeleton className="h-4 w-1/2" />
     </div>
   );
 }
