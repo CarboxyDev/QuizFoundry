@@ -1,7 +1,14 @@
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { SidebarMenu, SidebarMenuItem } from "@/components/ui/sidebar";
 import { capitalize } from "@/lib/string";
-import { LogOut, User } from "lucide-react";
+import { LogOut, Settings, User } from "lucide-react";
 
 interface UserProfile {
   name: string | null;
@@ -20,25 +27,39 @@ export function SidebarUserFooter({ user, logout }: SidebarUserFooterProps) {
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <div className="flex items-center gap-2 px-2 py-1.5">
-          <div className="bg-accent flex h-8 w-8 items-center justify-center rounded-full">
-            <User className="h-4 w-4" />
-          </div>
-          <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-medium">{user?.name || "User"}</span>
-            <span className="text-muted-foreground truncate text-xs">
-              {capitalize(user?.role || "Member")}
-            </span>
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={logout}
-            className="h-8 w-8 p-0"
-          >
-            <LogOut className="h-4 w-4" />
-          </Button>
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              className="hover:bg-accent h-auto w-full justify-start p-2"
+            >
+              <div className="flex items-center gap-2">
+                <div className="bg-accent flex h-8 w-8 items-center justify-center rounded-full">
+                  <User className="h-4 w-4" />
+                </div>
+                <div className="grid flex-1 text-left text-sm leading-tight">
+                  <span className="truncate font-medium">
+                    {user?.name || "User"}
+                  </span>
+                  <span className="text-muted-foreground truncate text-xs">
+                    {capitalize(user?.role || "Member")}
+                  </span>
+                </div>
+              </div>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuItem>
+              <Settings className="h-4 w-4" />
+              Settings
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={logout} variant="destructive">
+              <LogOut className="h-4 w-4" />
+              Logout
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
   );
