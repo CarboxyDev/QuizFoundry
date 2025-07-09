@@ -179,23 +179,15 @@ const QuizResultsCard = ({
     <Card className="border-primary/20 from-primary/10 to-primary/5 mb-8 bg-gradient-to-r">
       <CardContent className="pt-6 text-center">
         <Trophy className="text-primary mx-auto mb-4 h-16 w-16" />
-        <h2 className="text-primary mb-2 text-3xl font-bold">
-          Quiz Completed!
-        </h2>
+        <h2 className="text-primary mb-2 text-3xl font-bold">Quiz Completed</h2>
         <div className="space-y-2">
           <p className={`text-2xl font-bold ${scoreColor}`}>
             {result.score} / {quiz.questions?.length || 0}
           </p>
-          <p className={`text-lg font-semibold ${scoreColor}`}>
-            {percentage}% Score
-          </p>
           <p className="text-muted-foreground text-xs">
-            Attempt ID: <span className="font-mono">{result.attemptId}</span>
+            Completed at {new Date(result.completedAt).toLocaleString()}
           </p>
-          <p className="text-muted-foreground text-xs">
-            Completed at: {new Date(result.completedAt).toLocaleString()}
-          </p>
-          <p className={`font-medium ${scoreColor}`}>{successMessage}</p>
+          <p className={`font-medium`}>{successMessage}</p>
         </div>
       </CardContent>
     </Card>
