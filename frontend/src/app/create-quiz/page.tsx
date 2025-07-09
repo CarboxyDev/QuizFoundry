@@ -117,16 +117,13 @@ export default function CreateQuizPage() {
       toast.success("Quiz generated successfully!");
 
       if (!isAdvancedMode) {
-        // Fancy success overlay before redirecting in Express mode
         setShowSuccess(true);
         setIsGenerating(false);
 
-        // Redirect after a short delay to let the animation play
         setTimeout(() => {
           router.push(result.redirectTo);
-        }, 1800);
+        }, 3000);
       } else {
-        // Advanced mode: redirect immediately
         router.push(result.redirectTo);
       }
     } catch (error) {

@@ -2,10 +2,7 @@ import { GoogleGenAI } from "@google/genai";
 import { AppError } from "../errors/AppError";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
-
-// =============================================
-// TYPES
-// =============================================
+const model = "gemini-2.5-flash-lite-preview-06-17";
 
 export interface GeneratedQuiz {
   title: string;
@@ -95,7 +92,7 @@ export async function generateQuizWithAI(
     );
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model,
       contents: prompt,
     });
 
@@ -541,7 +538,7 @@ export async function generateCreativeQuizPrompt(): Promise<string> {
   `;
 
   const response = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
+    model,
     contents: prompt,
   });
 
