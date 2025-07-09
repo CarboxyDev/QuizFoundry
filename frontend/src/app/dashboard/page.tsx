@@ -1,88 +1,71 @@
 "use client";
 
 import { ProtectedRouteGuard } from "@/components/AuthGuard";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarInset,
+  SidebarProvider,
+} from "@/components/ui/sidebar";
 import { useAuth } from "@/hooks/auth/useAuth";
-import { LogOut, Plus, Sparkles, User, Users } from "lucide-react";
-import Link from "next/link";
+import { Sparkles } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { DashboardCards } from "./DashboardCards";
+import { GettingStarted } from "./GettingStarted";
+import { SidebarNav } from "./SidebarNav";
+import { SidebarUserFooter } from "./SidebarUserFooter";
 
 export default function DashboardPage() {
   const { user, logout } = useAuth();
+  const pathname = usePathname();
 
   return (
     <ProtectedRouteGuard>
-      <div className="from-background via-muted/20 to-background flex min-h-screen items-center justify-center bg-gradient-to-br p-4">
-        {/* Subtle background pattern */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(120,119,198,0.1),transparent_25%),radial-gradient(circle_at_80%_80%,rgba(255,255,255,0.03),transparent_25%)]" />
-
-        <Card className="relative z-10 w-full max-w-md shadow-lg">
-          <CardHeader className="text-center">
-            <div className="bg-primary/10 mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full">
-              <User className="text-primary h-8 w-8" />
-            </div>
-            <CardTitle className="text-2xl font-bold">Dashboard</CardTitle>
-            <p className="text-muted-foreground">
-              Welcome back, {user?.name || "there"}!
-            </p>
-          </CardHeader>
-
-          <CardContent className="space-y-6">
-            <div className="text-center">
-              <p className="text-muted-foreground mb-2 text-sm">
-                You have successfully completed onboarding.
-              </p>
-              {user?.role && (
-                <p className="text-muted-foreground text-xs">
-                  Role: {user.role}
-                </p>
-              )}
-            </div>
-
-            {/* Quick Actions */}
-            <div className="space-y-3">
-              <h3 className="text-center text-sm font-medium">Quick Actions</h3>
-              <div className="grid gap-3">
-                <Link href="/create-quiz">
-                  <Button className="flex h-11 w-full items-center gap-2">
-                    <Sparkles className="h-4 w-4" />
-                    Create AI Quiz
-                  </Button>
-                </Link>
-                <Link href="/quizzes">
-                  <Button
-                    variant="outline"
-                    className="flex h-11 w-full items-center gap-2"
-                  >
-                    <Users className="h-4 w-4" />
-                    Browse Public Quizzes
-                  </Button>
-                </Link>
-                <Button
-                  variant="outline"
-                  className="flex w-full items-center gap-2"
-                  disabled
-                >
-                  <Plus className="h-4 w-4" />
-                  Create Manual Quiz
-                  <span className="text-muted-foreground ml-auto text-xs">
-                    Soon
-                  </span>
-                </Button>
+      <SidebarProvider>
+        <Sidebar>
+          <SidebarHeader className="border-sidebar-border border-b">
+            <div className="flex h-12 items-center gap-2 px-4">
+              <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-lg">
+                <Sparkles className="h-4 w-4" />
+              </div>
+              <div className="grid flex-1 text-left text-sm leading-tight">
+                <span className="truncate font-semibold">QuizFoundry</span>
+                <span className="text-muted-foreground truncate text-xs">
+                  AI Powered Quizzes
+                </span>
               </div>
             </div>
-
-            <Button
-              onClick={logout}
-              variant="outline"
-              className="flex w-full items-center gap-2"
-            >
-              <LogOut className="h-4 w-4" />
-              Sign Out
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+          </SidebarHeader>
+          <SidebarContent>
+            <SidebarNav pathname={pathname} />
+          </SidebarContent>
+          <SidebarFooter className="border-sidebar-border border-t">
+            <SidebarUserFooter user={user} logout={logout} />
+          </SidebarFooter>
+        </Sidebar>
+        <SidebarInset>
+          <div className="mt-4 flex flex-1 flex-col gap-4 p-4 pt-0">
+            <div className="bg-muted/50 min-h-[100vh] flex-1 rounded-md border md:min-h-min">
+              <div className="mx-auto max-w-4xl p-6">
+                <div className="mb-8">
+                  <h2 className="mb-2 text-3xl font-bold tracking-tight">
+                    Welcome back, {user?.name || "there"}!
+                  </h2>
+                  <p className="text-muted-foreground">
+                    Ready to create and take some amazing AI-powered quizzes?
+                  </p>
+                </div>
+                <DashboardCards />
+                <div className="mt-8">
+                  <GettingStarted />
+                </div>
+              </div>
+            </div>
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
     </ProtectedRouteGuard>
   );
 }

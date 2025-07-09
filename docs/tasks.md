@@ -46,9 +46,9 @@ This is a granular breakdown of the MVP features. Each task should represent a s
 
 ## ✅ Quiz Management (Private)
 
-- [ ] Create a Supabase `quizzes` table and `questions` table
-- [ ] Save quiz metadata (title, tags, user_id, is_public)
-- [ ] Save full quiz with associated questions
+- [-] Create a Supabase `quizzes` table and `questions` table
+- [-] Save quiz metadata (title, tags, user_id, is_public)
+- [-] Save full quiz with associated questions
 - [ ] Build dashboard UI to list all user quizzes
 - [ ] Allow editing/deleting of a quiz
 - [ ] Add sorting by title and creation date
