@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type UserAnswers = Record<string, string>;
 
@@ -80,12 +80,22 @@ const QuizHeader = ({
   quiz,
   isSubmitted,
   userAnswersCount,
+  collapsed,
 }: {
   quiz: Quiz;
   isSubmitted: boolean;
   userAnswersCount: number;
+  collapsed: boolean;
 }) => (
-  <div className="mb-8">
+  <motion.div
+    animate={{
+      opacity: collapsed ? 0 : 1,
+      y: collapsed ? -20 : 0,
+      scale: collapsed ? 0.98 : 1,
+    }}
+    transition={{ duration: 0.25, ease: "easeInOut" }}
+    className="relative mb-12"
+  >
     <div className="mb-10 flex items-center justify-between">
       <Link href="/quizzes">
         <Button variant="ghost" size="sm">
@@ -97,7 +107,7 @@ const QuizHeader = ({
 
     <div className="space-y-4 text-center">
       <div className="flex items-center justify-center gap-3">
-        <h1 className="from-primary to-primary/70 bg-gradient-to-r bg-clip-text text-4xl font-bold text-transparent">
+        <h1 className="from-primary to-primary/70 bg-gradient-to-r bg-clip-text text-5xl font-extrabold tracking-tight text-transparent drop-shadow-sm">
           {quiz.title}
         </h1>
       </div>
@@ -141,7 +151,7 @@ const QuizHeader = ({
         )}
       </div>
     </div>
-  </div>
+  </motion.div>
 );
 
 const QuizResultsCard = ({
@@ -214,12 +224,15 @@ const QuestionCard = ({
   return (
     <Card
       className={cn(
-        "border-1 shadow-sm transition-all duration-200",
-        !isSubmitted && "border-muted-foreground/20",
-        !isSubmitted && isAnswered && "border-primary/30",
+        "rounded-xl border shadow-sm transition-all duration-200",
+        !isSubmitted &&
+          "border-border hover:ring-primary/20 hover:shadow-md hover:ring-2",
+        !isSubmitted &&
+          isAnswered &&
+          "border-primary/40 ring-primary/20 ring-2",
         isSubmitted && isCorrect && "border-green-500 bg-green-500/5",
         isSubmitted && isIncorrect && "border-red-500 bg-red-500/5",
-        isSubmitted && !isAnswered && "border-primary/30",
+        isSubmitted && !isAnswered && "border-border",
       )}
     >
       <CardHeader className="pb-4">
@@ -294,7 +307,7 @@ const QuestionCard = ({
                     !isSubmitted && onAnswerChange(question.id, option.id)
                   }
                   className={cn(
-                    "group relative cursor-pointer rounded-lg border-2 p-4 transition-all duration-200",
+                    "group focus-within:ring-primary/50 relative cursor-pointer rounded-lg border-2 p-4 transition-all duration-200 focus-within:ring-2 hover:-translate-y-[1px] hover:shadow-md",
                     isSubmitted
                       ? {
                           "border-green-500 bg-green-500/10 text-green-700 dark:text-green-300":
@@ -305,9 +318,9 @@ const QuestionCard = ({
                             !isSelected && !isCorrectOption,
                         }
                       : {
-                          "border-primary bg-primary/10 text-primary scale-[1.02] transform shadow-md":
+                          "border-primary/70 bg-primary/10 text-primary ring-primary/40 scale-[1.02] shadow-md ring-2":
                             isSelected,
-                          "border-muted hover:border-primary/50 hover:bg-primary/5 hover:shadow-sm":
+                          "border-border hover:border-primary/40 hover:bg-primary/5":
                             !isSelected,
                         },
                   )}
@@ -317,6 +330,7 @@ const QuestionCard = ({
                       value={option.id}
                       id={option.id}
                       disabled={isSubmitted}
+                      className="h-5 w-5"
                     />
                     <Label
                       htmlFor={option.id}
@@ -344,6 +358,55 @@ const QuestionCard = ({
   );
 };
 
+// Sticky header that appears after the main header scrolls out of view
+const StickyQuizHeader = ({
+  show,
+  quiz,
+  attempted,
+}: {
+  show: boolean;
+  quiz: Quiz;
+  attempted: number;
+}) => {
+  const total = quiz.questions?.length || 0;
+
+  return (
+    <AnimatePresence>
+      {show && (
+        <motion.div
+          initial={{ y: -60, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: -60, opacity: 0 }}
+          transition={{ duration: 0.25, ease: "easeInOut" }}
+          className="pointer-events-none fixed top-0 right-0 left-0 z-40 flex justify-center"
+        >
+          <div className="bg-background/90 pointer-events-auto mx-auto w-full max-w-4xl rounded-b-lg px-4 py-2 shadow-sm backdrop-blur-md">
+            <div className="flex items-center justify-between">
+              <Link href="/quizzes">
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+              </Link>
+
+              <div className="flex items-center gap-3">
+                <h3 className="line-clamp-1 max-w-[160px] text-sm font-semibold">
+                  {quiz.title}
+                </h3>
+                <Badge className="rounded-full border px-2 py-0.5 text-xs">
+                  {attempted}/{total}
+                </Badge>
+              </div>
+
+              {/* spacer for symmetrical layout */}
+              <div className="w-8" />
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
 export default function QuizPage() {
   const params = useParams();
   const quizId = params.id as string;
@@ -352,6 +415,22 @@ export default function QuizPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [result, setResult] = useState<SubmitQuizResult | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Sticky header logic using scroll position
+  const headerRef = useRef<HTMLDivElement | null>(null);
+  const [showStickyHeader, setShowStickyHeader] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!headerRef.current) return;
+      const { bottom } = headerRef.current.getBoundingClientRect();
+      setShowStickyHeader(bottom <= 0);
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const {
     data: quiz,
@@ -408,76 +487,89 @@ export default function QuizPage() {
     if (error) return <QuizError />;
     if (!quiz) return null;
 
+    const attemptedCount = Object.keys(userAnswers).length;
+
     return (
-      <div className="from-primary/5 to-background min-h-screen bg-gradient-to-br">
-        <div className="container mx-auto max-w-4xl px-4 py-8">
-          <QuizHeader
-            quiz={quiz}
-            isSubmitted={isSubmitted}
-            userAnswersCount={Object.keys(userAnswers).length}
-          />
+      <>
+        <StickyQuizHeader
+          show={showStickyHeader}
+          quiz={quiz}
+          attempted={attemptedCount}
+        />
 
-          {isSubmitted && result && (
-            <QuizResultsCard result={result} quiz={quiz} />
-          )}
-
-          <div className="space-y-8">
-            {quiz.questions?.map((question, index) => (
-              <QuestionCard
-                key={question.id}
-                question={question}
-                index={index}
-                userAnswer={userAnswers[question.id]}
+        <div className="from-primary/5 to-background min-h-screen bg-gradient-to-br">
+          <div className="container mx-auto max-w-4xl px-4 py-8">
+            <div ref={headerRef}>
+              <QuizHeader
+                quiz={quiz}
                 isSubmitted={isSubmitted}
-                questionResult={questionResultsMap.get(question.id)}
-                onAnswerChange={handleAnswerChange}
+                userAnswersCount={attemptedCount}
+                collapsed={showStickyHeader}
               />
-            ))}
-          </div>
+            </div>
 
-          <div className="mt-20 mb-32 space-y-4 text-center">
-            {!isSubmitted ? (
-              <>
-                <Button
-                  onClick={handleSubmit}
-                  disabled={!canSubmit || isSubmitting}
-                  size="lg"
-                  className="px-18 py-3 font-semibold"
-                >
-                  <Loader2
-                    className={cn(
-                      "mr-2 h-4 w-4 animate-spin",
-                      !isSubmitting && "hidden",
-                    )}
-                  />
-                  {isSubmitting ? "Submitting..." : "Submit Quiz"}
-                </Button>
-                {!canSubmit && (
-                  <p className="text-muted-foreground text-sm">
-                    Please answer all questions before submitting
-                  </p>
-                )}
-              </>
-            ) : (
-              <div className="space-y-4">
-                <Button
-                  onClick={handleRetake}
-                  variant="outline"
-                  size="lg"
-                  className="px-8"
-                >
-                  Retake Quiz
-                </Button>
-                <div className="flex items-center justify-center gap-4">
-                  <Link href="/quizzes">
-                    <Button variant="ghost">Browse More Quizzes</Button>
-                  </Link>
-                </div>
-              </div>
+            {isSubmitted && result && (
+              <QuizResultsCard result={result} quiz={quiz} />
             )}
+
+            <div className="space-y-8">
+              {quiz.questions?.map((question, index) => (
+                <QuestionCard
+                  key={question.id}
+                  question={question}
+                  index={index}
+                  userAnswer={userAnswers[question.id]}
+                  isSubmitted={isSubmitted}
+                  questionResult={questionResultsMap.get(question.id)}
+                  onAnswerChange={handleAnswerChange}
+                />
+              ))}
+            </div>
+
+            <div className="mt-20 mb-32 space-y-4 text-center">
+              {!isSubmitted ? (
+                <>
+                  <Button
+                    onClick={handleSubmit}
+                    disabled={!canSubmit || isSubmitting}
+                    size="lg"
+                    className="px-18 py-3 font-semibold"
+                  >
+                    <Loader2
+                      className={cn(
+                        "mr-2 h-4 w-4 animate-spin",
+                        !isSubmitting && "hidden",
+                      )}
+                    />
+                    {isSubmitting ? "Submitting..." : "Submit Quiz"}
+                  </Button>
+                  {!canSubmit && (
+                    <p className="text-muted-foreground text-sm">
+                      Please answer all questions before submitting
+                    </p>
+                  )}
+                </>
+              ) : (
+                <div className="space-y-4">
+                  <Button
+                    onClick={handleRetake}
+                    variant="outline"
+                    size="lg"
+                    className="px-8"
+                  >
+                    Retake Quiz
+                  </Button>
+                  <div className="flex items-center justify-center gap-4">
+                    <Link href="/quizzes">
+                      <Button variant="ghost">Browse More Quizzes</Button>
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      </>
     );
   };
 
