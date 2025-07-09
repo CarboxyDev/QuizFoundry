@@ -258,47 +258,108 @@ export default function OnboardingPage() {
                           }
                           className="space-y-6"
                         >
-                          <div className="space-y-3">
-                            {roleOptions.map((option) => {
+                          <div className="space-y-4">
+                            {roleOptions.map((option, index) => {
                               const IconComponent = option.icon;
                               const isSelected = formData.role === option.value;
+
+                              const handleSelect = () => {
+                                setFormData({
+                                  ...formData,
+                                  role: option.value,
+                                });
+                              };
+
+                              const handleKeyDown = (
+                                e: React.KeyboardEvent,
+                              ) => {
+                                if (e.key === "Enter" || e.key === " ") {
+                                  e.preventDefault();
+                                  handleSelect();
+                                }
+                              };
+
                               return (
-                                <div
+                                <motion.div
                                   key={option.value}
-                                  onClick={() =>
-                                    setFormData({
-                                      ...formData,
-                                      role: option.value,
-                                    })
-                                  }
-                                  className={`hover:bg-accent flex cursor-pointer items-center space-x-3 rounded-lg border-2 p-4 transition-all ${
+                                  initial={{ opacity: 0, y: 10 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  transition={{ delay: index * 0.1 }}
+                                  onClick={handleSelect}
+                                  onKeyDown={handleKeyDown}
+                                  tabIndex={0}
+                                  role="button"
+                                  aria-pressed={isSelected}
+                                  className={`group focus:ring-primary relative cursor-pointer overflow-hidden rounded-xl border-2 p-5 transition-all duration-200 focus:ring-2 focus:ring-offset-2 focus:outline-none ${
                                     isSelected
-                                      ? "border-primary bg-primary/5"
-                                      : "border-muted"
+                                      ? "border-primary from-primary/10 via-primary/5 to-primary/10 shadow-primary/10 bg-gradient-to-br shadow-lg"
+                                      : "border-border bg-card hover:border-primary/30 hover:from-primary/5 hover:bg-gradient-to-br hover:to-transparent hover:shadow-md"
                                   }`}
                                 >
-                                  <div className="flex-shrink-0">
-                                    <IconComponent
-                                      className={`h-5 w-5 ${
-                                        isSelected
-                                          ? "text-primary"
-                                          : "text-muted-foreground"
-                                      }`}
-                                    />
-                                  </div>
-                                  <div className="min-w-0 flex-1">
+                                  {/* Background gradient overlay for selected state */}
+                                  {isSelected && (
+                                    <div className="from-primary/5 to-primary/5 absolute inset-0 bg-gradient-to-r via-transparent opacity-50" />
+                                  )}
+
+                                  <div className="relative flex items-center space-x-4">
                                     <div
-                                      className={`font-medium ${
-                                        isSelected ? "text-primary" : ""
+                                      className={`flex-shrink-0 rounded-lg p-2 transition-colors ${
+                                        isSelected
+                                          ? "bg-primary/15 text-primary"
+                                          : "bg-muted/50 text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary"
                                       }`}
                                     >
-                                      {option.label}
+                                      <IconComponent className="h-6 w-6" />
                                     </div>
-                                    <div className="text-muted-foreground text-sm">
-                                      {option.description}
+
+                                    <div className="min-w-0 flex-1">
+                                      <div
+                                        className={`text-lg font-semibold transition-colors ${
+                                          isSelected
+                                            ? "text-primary"
+                                            : "text-foreground group-hover:text-primary"
+                                        }`}
+                                      >
+                                        {option.label}
+                                      </div>
+                                      <div
+                                        className={`text-sm transition-colors ${
+                                          isSelected
+                                            ? "text-primary/70"
+                                            : "text-muted-foreground"
+                                        }`}
+                                      >
+                                        {option.description}
+                                      </div>
+                                    </div>
+
+                                    {/* Selection indicator */}
+                                    <div
+                                      className={`flex-shrink-0 transition-all duration-200 ${
+                                        isSelected
+                                          ? "scale-100 opacity-100"
+                                          : "scale-75 opacity-0"
+                                      }`}
+                                    >
+                                      <div className="bg-primary text-primary-foreground flex h-6 w-6 items-center justify-center rounded-full">
+                                        <svg
+                                          className="h-3 w-3"
+                                          viewBox="0 0 12 12"
+                                          fill="currentColor"
+                                        >
+                                          <path
+                                            d="M10 3L4.5 8.5L2 6"
+                                            stroke="currentColor"
+                                            strokeWidth="1.5"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            fill="none"
+                                          />
+                                        </svg>
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
+                                </motion.div>
                               );
                             })}
                           </div>
