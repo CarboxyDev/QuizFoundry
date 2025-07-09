@@ -68,16 +68,13 @@ export function useGoogleAuth() {
   const handleAuthCallback = async () => {
     try {
       setIsLoading(true);
-      const code = new URLSearchParams(window.location.search).get("code");
-      if (!code) {
-        throw new Error("No code found");
-      }
+      const searchParams = new URLSearchParams(window.location.search);
+      const authCode = searchParams.get("code");
 
-      try {
-        await supabase.auth.exchangeCodeForSession(code);
-      } catch (err) {
-        console.error("Error exchanging code for session:", err);
-        throw err;
+      if (authCode) {
+        try {
+          await supabase.auth.exchangeCodeForSession(authCode);
+        } catch (err) {}
       }
 
       let session = null;
