@@ -68,22 +68,18 @@ export function useGoogleAuth() {
   const handleAuthCallback = async () => {
     try {
       setIsLoading(true);
-
-      // 1. Ensure that any OAuth code present in the URL is exchanged for a session.
-      //    This is especially important in production where network latency might cause
-      //    the automatic exchange inside the Supabase client to complete AFTER our
-      //    component mounts.
-      try {
-        await supabase.auth.exchangeCodeForSession();
-      } catch (err) {
-        // Ignore "Auth code no longer valid" errors – this simply means the exchange already happened.
-        // Other errors will be surfaced later if we still fail to obtain a session.
-        /* empty */
+      const code = new URLSearchParams(window.location.search).get("code");
+      if (!code) {
+        throw new Error("No code found");
       }
 
-      // 2. Attempt to retrieve the session, retrying a few times because in some
-      //    environments (e.g., production) the session may not be immediately
-      //    available right after the redirect.
+      try {
+        await supabase.auth.exchangeCodeForSession(code);
+      } catch (err) {
+        console.error("Error exchanging code for session:", err);
+        throw err;
+      }
+
       let session = null;
       let attempts = 0;
       const MAX_ATTEMPTS = 5;
