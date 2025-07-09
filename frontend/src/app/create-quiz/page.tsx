@@ -24,6 +24,7 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowLeft,
+  CheckCircle2,
   Edit3,
   Loader2,
   Settings2,
@@ -54,6 +55,7 @@ export default function CreateQuizPage() {
   });
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSurpriseLoading, setIsSurpriseLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const router = useRouter();
 
   const handleModeChange = (checked: boolean) => {
@@ -114,8 +116,19 @@ export default function CreateQuizPage() {
 
       toast.success("Quiz generated successfully!");
 
-      // Navigate to the page specified by the backend
-      router.push(result.redirectTo);
+      if (!isAdvancedMode) {
+        // Fancy success overlay before redirecting in Express mode
+        setShowSuccess(true);
+        setIsGenerating(false);
+
+        // Redirect after a short delay to let the animation play
+        setTimeout(() => {
+          router.push(result.redirectTo);
+        }, 1800);
+      } else {
+        // Advanced mode: redirect immediately
+        router.push(result.redirectTo);
+      }
     } catch (error) {
       console.error("Error generating quiz:", error);
       toast.error("Failed to generate quiz. Please try again.");
@@ -185,7 +198,7 @@ export default function CreateQuizPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <Card className="mx-auto max-w-3xl shadow-lg">
+              <Card className="relative mx-auto max-w-3xl overflow-hidden shadow-lg">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Sparkles className="h-5 w-5" />
@@ -253,7 +266,7 @@ export default function CreateQuizPage() {
 
                     <Textarea
                       id="prompt"
-                      placeholder="e.g., Create a quiz about the solar system for middle school students, focusing on planets, their characteristics, and basic astronomy concepts..."
+                      placeholder="Example: Create a quiz on the history of the internet"
                       value={formData.prompt}
                       onChange={(e) => handlePromptChange(e.target.value)}
                       className="min-h-[120px] resize-none text-base"
@@ -479,6 +492,95 @@ export default function CreateQuizPage() {
                     </Button>
                   </div>
                 </CardContent>
+
+                {/* Success Overlay */}
+                <AnimatePresence>
+                  {showSuccess && (
+                    <motion.div
+                      key="successOverlay"
+                      initial={{ opacity: 0, scale: 0.85 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 120,
+                        damping: 20,
+                      }}
+                      className="absolute inset-0 z-50 flex items-center justify-center overflow-hidden rounded-lg shadow-inner"
+                    >
+                      {/* Animated gradient background */}
+                      <motion.div
+                        aria-hidden
+                        className="absolute inset-0 bg-gradient-to-br from-emerald-400 via-emerald-500 to-teal-400"
+                        initial={{ scale: 1 }}
+                        animate={{ scale: [1, 1.04, 1] }}
+                        transition={{
+                          duration: 6,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                        }}
+                      />
+
+                      {/* Confetti / sparkles */}
+                      {Array.from({ length: 20 }).map((_, i) => {
+                        const size = Math.random() * 8 + 4; // 4-12px
+                        const left = Math.random() * 100;
+                        const delay = Math.random() * 0.5;
+                        return (
+                          <motion.span
+                            key={i}
+                            style={{
+                              left: `${left}%`,
+                              width: size,
+                              height: size,
+                            }}
+                            className="absolute bottom-0 rounded-full bg-white/80"
+                            initial={{ y: 0, opacity: 1 }}
+                            animate={{ y: -350, opacity: 0 }}
+                            transition={{
+                              duration: 2.2,
+                              delay,
+                              repeat: Infinity,
+                              ease: "easeOut",
+                            }}
+                          />
+                        );
+                      })}
+
+                      {/* Content */}
+                      <div className="relative z-10 flex flex-col items-center text-center text-white drop-shadow-lg">
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 260,
+                            damping: 20,
+                          }}
+                          className="flex items-center justify-center rounded-full bg-white/10 p-4 backdrop-blur"
+                        >
+                          <CheckCircle2 className="h-20 w-20 text-white" />
+                        </motion.div>
+                        <motion.h2
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.1 }}
+                          className="mt-6 text-3xl font-bold"
+                        >
+                          Quiz Ready!
+                        </motion.h2>
+                        <motion.p
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.2 }}
+                          className="mt-2 text-lg font-medium"
+                        >
+                          Redirecting to your quiz...
+                        </motion.p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </Card>
             </motion.div>
           </div>
