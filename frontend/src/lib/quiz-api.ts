@@ -43,7 +43,6 @@ export interface CreateQuizResponse {
   data: {
     quiz: Quiz;
     mode: "express" | "advanced";
-    redirect_to: string;
     is_manual_mode?: boolean;
   };
   message: string;
@@ -114,7 +113,6 @@ export async function createQuizExpress(
   input: CreateQuizExpressInput,
 ): Promise<{
   quiz: Quiz;
-  redirectTo: string;
 }> {
   const response = await axiosInstance.post<CreateQuizResponse>(
     "/quizzes/create/express",
@@ -127,7 +125,6 @@ export async function createQuizExpress(
 
   return {
     quiz: response.data.data.quiz,
-    redirectTo: response.data.data.redirect_to,
   };
 }
 
@@ -138,7 +135,6 @@ export async function createQuizAdvanced(
   input: CreateQuizAdvancedInput,
 ): Promise<{
   quiz: Quiz;
-  redirectTo: string;
   isManualMode: boolean;
 }> {
   const response = await axiosInstance.post<CreateQuizResponse>(
@@ -152,7 +148,6 @@ export async function createQuizAdvanced(
 
   return {
     quiz: response.data.data.quiz,
-    redirectTo: response.data.data.redirect_to,
     isManualMode: response.data.data.is_manual_mode || false,
   };
 }

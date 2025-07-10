@@ -82,7 +82,6 @@ function stripAnswersFromQuiz(quiz: any) {
 /**
  * POST /quizzes/create/express - Create quiz using Express Mode
  * Uses defaults: 5 questions, 4 options, medium difficulty
- * Generates immediately and redirects to quiz view
  */
 quizzesRouter.post(
   "/create/express",
@@ -112,7 +111,6 @@ quizzesRouter.post(
       data: {
         quiz: sanitizedQuiz,
         mode: "express",
-        redirect_to: `/quiz/${quiz.id}`, // Frontend should redirect here
       },
       message: "Quiz created successfully in Express Mode",
     });
@@ -144,14 +142,9 @@ quizzesRouter.post(
 
     const quiz = await createQuizAdvancedMode(userId, validationResult.data);
 
-    // Strip answers from response
     const sanitizedQuiz = stripAnswersFromQuiz(quiz);
 
-    // Determine redirect based on Manual Mode
     const isManualMode = validationResult.data.isManualMode;
-    const redirectTo = isManualMode
-      ? `/quiz/${quiz.id}/edit` // Edit page for manual mode
-      : `/quiz/${quiz.id}`; // View page for auto mode
 
     res.status(201).json({
       success: true,
@@ -159,7 +152,6 @@ quizzesRouter.post(
         quiz: sanitizedQuiz,
         mode: "advanced",
         is_manual_mode: isManualMode,
-        redirect_to: redirectTo,
       },
       message: `Quiz created successfully in Advanced Mode${isManualMode ? " (Manual editing enabled)" : ""}`,
     });

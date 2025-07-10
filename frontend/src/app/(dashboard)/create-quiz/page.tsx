@@ -126,10 +126,10 @@ export default function CreateQuizPage() {
         setIsGenerating(false);
 
         setTimeout(() => {
-          router.push(result.redirectTo);
+          router.push("/my-quizzes");
         }, 3000);
       } else {
-        router.push(result.redirectTo);
+        router.push("/my-quizzes");
       }
     } catch (error) {
       console.error("Error generating quiz:", error);
@@ -632,7 +632,7 @@ export default function CreateQuizPage() {
                           transition={{ delay: 0.2 }}
                           className="mt-2 text-lg font-medium"
                         >
-                          Redirecting to your quiz...
+                          Taking you to all your quizzes...
                         </motion.p>
                       </div>
                     </motion.div>
