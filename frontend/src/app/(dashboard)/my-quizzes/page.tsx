@@ -1,5 +1,15 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -25,9 +35,10 @@ import {
   Sparkles,
 } from "lucide-react";
 
-import { getUserQuizzes, type Quiz } from "@/lib/quiz-api";
-import { useQuery } from "@tanstack/react-query";
+import { deleteQuiz, getUserQuizzes, type Quiz } from "@/lib/quiz-api";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -107,12 +118,18 @@ const emptyStateVariants = {
 };
 
 export default function MyQuizzesPage() {
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [difficultyFilter, setDifficultyFilter] =
     useState<DifficultyFilter>("all");
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
   const [visibilityFilter, setVisibilityFilter] =
     useState<VisibilityFilter>("all");
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [quizToDelete, setQuizToDelete] = useState<Quiz | null>(null);
+
+  const queryClient = useQueryClient();
+
   // Data fetching – React Query
   const {
     data: quizzes = [],
@@ -121,6 +138,20 @@ export default function MyQuizzesPage() {
   } = useQuery<Quiz[]>({
     queryKey: ["my-quizzes"],
     queryFn: getUserQuizzes,
+  });
+
+  // Delete mutation
+  const deleteMutation = useMutation({
+    mutationFn: deleteQuiz,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["my-quizzes"] });
+      toast.success("Quiz deleted successfully");
+      setDeleteDialogOpen(false);
+      setQuizToDelete(null);
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to delete quiz");
+    },
   });
 
   // Filtering – applied to fetched quizzes
@@ -158,7 +189,24 @@ export default function MyQuizzesPage() {
     if (action === "share") {
       const url = `${window.location.origin}/quiz/${quizId}`;
       navigator.clipboard.writeText(url);
-      toast.success("Copied to clipboard");
+      toast.success("Quiz link copied to clipboard");
+    } else if (action === "delete") {
+      const quiz = quizzes.find((q) => q.id === quizId);
+      if (quiz) {
+        setQuizToDelete(quiz);
+        setDeleteDialogOpen(true);
+      }
+    } else if (action === "edit") {
+      // TODO: Implement edit functionality
+      toast.info("Edit functionality coming soon");
+    } else if (action === "analytics") {
+      router.push("/analytics");
+    }
+  };
+
+  const handleConfirmDelete = () => {
+    if (quizToDelete) {
+      deleteMutation.mutate(quizToDelete.id);
     }
   };
 
@@ -483,6 +531,30 @@ export default function MyQuizzesPage() {
           </motion.div>
         </div>
       </motion.div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Quiz</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete &quot;{quizToDelete?.title}&quot;?
+              This action cannot be undone. All quiz data, questions, and
+              attempt history will be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              disabled={deleteMutation.isPending}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteMutation.isPending ? "Deleting..." : "Delete Quiz"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -24,7 +24,6 @@ import {
   Brain,
   Circle,
   Clock,
-  Copy,
   Edit,
   Eye,
   Flame,
@@ -136,12 +135,6 @@ export default function QuizCard({ quiz, index, onAction }: QuizCardProps) {
                 <DropdownMenuItem onClick={() => onAction("edit", quiz.id)}>
                   <Edit className="mr-2 h-4 w-4" />
                   Edit Quiz
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => onAction("duplicate", quiz.id)}
-                >
-                  <Copy className="mr-2 h-4 w-4" />
-                  Duplicate
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => onAction("share", quiz.id)}>
                   <Share2 className="mr-2 h-4 w-4" />
