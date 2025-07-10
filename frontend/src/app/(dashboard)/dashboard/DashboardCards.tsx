@@ -1,33 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3, BookOpen, FileText, Sparkles } from "lucide-react";
+import { BookOpen, FileText, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 export function DashboardCards() {
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      <Card className="col-span-full md:col-span-2">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Sparkles className="text-primary h-5 w-5" />
-            Create AI Quiz
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground mb-4">
-            Generate intelligent quizzes on any topic using our advanced AI.
-            Just provide a topic and let our AI create engaging questions for
-            you.
-          </p>
-          <Link href="/create-quiz">
-            <Button className="w-full">
-              <Sparkles className="mr-2 h-4 w-4" />
-              Create AI Quiz
-            </Button>
-          </Link>
-        </CardContent>
-      </Card>
-
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -69,21 +47,43 @@ export function DashboardCards() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="text-primary h-5 w-5" />
-            Analytics
+            <Sparkles className="text-primary h-5 w-5" />
+            Create Quiz
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground mb-4 text-sm">
-            Track your quiz performance and engagement metrics.
+            Generate intelligent quizzes with AI on any topic in seconds.
           </p>
-          <Link href="/analytics">
-            <Button variant="outline" className="w-full">
-              View Analytics
+          <Link href="/create-quiz">
+            <Button variant="default" className="w-full">
+              Create Quiz
             </Button>
           </Link>
         </CardContent>
       </Card>
+
+      {/* <Card className="col-span-full md:col-span-2">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Sparkles className="text-primary h-5 w-5" />
+            Create AI Quiz
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-muted-foreground mb-4">
+            Generate intelligent quizzes on any topic using our advanced AI.
+            Just provide a topic and let our AI create engaging questions for
+            you.
+          </p>
+          <Link href="/create-quiz">
+            <Button className="w-full">
+              <Sparkles className="mr-2 h-4 w-4" />
+              Create AI Quiz
+            </Button>
+          </Link>
+        </CardContent>
+      </Card> */}
     </div>
   );
 }

@@ -19,9 +19,9 @@ export default function DashboardPage() {
               Ready to create and take some amazing AI-powered quizzes?
             </p>
           </div>
-          <DashboardCards />
+          <GettingStarted />
           <div className="mt-8">
-            <GettingStarted />
+            <DashboardCards />
           </div>
         </div>
       </div>
