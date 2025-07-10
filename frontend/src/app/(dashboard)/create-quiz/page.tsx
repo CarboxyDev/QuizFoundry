@@ -25,7 +25,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   CheckCircle2,
   Edit3,
+  Globe,
   Loader2,
+  Lock,
   Settings2,
   Sparkles,
   Wand2,
@@ -40,6 +42,7 @@ interface QuizFormData {
   optionsCount: number;
   questionCount: number;
   isManual: boolean;
+  isPublic: boolean;
 }
 
 export default function CreateQuizPage() {
@@ -50,6 +53,7 @@ export default function CreateQuizPage() {
     optionsCount: 4,
     questionCount: 5,
     isManual: false,
+    isPublic: true,
   });
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSurpriseLoading, setIsSurpriseLoading] = useState(false);
@@ -67,6 +71,7 @@ export default function CreateQuizPage() {
         optionsCount: 4,
         questionCount: 5,
         isManual: false,
+        // Keep isPublic as is when switching back to Express mode
       }));
     }
   };
@@ -102,12 +107,14 @@ export default function CreateQuizPage() {
           questionCount: formData.questionCount,
           optionsCount: formData.optionsCount,
           isManualMode: formData.isManual,
+          is_public: formData.isPublic,
         };
         result = await createQuizAdvanced(advancedInput);
       } else {
         // Map form data to express API input
         const expressInput = {
           prompt: formData.prompt,
+          is_public: formData.isPublic,
         };
         result = await createQuizExpress(expressInput);
       }
@@ -263,10 +270,80 @@ export default function CreateQuizPage() {
                         <Badge variant="outline">
                           {formData.optionsCount} options
                         </Badge>{" "}
-                        each.
+                        each
                       </div>
                       <div className="text-muted-foreground">
                         {formData.prompt.length} characters
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-1">
+                        <Label
+                          htmlFor="visibility-switch"
+                          className="text-base font-medium"
+                        >
+                          {formData.isPublic ? "Public" : "Private"} Quiz
+                        </Label>
+                        <p className="text-muted-foreground text-sm">
+                          <AnimatePresence mode="wait">
+                            <motion.span
+                              key={
+                                formData.isPublic
+                                  ? "public-desc"
+                                  : "private-desc"
+                              }
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                              transition={{ duration: 0.2, ease: "easeInOut" }}
+                            >
+                              {formData.isPublic
+                                ? "Anyone can find and take this quiz"
+                                : "Only you and your collaborators can access this quiz"}
+                            </motion.span>
+                          </AnimatePresence>
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 text-sm">
+                          <AnimatePresence mode="wait">
+                            <motion.div
+                              key={formData.isPublic ? "public" : "private"}
+                              initial={{ opacity: 0, x: 20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              exit={{ opacity: 0, x: -20 }}
+                              transition={{ duration: 0.2, ease: "easeInOut" }}
+                              className="flex items-center gap-2"
+                            >
+                              {formData.isPublic ? (
+                                <>
+                                  <Globe className="h-4 w-4 text-emerald-500" />
+                                  <span className="font-medium text-emerald-500">
+                                    Public
+                                  </span>
+                                </>
+                              ) : (
+                                <>
+                                  <Lock className="h-4 w-4 text-red-500" />
+                                  <span className="font-medium text-red-500">
+                                    Private
+                                  </span>
+                                </>
+                              )}
+                            </motion.div>
+                          </AnimatePresence>
+                        </div>
+                        <Switch
+                          id="visibility-switch"
+                          checked={formData.isPublic}
+                          onCheckedChange={(checked) =>
+                            handleFormDataChange({ isPublic: checked })
+                          }
+                          disabled={isGenerating}
+                        />
                       </div>
                     </div>
                   </div>

@@ -98,7 +98,8 @@ export async function createQuizExpressMode(
       userId,
       input.prompt,
       generatedQuiz,
-      false // is_manual = false for Express Mode
+      false, // is_manual = false for Express Mode
+      input.is_public
     );
 
     console.log(
@@ -143,7 +144,8 @@ export async function createQuizAdvancedMode(
       userId,
       input.prompt,
       generatedQuiz,
-      input.isManualMode
+      input.isManualMode,
+      input.is_public
     );
 
     console.log(
@@ -170,7 +172,8 @@ async function saveGeneratedQuiz(
   userId: string,
   originalPrompt: string,
   generatedQuiz: GeneratedQuiz,
-  isManual: boolean
+  isManual: boolean,
+  isPublic: boolean = true
 ): Promise<QuizWithQuestions> {
   try {
     console.log(
@@ -185,7 +188,7 @@ async function saveGeneratedQuiz(
         title: generatedQuiz.title,
         description: generatedQuiz.description,
         difficulty: generatedQuiz.difficulty,
-        is_public: true, // Default to public
+        is_public: isPublic, // Use provided visibility setting
         is_ai_generated: true, // Always true for AI-generated content
         is_manual: isManual, // Set based on mode
         original_prompt: originalPrompt,

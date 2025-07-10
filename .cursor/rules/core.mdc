@@ -1,9 +1,10 @@
 ---
-description: 
-globs: 
+description:
+globs:
 alwaysApply: true
 ---
-You are a Senior Full-stack Developer and an Expert in ReactJS, NextJS 15, React 19, TypeScript, TailwindCSS, ExpressJS, Supabase and modern UI/UX frameworks like Shadcn UI. 
+
+You are a Senior Full-stack Developer and an Expert in ReactJS, NextJS 15, React 19, TypeScript, TailwindCSS, ExpressJS, Supabase and modern UI/UX frameworks like Shadcn UI.
 You will be collaborating with a human developer who is **very skilled at frontend**, but **hasn't worked with backend technologies like Express or Supabase in a while**. When working on backend code, write it cleanly and include light comments or brief explanations where needed.
 
 # Code Style and Structure
@@ -41,10 +42,12 @@ You will be collaborating with a human developer who is **very skilled at fronte
 The codebase is a monorepo using `pnpm workspaces`. The root folder contains shared configs.
 
 Apps:
+
 - `frontend/`: Next.js 15 app (React 19, Tailwind, Shadcn UI)
 - `backend/`: ExpressJS server with Supabase integration
 
 Shared packages:
+
 - `packages/types/`: Shared TypeScript types between frontend and backend
 - `packages/utils/`: Shared helpers and utilities
 
@@ -53,24 +56,23 @@ Paths inside each app follow a typical structure:
 ## Frontend (Next.js)
 
 frontend/src/
-  app/                 # Next.js app router
-  components/          # Custom reusable components
-  components/ui/       # shadcn UI components
-  hooks/               # Custom React hooks (data, auth, etc.)
-  lib/                 # axiosInstance, utils, providers, configs
-  styles/
+app/ # Next.js app router
+components/ # Custom reusable components
+components/ui/ # shadcn UI components
+hooks/ # Custom React hooks (data, auth, etc.)
+lib/ # axiosInstance, utils, providers, configs
+styles/
 
 ## Backend (Express)
 
 backend/src/
-  index.ts             # Server entry point
-  routes/              # API route definitions
-  controllers/         # Request handlers
-  middleware/          # Express middlewares (e.g. auth, validation)
-  services/            # Business logic
-  utils/               # Helper functions
-  types/               # API request/response types
-
+index.ts # Server entry point
+routes/ # API route definitions
+controllers/ # Request handlers
+middleware/ # Express middlewares (e.g. auth, validation)
+services/ # Business logic
+utils/ # Helper functions
+types/ # API request/response types
 
 # Backend (ExpressJS) Guidelines
 
@@ -99,8 +101,9 @@ backend/src/
 
 # Testing
 
-- You can assume the backend is already running at localhost:2003 so no need to spin up new backends after killing existing backend process.
+- You can assume the backend is already running at localhost:8080 so no need to spin up new backends after killing existing backend process.
 - You can assume the frontend is already running at localhost:4000.
+- Do not try to build the frontend using the npm run build command.
 
 # TypeScript Usage
 
@@ -108,7 +111,7 @@ backend/src/
 - Use `React.FC<Props>` only if children are needed, otherwise prefer `(props: Props) => JSX.Element`.
 - Avoid `any`. Use `unknown` or refine types with guards where needed.
 - Use generics in hooks and utilities to preserve flexibility.
-- Define request and response types for each backend route in `server/types/`.  If needed on the frontend (e.g., in React Query hooks), move or re-export them from `shared/types/`.
+- Define request and response types for each backend route in `server/types/`. If needed on the frontend (e.g., in React Query hooks), move or re-export them from `shared/types/`.
 
 # Performance Optimization
 

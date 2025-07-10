@@ -11,6 +11,7 @@ export const createQuizExpressModeSchema = z.object({
     .min(10, "Prompt must be at least 10 characters")
     .max(2000, "Prompt must be less than 2000 characters")
     .transform((str) => str.trim()),
+  is_public: z.boolean().default(true),
 });
 
 // Advanced Mode Schema - Custom settings with optional Manual Mode
@@ -35,6 +36,7 @@ export const createQuizAdvancedModeSchema = z.object({
     invalid_type_error: "Difficulty must be easy, medium, or hard",
   }),
   isManualMode: z.boolean().default(false),
+  is_public: z.boolean().default(true),
 });
 
 // =============================================

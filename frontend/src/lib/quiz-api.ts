@@ -51,6 +51,7 @@ export interface CreateQuizResponse {
 
 export interface CreateQuizExpressInput {
   prompt: string;
+  is_public: boolean;
 }
 
 export interface CreateQuizAdvancedInput {
@@ -59,6 +60,7 @@ export interface CreateQuizAdvancedInput {
   questionCount: number;
   optionsCount: number;
   isManualMode: boolean;
+  is_public: boolean;
 }
 
 export interface GetQuizzesResponse {
