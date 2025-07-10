@@ -427,7 +427,7 @@ export default function CreateQuizPage() {
                               onCheckedChange={(checked) =>
                                 handleFormDataChange({ isManual: !!checked })
                               }
-                              disabled={isGenerating}
+                              disabled={isGenerating || true}
                             />
                             <div className="space-y-1">
                               <Label
@@ -435,7 +435,7 @@ export default function CreateQuizPage() {
                                 className="flex cursor-pointer items-center gap-2 text-sm font-medium"
                               >
                                 <Edit3 className="h-4 w-4" />
-                                Manual Mode
+                                Manual Mode (Coming Soon)
                               </Label>
                               <p className="text-muted-foreground text-xs">
                                 Generate a prototype quiz that you can edit

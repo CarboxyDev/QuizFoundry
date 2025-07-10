@@ -248,18 +248,37 @@ export default function QuizCard({ quiz, index, onAction }: QuizCardProps) {
 
           {/* Quiz Stats */}
           <div className="mb-4 grid grid-cols-2 gap-3 text-xs">
-            <div className="bg-muted/50 rounded-lg p-2 text-center">
-              <div className="text-muted-foreground">Attempts</div>
-              <div className="text-foreground font-semibold">
+            <motion.div
+              className="rounded-lg border border-blue-200/50 bg-gradient-to-br from-blue-50 to-blue-100 p-3 text-center backdrop-blur-sm dark:border-blue-800/30 dark:from-blue-950/50 dark:to-blue-900/30"
+              whileHover={{ scale: 1.05, y: -2 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="mb-1 flex items-center justify-center gap-1">
+                <BarChart3 className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+                <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
+                  Attempts
+                </span>
+              </div>
+              <div className="text-lg font-bold text-blue-800 dark:text-blue-200">
                 {quiz.attempts ?? 0}
               </div>
-            </div>
-            <div className="bg-muted/50 rounded-lg p-2 text-center">
-              <div className="text-muted-foreground">Avg Score</div>
-              <div className="text-foreground font-semibold">
+            </motion.div>
+
+            <motion.div
+              className="rounded-lg border border-green-200/50 bg-gradient-to-br from-green-50 to-green-100 p-3 text-center backdrop-blur-sm dark:border-green-800/30 dark:from-green-950/50 dark:to-green-900/30"
+              whileHover={{ scale: 1.05, y: -2 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="mb-1 flex items-center justify-center gap-1">
+                <Sparkles className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                <span className="text-xs font-medium text-green-700 dark:text-green-300">
+                  Avg Score
+                </span>
+              </div>
+              <div className="text-lg font-bold text-green-800 dark:text-green-200">
                 {quiz.average_score?.toFixed(1) ?? 0}%
               </div>
-            </div>
+            </motion.div>
           </div>
 
           {/* Action Buttons */}

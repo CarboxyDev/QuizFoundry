@@ -2,13 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -28,6 +21,7 @@ import {
   Globe,
   LockIcon,
   Plus,
+  Search,
   Sparkles,
 } from "lucide-react";
 
@@ -35,6 +29,7 @@ import { getUserQuizzes, type Quiz } from "@/lib/quiz-api";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useState } from "react";
+import { toast } from "sonner";
 
 // No more mock data – quizzes will be fetched from the backend
 
@@ -152,8 +147,6 @@ export default function MyQuizzesPage() {
     );
   });
 
-  // getDifficultyConfig removed – logic now lives inside QuizCard component
-
   const clearFilters = () => {
     setSearchTerm("");
     setDifficultyFilter("all");
@@ -162,8 +155,11 @@ export default function MyQuizzesPage() {
   };
 
   const handleQuizAction = (action: string, quizId: string) => {
-    // Mock actions - will be replaced with real implementations
-    console.log(`${action} quiz ${quizId}`);
+    if (action === "share") {
+      const url = `${window.location.origin}/quiz/${quizId}`;
+      navigator.clipboard.writeText(url);
+      toast.success("Copied to clipboard");
+    }
   };
 
   return (
@@ -303,97 +299,145 @@ export default function MyQuizzesPage() {
               </Card>
             </motion.div>
 
-            {/* Filters */}
+            {/* Enhanced Search and Filters */}
             <motion.div
-              className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+              className="mt-8 space-y-4"
               variants={filtersVariants}
               initial="initial"
               animate="animate"
             >
-              <div className="flex flex-wrap items-center gap-3">
-                <Input
-                  placeholder="Search quizzes..."
-                  className="w-full sm:w-[180px] lg:w-[300px]"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <motion.div
+                  className="relative max-w-md flex-1"
+                  whileFocus={{ scale: 1.02 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-3 z-10 h-4 w-4 -translate-y-1/2" />
+                  <Input
+                    placeholder="Search quizzes by title or description..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="bg-card/60 border-border/40 focus:bg-card h-11 pl-10 backdrop-blur-sm"
+                  />
+                </motion.div>
 
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button className="w-full sm:w-[180px]">
-                      <Filter className="mr-2 h-4 w-4" />
-                      Filters
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start">
-                    <DropdownMenuItem onClick={clearFilters}>
-                      Clear Filters
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuTrigger asChild>
-                      <DropdownMenuItem>
-                        <Select
-                          onValueChange={(value) =>
-                            setDifficultyFilter(value as DifficultyFilter)
-                          }
-                          value={difficultyFilter}
+                <motion.div
+                  className="flex items-center gap-3"
+                  initial={{ x: 20, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  transition={{ duration: 0.5, delay: 0.4 }}
+                >
+                  <div className="flex items-center gap-2">
+                    <Filter className="text-muted-foreground h-4 w-4" />
+                    <span className="text-foreground text-sm font-medium">
+                      Filters:
+                    </span>
+                  </div>
+
+                  <motion.div whileHover={{ scale: 1.05 }}>
+                    <Select
+                      value={difficultyFilter}
+                      onValueChange={(value: DifficultyFilter) =>
+                        setDifficultyFilter(value)
+                      }
+                    >
+                      <SelectTrigger className="bg-card/60 border-border/40 w-32 backdrop-blur-sm">
+                        <SelectValue placeholder="Difficulty" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Levels</SelectItem>
+                        <SelectItem value="easy">
+                          <div className="flex items-center gap-2">
+                            <div className="h-2 w-2 rounded-full bg-green-500" />
+                            Easy
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="medium">
+                          <div className="flex items-center gap-2">
+                            <div className="h-2 w-2 rounded-full bg-yellow-500" />
+                            Medium
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="hard">
+                          <div className="flex items-center gap-2">
+                            <div className="h-2 w-2 rounded-full bg-red-500" />
+                            Hard
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </motion.div>
+
+                  <motion.div whileHover={{ scale: 1.05 }}>
+                    <Select
+                      value={typeFilter}
+                      onValueChange={(value: TypeFilter) =>
+                        setTypeFilter(value)
+                      }
+                    >
+                      <SelectTrigger className="bg-card/60 border-border/40 w-32 backdrop-blur-sm">
+                        <SelectValue placeholder="Type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Types</SelectItem>
+                        <SelectItem value="ai">✨ AI Made</SelectItem>
+                        <SelectItem value="manual">👤 Manual</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </motion.div>
+
+                  <motion.div whileHover={{ scale: 1.05 }}>
+                    <Select
+                      value={visibilityFilter}
+                      onValueChange={(value: VisibilityFilter) =>
+                        setVisibilityFilter(value)
+                      }
+                    >
+                      <SelectTrigger className="bg-card/60 border-border/40 w-32 backdrop-blur-sm">
+                        <SelectValue placeholder="Visibility" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All</SelectItem>
+                        <SelectItem value="public">
+                          <div className="flex items-center gap-2">
+                            <Globe className="h-3 w-3" />
+                            Public
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="private">
+                          <div className="flex items-center gap-2">
+                            <LockIcon className="h-3 w-3" />
+                            Private
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </motion.div>
+
+                  <AnimatePresence>
+                    {(searchTerm ||
+                      difficultyFilter !== "all" ||
+                      typeFilter !== "all" ||
+                      visibilityFilter !== "all") && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={clearFilters}
+                          className="bg-card/60 border-border/40 backdrop-blur-sm"
                         >
-                          <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Difficulty" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">
-                              All Difficulties
-                            </SelectItem>
-                            <SelectItem value="easy">Easy</SelectItem>
-                            <SelectItem value="medium">Medium</SelectItem>
-                            <SelectItem value="hard">Hard</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </DropdownMenuItem>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuTrigger asChild>
-                      <DropdownMenuItem>
-                        <Select
-                          onValueChange={(value) =>
-                            setTypeFilter(value as TypeFilter)
-                          }
-                          value={typeFilter}
-                        >
-                          <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">All Types</SelectItem>
-                            <SelectItem value="ai">AI Generated</SelectItem>
-                            <SelectItem value="manual">Manual</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </DropdownMenuItem>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuTrigger asChild>
-                      <DropdownMenuItem>
-                        <Select
-                          onValueChange={(value) =>
-                            setVisibilityFilter(value as VisibilityFilter)
-                          }
-                          value={visibilityFilter}
-                        >
-                          <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Visibility" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">
-                              All Visibilities
-                            </SelectItem>
-                            <SelectItem value="public">Public</SelectItem>
-                            <SelectItem value="private">Private</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </DropdownMenuItem>
-                    </DropdownMenuTrigger>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                          Clear
+                        </Button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
               </div>
             </motion.div>
 
