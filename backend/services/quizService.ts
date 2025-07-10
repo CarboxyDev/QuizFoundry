@@ -400,7 +400,7 @@ export async function getUserQuizzes(userId: string): Promise<Quiz[]> {
 }
 
 /**
- * Get public quizzes
+ * Get public quizzes with question count
  */
 export async function getPublicQuizzes(
   limit: number = 50,
@@ -410,19 +410,62 @@ export async function getPublicQuizzes(
     `[Quiz Service] Fetching public quizzes (limit: ${limit}, offset: ${offset})`
   );
 
-  const { data, error } = await supabase
+  // First get the quizzes
+  const { data: quizzesData, error: quizzesError } = await supabase
     .from("quizzes")
     .select("*")
     .eq("is_public", true)
     .order("created_at", { ascending: false })
     .range(offset, offset + limit - 1);
 
-  if (error) {
-    throw new AppError(`Failed to fetch public quizzes: ${error.message}`, 500);
+  if (quizzesError) {
+    throw new AppError(
+      `Failed to fetch public quizzes: ${quizzesError.message}`,
+      500
+    );
   }
 
-  console.log(`[Quiz Service] Found ${data?.length || 0} public quizzes`);
-  return data || [];
+  if (!quizzesData || quizzesData.length === 0) {
+    console.log(`[Quiz Service] Found 0 public quizzes`);
+    return [];
+  }
+
+  // Get question counts for these quizzes
+  const quizIds = quizzesData.map((quiz) => quiz.id);
+  const { data: questionCounts, error: countsError } = await supabase
+    .from("questions")
+    .select("quiz_id")
+    .in("quiz_id", quizIds);
+
+  if (countsError) {
+    throw new AppError(
+      `Failed to fetch question counts: ${countsError.message}`,
+      500
+    );
+  }
+
+  // Count questions per quiz
+  const countMap = new Map<string, number>();
+  (questionCounts || []).forEach((q: any) => {
+    const quizId = q.quiz_id;
+    countMap.set(quizId, (countMap.get(quizId) || 0) + 1);
+  });
+
+  // Add question count and mock questions array for frontend compatibility
+  const quizzesWithQuestionCount = quizzesData.map((quiz: any) => {
+    const questionCount = countMap.get(quiz.id) || 0;
+    return {
+      ...quiz,
+      questions: Array(questionCount)
+        .fill(null)
+        .map((_, index) => ({ id: `question-${index}` })),
+    };
+  });
+
+  console.log(
+    `[Quiz Service] Found ${quizzesWithQuestionCount.length} public quizzes`
+  );
+  return quizzesWithQuestionCount;
 }
 
 /**
