@@ -16,8 +16,8 @@
   },
   "scripts": {
     "build": "pnpm -r run build",
-    "dev": "concurrently \"pnpm dev:frontend\" \"pnpm dev:backend\"",
+    "dev": "concurrently -k -n FRONTEND,BACKEND -c cyan,magenta \"pnpm dev:frontend\" \"pnpm dev:backend\"",
     "dev:frontend": "pnpm --filter frontend dev",
-    "dev:backend": "nodemon --watch . --ext ts --exec ts-node index.ts"
+    "dev:backend": "pnpm --filter backend dev"
   }
 }
