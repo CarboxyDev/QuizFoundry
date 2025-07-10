@@ -1,6 +1,8 @@
 "use client";
 
 import DashboardHeader from "@/app/dashboard/DashboardHeader";
+import { SidebarNav } from "@/app/dashboard/SidebarNav";
+import { SidebarUserFooter } from "@/app/dashboard/SidebarUserFooter";
 import { ProtectedRouteGuard } from "@/components/AuthGuard";
 import {
   Sidebar,
@@ -13,12 +15,13 @@ import {
 import { useAuth } from "@/hooks/auth/useAuth";
 import { Sparkles } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { DashboardCards } from "./DashboardCards";
-import { GettingStarted } from "./GettingStarted";
-import { SidebarNav } from "./SidebarNav";
-import { SidebarUserFooter } from "./SidebarUserFooter";
+import { ReactNode } from "react";
 
-export default function DashboardPage() {
+interface DashboardLayoutProps {
+  children: ReactNode;
+}
+
+export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const { user, logout } = useAuth();
   const pathname = usePathname();
 
@@ -48,24 +51,7 @@ export default function DashboardPage() {
         </Sidebar>
         <SidebarInset>
           <DashboardHeader />
-          <div className="mt-4 flex flex-1 flex-col gap-4 p-4 pt-0">
-            <div className="min-h-[100vh] flex-1 md:min-h-min">
-              <div className="mx-auto max-w-4xl p-6">
-                <div className="mb-8">
-                  <h2 className="mb-2 text-3xl font-bold tracking-tight">
-                    Welcome back, {user?.name || "there"}!
-                  </h2>
-                  <p className="text-muted-foreground">
-                    Ready to create and take some amazing AI-powered quizzes?
-                  </p>
-                </div>
-                <DashboardCards />
-                <div className="mt-8">
-                  <GettingStarted />
-                </div>
-              </div>
-            </div>
-          </div>
+          {children}
         </SidebarInset>
       </SidebarProvider>
     </ProtectedRouteGuard>
