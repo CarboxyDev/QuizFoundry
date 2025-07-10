@@ -186,13 +186,42 @@ export default function CreateQuizPage() {
               transition={{ delay: 0.2 }}
             >
               <Card className="relative mx-auto max-w-3xl overflow-hidden shadow-lg">
-                <CardHeader>
+                {/* Animated Border Effect */}
+                <AnimatePresence>
+                  {isGenerating && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="absolute inset-0 z-10 rounded-lg"
+                    >
+                      <motion.div
+                        className="h-full w-full rounded-lg"
+                        style={{
+                          background: `conic-gradient(from 0deg, transparent 60%, rgb(255, 125, 40) 70%, rgb(255, 140, 70) 75%, rgb(255, 125, 40) 80%, transparent 90%)`,
+                        }}
+                        animate={{
+                          rotate: [0, 90, 180, 270, 360],
+                        }}
+                        transition={{
+                          duration: 3,
+                          repeat: Infinity,
+                          ease: "linear",
+                        }}
+                      />
+                      {/* Inner content mask - preserves card background */}
+                      <div className="bg-card absolute inset-[2px] rounded-lg" />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <CardHeader className="relative z-20">
                   <CardTitle className="flex items-center gap-2">
                     <Sparkles className="h-5 w-5" />
                     Quiz Configuration
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-8">
+                <CardContent className="relative z-20 space-y-8">
                   {/* Quiz Prompt */}
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
