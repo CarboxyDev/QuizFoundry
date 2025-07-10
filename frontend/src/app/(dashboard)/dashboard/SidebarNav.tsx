@@ -4,11 +4,12 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { BarChart3, BookOpen, FileText, Home } from "lucide-react";
+import { BarChart3, BookOpen, FileText, Home, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 const navigation = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
+  { title: "Create Quiz", url: "/create-quiz", icon: Sparkles },
   { title: "View Quizzes", url: "/quizzes", icon: BookOpen },
   { title: "My Quizzes", url: "/my-quizzes", icon: FileText },
   { title: "Analytics", url: "/analytics", icon: BarChart3 },

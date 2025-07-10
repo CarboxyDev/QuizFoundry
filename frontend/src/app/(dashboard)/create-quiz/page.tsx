@@ -23,7 +23,6 @@ import {
 } from "@/lib/quiz-api";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  ArrowLeft,
   CheckCircle2,
   Edit3,
   Loader2,
@@ -31,7 +30,6 @@ import {
   Sparkles,
   Wand2,
 } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -157,21 +155,6 @@ export default function CreateQuizPage() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(120,119,198,0.08),transparent_50%),radial-gradient(circle_at_70%_70%,rgba(255,255,255,0.02),transparent_50%)]" />
 
         <div className="relative z-10 container mx-auto px-4 py-8">
-          {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-8 flex items-center gap-4"
-          >
-            <Link href="/dashboard">
-              <Button variant="outline" size="sm" className="gap-2">
-                <ArrowLeft className="h-4 w-4" />
-                Back to Dashboard
-              </Button>
-            </Link>
-          </motion.div>
-
-          {/* Main content */}
           <div className="mx-auto max-w-4xl">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -181,7 +164,7 @@ export default function CreateQuizPage() {
             >
               <div className="bg-primary/10 text-primary mb-4 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium">
                 <Sparkles className="h-4 w-4" />
-                AI Quiz Generator
+                {isAdvancedMode ? "Advanced Mode" : "Express Mode"}
               </div>
               <h1 className="mb-4 text-4xl font-bold">Create Your Quiz</h1>
               <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
