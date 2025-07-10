@@ -12,7 +12,7 @@ import {
   createQuizAdvancedMode,
   createManualQuiz,
   getQuizById,
-  getUserQuizzes,
+  getUserQuizzesWithStats,
   getPublicQuizzes,
   updateQuiz,
   deleteQuiz,
@@ -180,7 +180,7 @@ quizzesRouter.get(
       throw new AppError("User not authenticated", 401);
     }
 
-    const quizzes = await getUserQuizzes(userId);
+    const quizzes = await getUserQuizzesWithStats(userId);
 
     res.json({
       success: true,

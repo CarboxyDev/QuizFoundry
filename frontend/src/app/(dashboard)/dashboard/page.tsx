@@ -1,7 +1,7 @@
 "use client";
 
-import { DashboardCards } from "@/app/dashboard/DashboardCards";
-import { GettingStarted } from "@/app/dashboard/GettingStarted";
+import { DashboardCards } from "@/app/(dashboard)/dashboard/DashboardCards";
+import { GettingStarted } from "@/app/(dashboard)/dashboard/GettingStarted";
 import { useAuth } from "@/hooks/auth/useAuth";
 
 export default function DashboardPage() {

@@ -1,8 +1,7 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,80 +17,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Skeleton } from "@/components/ui/skeleton";
-import { formatDate } from "@/lib/date";
 import { cn } from "@/lib/utils";
+import QuizCard from "@/my-quizzes/QuizCard";
+import QuizCardSkeleton from "@/my-quizzes/QuizCardSkeleton";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  BarChart3,
   Brain,
-  Circle,
   Clock,
-  Copy,
-  Edit,
-  Eye,
   Filter,
-  Flame,
   Globe,
-  GlobeLock,
-  MoreVertical,
-  Play,
+  LockIcon,
   Plus,
-  Share2,
   Sparkles,
-  Trash2,
-  TrendingUp,
-  Triangle,
 } from "lucide-react";
 
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { getUserQuizzes, type Quiz } from "@/lib/quiz-api";
+import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { useState } from "react";
 
-// Mock data - will be replaced with real API calls later
-const mockQuizzes = [
-  {
-    id: "1",
-    title: "Advanced JavaScript Concepts",
-    description:
-      "Test your knowledge of closures, promises, and advanced JS patterns",
-    difficulty: "hard",
-    is_ai_generated: true,
-    is_public: true,
-    questions: new Array(15),
-    created_at: "2024-01-15T10:30:00Z",
-    attempts: 42,
-    average_score: 78.5,
-  },
-  {
-    id: "2",
-    title: "React Hooks Deep Dive",
-    description: "Master useState, useEffect, and custom hooks",
-    difficulty: "medium",
-    is_ai_generated: false,
-    is_public: false,
-    questions: new Array(12),
-    created_at: "2024-01-20T14:15:00Z",
-    attempts: 28,
-    average_score: 85.2,
-  },
-  {
-    id: "3",
-    title: "TypeScript Fundamentals",
-    description: "Learn the basics of TypeScript type system",
-    difficulty: "easy",
-    is_ai_generated: true,
-    is_public: true,
-    questions: new Array(8),
-    created_at: "2024-01-25T09:00:00Z",
-    attempts: 67,
-    average_score: 92.1,
-  },
-];
+// No more mock data – quizzes will be fetched from the backend
 
 type DifficultyFilter = "all" | "easy" | "medium" | "hard";
 type TypeFilter = "all" | "ai" | "manual";
@@ -173,10 +118,18 @@ export default function MyQuizzesPage() {
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
   const [visibilityFilter, setVisibilityFilter] =
     useState<VisibilityFilter>("all");
-  const [isLoading, setIsLoading] = useState(false);
+  // Data fetching – React Query
+  const {
+    data: quizzes = [],
+    isLoading,
+    isFetching,
+  } = useQuery<Quiz[]>({
+    queryKey: ["my-quizzes"],
+    queryFn: getUserQuizzes,
+  });
 
-  // Mock data filtering - will be replaced with real API calls
-  const filteredQuizzes = mockQuizzes.filter((quiz) => {
+  // Filtering – applied to fetched quizzes
+  const filteredQuizzes = quizzes.filter((quiz) => {
     const matchesSearch =
       quiz.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       quiz.description?.toLowerCase().includes(searchTerm.toLowerCase());
@@ -199,38 +152,7 @@ export default function MyQuizzesPage() {
     );
   });
 
-  const getDifficultyConfig = (difficulty: string) => {
-    switch (difficulty) {
-      case "easy":
-        return {
-          icon: Circle,
-          color: "text-green-600 dark:text-green-400",
-          hoverColor: "hover:text-green-700 dark:hover:text-green-300",
-          label: "Easy",
-        };
-      case "medium":
-        return {
-          icon: Triangle,
-          color: "text-yellow-600 dark:text-yellow-400",
-          hoverColor: "hover:text-yellow-700 dark:hover:text-yellow-300",
-          label: "Medium",
-        };
-      case "hard":
-        return {
-          icon: Flame,
-          color: "text-red-600 dark:text-red-400",
-          hoverColor: "hover:text-red-700 dark:hover:text-red-300",
-          label: "Hard",
-        };
-      default:
-        return {
-          icon: Circle,
-          color: "text-muted-foreground",
-          hoverColor: "hover:text-foreground",
-          label: "Unknown",
-        };
-    }
-  };
+  // getDifficultyConfig removed – logic now lives inside QuizCard component
 
   const clearFilters = () => {
     setSearchTerm("");
@@ -308,7 +230,7 @@ export default function MyQuizzesPage() {
                       <p className="text-muted-foreground text-sm">
                         Total Quizzes
                       </p>
-                      <p className="text-2xl font-bold">{mockQuizzes.length}</p>
+                      <p className="text-2xl font-bold">{quizzes.length}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -325,7 +247,7 @@ export default function MyQuizzesPage() {
                         Public Quizzes
                       </p>
                       <p className="text-2xl font-bold">
-                        {mockQuizzes.filter((q) => q.is_public).length}
+                        {quizzes.filter((q) => q.is_public).length}
                       </p>
                     </div>
                   </div>
@@ -336,14 +258,14 @@ export default function MyQuizzesPage() {
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
                     <div className="rounded-lg bg-purple-500/10 p-2 text-purple-500">
-                      <TrendingUp className="h-5 w-5" />
+                      <LockIcon className="h-5 w-5" />
                     </div>
                     <div>
                       <p className="text-muted-foreground text-sm">
-                        Trending Quizzes
+                        Private Quizzes
                       </p>
                       <p className="text-2xl font-bold">
-                        {mockQuizzes.filter((q) => q.average_score > 80).length}
+                        {quizzes.filter((q) => !q.is_public).length}
                       </p>
                     </div>
                   </div>
@@ -362,7 +284,7 @@ export default function MyQuizzesPage() {
                       </p>
                       <p className="text-2xl font-bold">
                         {
-                          mockQuizzes.filter((q) => {
+                          quizzes.filter((q) => {
                             const quizDate = new Date(q.created_at);
                             const today = new Date();
                             const diffTime = Math.abs(
@@ -483,12 +405,10 @@ export default function MyQuizzesPage() {
               animate="animate"
             >
               <AnimatePresence mode="wait">
-                {isLoading ? (
-                  <div className="grid gap-6">
-                    <Skeleton className="h-48 w-full" />
-                    <Skeleton className="h-48 w-full" />
-                    <Skeleton className="h-48 w-full" />
-                  </div>
+                {isLoading || isFetching ? (
+                  Array.from({ length: 6 }).map((_, idx) => (
+                    <QuizCardSkeleton key={idx} />
+                  ))
                 ) : filteredQuizzes.length === 0 ? (
                   <motion.div
                     className="col-span-full text-center"
@@ -505,237 +425,14 @@ export default function MyQuizzesPage() {
                     </p>
                   </motion.div>
                 ) : (
-                  filteredQuizzes.map((quiz, index) => {
-                    const difficultyConfig = getDifficultyConfig(
-                      quiz.difficulty,
-                    );
-                    return (
-                      <motion.div
-                        key={quiz.id}
-                        layout
-                        variants={cardVariants}
-                        initial="initial"
-                        animate="animate"
-                        whileHover="hover"
-                        exit={{ opacity: 0, scale: 0.8 }}
-                      >
-                        <Card
-                          className={cn(
-                            "group border-border/50 bg-card/80 overflow-hidden backdrop-blur-sm transition-all duration-300",
-                            "hover:shadow-primary/20 hover:bg-card hover:border-primary/50 hover:shadow-xl",
-                            "flex h-full flex-col",
-                          )}
-                        >
-                          <CardHeader className="flex-shrink-0 pb-4">
-                            <div className="flex items-start justify-between gap-3">
-                              <h3 className="text-foreground group-hover:text-primary line-clamp-2 flex-1 leading-snug font-semibold transition-colors">
-                                {quiz.title}
-                              </h3>
-
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-8 w-8 p-0 opacity-0 transition-opacity group-hover:opacity-100"
-                                  >
-                                    <MoreVertical className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent
-                                  align="end"
-                                  className="w-48"
-                                >
-                                  <DropdownMenuItem
-                                    onClick={() =>
-                                      handleQuizAction("edit", quiz.id)
-                                    }
-                                  >
-                                    <Edit className="mr-2 h-4 w-4" />
-                                    Edit Quiz
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={() =>
-                                      handleQuizAction("duplicate", quiz.id)
-                                    }
-                                  >
-                                    <Copy className="mr-2 h-4 w-4" />
-                                    Duplicate
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={() =>
-                                      handleQuizAction("share", quiz.id)
-                                    }
-                                  >
-                                    <Share2 className="mr-2 h-4 w-4" />
-                                    Share
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={() =>
-                                      handleQuizAction("analytics", quiz.id)
-                                    }
-                                  >
-                                    <BarChart3 className="mr-2 h-4 w-4" />
-                                    View Analytics
-                                  </DropdownMenuItem>
-                                  <DropdownMenuSeparator />
-                                  <DropdownMenuItem
-                                    onClick={() =>
-                                      handleQuizAction("delete", quiz.id)
-                                    }
-                                    className="text-destructive focus:text-destructive"
-                                  >
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    Delete
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </div>
-
-                            <div className="flex h-10 items-start">
-                              {quiz.description && (
-                                <p className="text-muted-foreground line-clamp-2 text-sm leading-relaxed">
-                                  {quiz.description}
-                                </p>
-                              )}
-                            </div>
-                          </CardHeader>
-
-                          <CardContent className="flex flex-grow flex-col pt-0">
-                            <div className="mb-4 flex items-center justify-between text-sm">
-                              <div className="text-muted-foreground flex items-center gap-3">
-                                <span className="flex items-center gap-1">
-                                  <Brain className="h-3.5 w-3.5" />
-                                  {quiz.questions?.length || 0}
-                                </span>
-                                <span className="flex items-center gap-1">
-                                  <Clock className="h-3.5 w-3.5" />
-                                  {formatDate(quiz.created_at)}
-                                </span>
-                                <Tooltip delayDuration={500}>
-                                  <TooltipTrigger asChild>
-                                    <motion.span
-                                      className={cn(
-                                        "flex cursor-pointer items-center transition-colors",
-                                        difficultyConfig.color,
-                                        difficultyConfig.hoverColor,
-                                      )}
-                                      whileHover={{ scale: 1.2 }}
-                                      whileTap={{ scale: 0.9 }}
-                                    >
-                                      <difficultyConfig.icon className="h-3.5 w-3.5" />
-                                    </motion.span>
-                                  </TooltipTrigger>
-                                  <TooltipContent side="top">
-                                    <p className="font-medium">
-                                      {difficultyConfig.label} Difficulty
-                                    </p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </div>
-
-                              <div className="flex items-center gap-2">
-                                {quiz.is_public ? (
-                                  <Tooltip delayDuration={500}>
-                                    <TooltipTrigger asChild>
-                                      <Globe className="h-3.5 w-3.5 text-green-500" />
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>Public Quiz</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                ) : (
-                                  <Tooltip delayDuration={500}>
-                                    <TooltipTrigger asChild>
-                                      <GlobeLock className="text-muted-foreground h-3.5 w-3.5" />
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>Private Quiz</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                )}
-
-                                {quiz.is_ai_generated && (
-                                  <motion.div
-                                    initial={{ scale: 0, opacity: 0 }}
-                                    animate={{ scale: 1, opacity: 1 }}
-                                    transition={{
-                                      duration: 0.3,
-                                      delay: index * 0.1 + 0.5,
-                                    }}
-                                  >
-                                    <Badge
-                                      variant="secondary"
-                                      className="border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-800 dark:bg-purple-900/20 dark:text-purple-400"
-                                    >
-                                      <Sparkles className="mr-1 h-3 w-3" />
-                                      AI
-                                    </Badge>
-                                  </motion.div>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Quiz Stats */}
-                            <div className="mb-4 grid grid-cols-2 gap-3 text-xs">
-                              <div className="bg-muted/50 rounded-lg p-2 text-center">
-                                <div className="text-muted-foreground">
-                                  Attempts
-                                </div>
-                                <div className="text-foreground font-semibold">
-                                  {quiz.attempts}
-                                </div>
-                              </div>
-                              <div className="bg-muted/50 rounded-lg p-2 text-center">
-                                <div className="text-muted-foreground">
-                                  Avg Score
-                                </div>
-                                <div className="text-foreground font-semibold">
-                                  {quiz.average_score}%
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Action Buttons */}
-                            <div className="mt-auto grid grid-cols-2 gap-2">
-                              <Link href={`/quiz/${quiz.id}`}>
-                                <motion.div
-                                  whileHover={{ scale: 1.02 }}
-                                  whileTap={{ scale: 0.98 }}
-                                  className="w-full"
-                                >
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="w-full"
-                                  >
-                                    <Play className="mr-1 h-3 w-3" />
-                                    Preview
-                                  </Button>
-                                </motion.div>
-                              </Link>
-
-                              <motion.div
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                              >
-                                <Button
-                                  size="sm"
-                                  onClick={() =>
-                                    handleQuizAction("analytics", quiz.id)
-                                  }
-                                  className="w-full"
-                                >
-                                  <Eye className="mr-1 h-3 w-3" />
-                                  Analytics
-                                </Button>
-                              </motion.div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </motion.div>
-                    );
-                  })
+                  filteredQuizzes.map((quiz, index) => (
+                    <QuizCard
+                      key={quiz.id}
+                      quiz={quiz}
+                      index={index}
+                      onAction={handleQuizAction}
+                    />
+                  ))
                 )}
               </AnimatePresence>
             </motion.div>

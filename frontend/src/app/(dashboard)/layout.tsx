@@ -1,8 +1,8 @@
 "use client";
 
-import DashboardHeader from "@/app/dashboard/DashboardHeader";
-import { SidebarNav } from "@/app/dashboard/SidebarNav";
-import { SidebarUserFooter } from "@/app/dashboard/SidebarUserFooter";
+import DashboardHeader from "@/app/(dashboard)/dashboard/DashboardHeader";
+import { SidebarNav } from "@/app/(dashboard)/dashboard/SidebarNav";
+import { SidebarUserFooter } from "@/app/(dashboard)/dashboard/SidebarUserFooter";
 import { ProtectedRouteGuard } from "@/components/AuthGuard";
 import {
   Sidebar,

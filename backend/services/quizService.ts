@@ -638,3 +638,66 @@ export async function submitQuizAttempt(
 export async function getCreativeQuizPrompt(): Promise<string> {
   return generateCreativeQuizPrompt();
 }
+
+// =============================================
+// USER QUIZZES WITH AGGREGATED STATS
+// =============================================
+
+/**
+ * Get a user's quizzes together with attempt statistics (attempt count & average score)
+ */
+export async function getUserQuizzesWithStats(
+  userId: string
+): Promise<(Quiz & { attempts: number; average_score: number })[]> {
+  // First, fetch the quizzes that belong to the user
+  const quizzes = await getUserQuizzes(userId);
+  if (quizzes.length === 0) return [];
+
+  // Build a lookup for quick aggregation
+  const quizIds = quizzes.map((q) => q.id);
+
+  // Fetch all attempts for the fetched quizzes in one query
+  const { data: attemptsData, error: attemptsError } = await supabase
+    .from("quiz_attempts")
+    .select("quiz_id, percentage")
+    .in("quiz_id", quizIds);
+
+  if (attemptsError) {
+    throw new AppError(
+      `Failed to fetch quiz attempt statistics: ${attemptsError.message}`,
+      500
+    );
+  }
+
+  // Aggregate attempts per quiz
+  const statsMap = new Map<
+    string,
+    { attempts: number; totalPercentage: number }
+  >();
+
+  (attemptsData || []).forEach((attempt) => {
+    const quizId: string = (attempt as any).quiz_id;
+    const percentage: number = (attempt as any).percentage;
+    const existing = statsMap.get(quizId) || {
+      attempts: 0,
+      totalPercentage: 0,
+    };
+    statsMap.set(quizId, {
+      attempts: existing.attempts + 1,
+      totalPercentage: existing.totalPercentage + (percentage || 0),
+    });
+  });
+
+  // Merge stats back into quizzes array
+  return quizzes.map((quiz) => {
+    const stats = statsMap.get(quiz.id) || { attempts: 0, totalPercentage: 0 };
+    const attempts = stats.attempts;
+    const average_score =
+      attempts > 0 ? Number((stats.totalPercentage / attempts).toFixed(1)) : 0;
+    return {
+      ...quiz,
+      attempts,
+      average_score,
+    } as Quiz & { attempts: number; average_score: number };
+  });
+}

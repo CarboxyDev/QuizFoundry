@@ -65,10 +65,10 @@ const QuizError = () => (
           The quiz you&apos;re looking for doesn&apos;t exist or you don&apos;t
           have access to it.
         </p>
-        <Link href="/quizzes">
+        <Link href="/dashboard">
           <Button className="w-full">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Browse More Quizzes
+            Back to Dashboard
           </Button>
         </Link>
       </CardContent>
@@ -97,10 +97,10 @@ const QuizHeader = ({
     className="relative mb-12"
   >
     <div className="mb-10 flex items-center justify-between">
-      <Link href="/quizzes">
+      <Link href="/dashboard">
         <Button variant="ghost" size="sm">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Browse More Quizzes
+          Back to Dashboard
         </Button>
       </Link>
     </div>
@@ -374,7 +374,7 @@ const StickyQuizHeader = ({
         >
           <div className="bg-background/90 pointer-events-auto mx-auto w-full max-w-4xl rounded-b-lg px-4 py-2 shadow-sm backdrop-blur-md">
             <div className="flex items-center justify-between">
-              <Link href="/quizzes">
+              <Link href="/dashboard">
                 <Button variant="ghost" size="icon" className="h-8 w-8">
                   <ArrowLeft className="h-4 w-4" />
                 </Button>
@@ -552,8 +552,8 @@ export default function QuizPage() {
                     Retake Quiz
                   </Button>
                   <div className="flex items-center justify-center gap-4">
-                    <Link href="/quizzes">
-                      <Button variant="ghost">Browse More Quizzes</Button>
+                    <Link href="/dashboard">
+                      <Button variant="ghost">Back to Dashboard</Button>
                     </Link>
                   </div>
                 </div>

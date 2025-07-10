@@ -12,6 +12,10 @@ export interface Quiz {
   created_at: string;
   updated_at: string;
   questions?: Question[];
+
+  // Stats
+  attempts?: number;
+  average_score?: number;
 }
 
 export interface Question {
