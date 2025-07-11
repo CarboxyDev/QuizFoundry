@@ -2,6 +2,7 @@ import express, { type Router } from "express";
 import asyncHandler from "express-async-handler";
 import { AppError } from "../errors/AppError";
 import { authMiddleware, AuthenticatedRequest } from "../middleware/auth";
+import { authOperationsLimiter } from "../lib/ratelimits";
 import {
   getUserById,
   createGoogleUserProfile,
@@ -20,6 +21,7 @@ const authRouter: Router = express.Router();
  */
 authRouter.post(
   "/register",
+  authOperationsLimiter,
   asyncHandler(async (req, res) => {
     const validationResult = signupSchema.safeParse(req.body);
     if (!validationResult.success) {
@@ -40,6 +42,7 @@ authRouter.post(
  */
 authRouter.post(
   "/login",
+  authOperationsLimiter,
   asyncHandler(async (req, res) => {
     const validationResult = loginSchema.safeParse(req.body);
     if (!validationResult.success) {
@@ -60,6 +63,7 @@ authRouter.post(
  */
 authRouter.post(
   "/google-profile",
+  authOperationsLimiter,
   authMiddleware,
   asyncHandler(async (req: AuthenticatedRequest, res) => {
     const userId = req.user?.id;

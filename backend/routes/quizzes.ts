@@ -26,6 +26,11 @@ import {
   requireCompletedOnboarding,
   AuthenticatedRequest,
 } from "../middleware/auth";
+import {
+  aiOperationsLimiter,
+  creativePromptsLimiter,
+  generalApiLimiter,
+} from "../lib/ratelimits";
 import type { Router } from "express";
 import { GoogleGenAI } from "@google/genai";
 import { z } from "zod";
@@ -86,6 +91,7 @@ function stripAnswersFromQuiz(quiz: any) {
  */
 quizzesRouter.post(
   "/create/express",
+  aiOperationsLimiter,
   authMiddleware,
   requireCompletedOnboarding,
   asyncHandler(async (req: AuthenticatedRequest, res) => {
@@ -125,6 +131,7 @@ quizzesRouter.post(
  */
 quizzesRouter.post(
   "/create/advanced",
+  aiOperationsLimiter,
   authMiddleware,
   requireCompletedOnboarding,
   asyncHandler(async (req: AuthenticatedRequest, res) => {
@@ -164,6 +171,7 @@ quizzesRouter.post(
  */
 quizzesRouter.get(
   "/my",
+  generalApiLimiter,
   authMiddleware,
   requireCompletedOnboarding,
   asyncHandler(async (req: AuthenticatedRequest, res) => {
@@ -400,6 +408,7 @@ quizzesRouter.post(
  */
 quizzesRouter.post(
   "/surprise-me",
+  creativePromptsLimiter,
   authMiddleware,
   requireCompletedOnboarding,
   asyncHandler(async (req: AuthenticatedRequest, res) => {
@@ -431,6 +440,7 @@ quizzesRouter.post(
  */
 quizzesRouter.post(
   "/:id/submit",
+  generalApiLimiter,
   authMiddleware,
   requireCompletedOnboarding,
   asyncHandler(async (req: AuthenticatedRequest, res) => {

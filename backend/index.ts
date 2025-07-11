@@ -4,6 +4,7 @@ import helmet from "helmet";
 import { env } from "./env";
 import { errorHandler } from "./middleware/error-handler";
 import { sanitizeInput } from "./middleware/sanitization";
+import { generalApiLimiter } from "./lib/ratelimits";
 import metaRouter from "./routes/meta";
 import usersRouter from "./routes/users";
 import onboardingRouter from "./routes/onboarding";
@@ -13,7 +14,6 @@ import quizzesRouter from "./routes/quizzes";
 const app = express();
 const port = env.PORT || 8080;
 
-// Security middleware
 app.use(helmet());
 
 app.use(
@@ -23,11 +23,13 @@ app.use(
   })
 );
 
+// Global rate limiting (applied to all routes as baseline protection)
+app.use(generalApiLimiter);
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(sanitizeInput);
 
-// Health check endpoint
 app.get("/health", (req, res) => {
   res.json({
     status: "healthy",
@@ -42,14 +44,12 @@ app.use("/api/onboarding", onboardingRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/quizzes", quizzesRouter);
 
-// Global error handler
 app.use(errorHandler);
 
 const server = app.listen(port, () =>
   console.log(`Backend started on port ${port}`)
 );
 
-// Graceful shutdown handling
 const gracefulShutdown = (signal: string) => {
   console.log(`Received ${signal}. Starting graceful shutdown...`);
 
@@ -63,7 +63,6 @@ const gracefulShutdown = (signal: string) => {
     process.exit(0);
   });
 
-  // Force shutdown after 10 seconds
   setTimeout(() => {
     console.error("Force shutdown after timeout");
     process.exit(1);
