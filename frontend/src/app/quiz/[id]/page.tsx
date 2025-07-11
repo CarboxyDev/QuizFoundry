@@ -22,12 +22,14 @@ import {
   CheckCircle,
   Clock,
   Loader2,
+  Share2,
   Trophy,
   XCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 
 type UserAnswers = Record<string, string>;
 
@@ -81,11 +83,15 @@ const QuizHeader = ({
   isSubmitted,
   userAnswersCount,
   collapsed,
+  onShare,
+  shareText,
 }: {
   quiz: Quiz;
   isSubmitted: boolean;
   userAnswersCount: number;
   collapsed: boolean;
+  onShare: () => void;
+  shareText: string;
 }) => (
   <motion.div
     animate={{
@@ -97,12 +103,23 @@ const QuizHeader = ({
     className="relative mb-12"
   >
     <div className="mb-10 flex items-center justify-between">
-      <Link href="/dashboard">
-        <Button variant="ghost" size="sm">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Dashboard
-        </Button>
-      </Link>
+      <div className="flex items-center gap-3">
+        <Link href="/dashboard">
+          <Button variant="ghost" size="sm">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Dashboard
+          </Button>
+        </Link>
+      </div>
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={onShare}
+        className="flex items-center gap-2"
+      >
+        <Share2 className="h-4 w-4" />
+        {shareText}
+      </Button>
     </div>
 
     <div className="space-y-4 text-center">
@@ -355,10 +372,14 @@ const StickyQuizHeader = ({
   show,
   quiz,
   attempted,
+  onShare,
+  shareText,
 }: {
   show: boolean;
   quiz: Quiz;
   attempted: number;
+  onShare: () => void;
+  shareText: string;
 }) => {
   const total = quiz.questions?.length || 0;
 
@@ -372,16 +393,18 @@ const StickyQuizHeader = ({
           transition={{ duration: 0.25, ease: "easeInOut" }}
           className="pointer-events-none fixed top-0 right-0 left-0 z-40 flex justify-center"
         >
-          <div className="bg-background/90 pointer-events-auto mx-auto w-full max-w-4xl rounded-b-lg px-4 py-2 shadow-sm backdrop-blur-md">
+          <div className="bg-background/70 pointer-events-auto mx-auto w-full max-w-4xl rounded-b-lg px-4 py-2 shadow-sm backdrop-blur-lg">
             <div className="flex items-center justify-between">
-              <Link href="/dashboard">
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <ArrowLeft className="h-4 w-4" />
-                </Button>
-              </Link>
+              <div className="flex items-center gap-2">
+                <Link href="/dashboard">
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
 
               <div className="flex items-center gap-3">
-                <h3 className="line-clamp-1 max-w-[160px] text-sm font-semibold">
+                <h3 className="line-clamp-1 max-w-[160px] text-sm font-semibold xl:max-w-[360px] 2xl:max-w-[460px]">
                   {quiz.title}
                 </h3>
                 <Badge className="rounded-full border px-2 py-0.5 text-xs">
@@ -389,8 +412,15 @@ const StickyQuizHeader = ({
                 </Badge>
               </div>
 
-              {/* spacer for symmetrical layout */}
-              <div className="w-8" />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onShare}
+                className="h-8 w-8"
+                title={shareText}
+              >
+                <Share2 className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         </motion.div>
@@ -407,6 +437,7 @@ export default function QuizPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [result, setResult] = useState<SubmitQuizResult | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [shareText, setShareText] = useState("Share Quiz");
 
   // Sticky header logic using scroll position
   const headerRef = useRef<HTMLDivElement | null>(null);
@@ -469,6 +500,17 @@ export default function QuizPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
+  const handleShare = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setShareText("Copied!");
+      setTimeout(() => setShareText("Share Quiz"), 3000);
+      toast.success("Quiz URL copied to clipboard");
+    } catch (err) {
+      console.error("Failed to copy URL:", err);
+    }
+  };
+
   const canSubmit = useMemo(() => {
     if (!quiz?.questions) return false;
     return quiz.questions.every((question) => userAnswers[question.id]);
@@ -487,6 +529,8 @@ export default function QuizPage() {
           show={showStickyHeader}
           quiz={quiz}
           attempted={attemptedCount}
+          onShare={handleShare}
+          shareText={shareText}
         />
 
         <div className="from-primary/5 to-background min-h-screen bg-gradient-to-br">
@@ -497,6 +541,8 @@ export default function QuizPage() {
                 isSubmitted={isSubmitted}
                 userAnswersCount={attemptedCount}
                 collapsed={showStickyHeader}
+                onShare={handleShare}
+                shareText={shareText}
               />
             </div>
 

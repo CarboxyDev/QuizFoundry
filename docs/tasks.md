@@ -50,18 +50,17 @@ This is a granular breakdown of the MVP features. Each task should represent a s
 - [-] Save quiz metadata (title, tags, user_id, is_public)
 - [-] Save full quiz with associated questions
 - [-] Build dashboard UI to list all user quizzes
-- [ ] Allow editing/deleting of a quiz
-- [ ] Add sorting by title and creation date
+- [ ] Allow editing quiz
+- [-] Allow deleting quiz
 
 ---
 
 ## ✅ Public Quiz Sharing & Browsing
 
-- [ ] Add `is_public` flag to quizzes
-- [ ] Add toggle to make quiz public/private
-- [ ] Build public quiz list page (for unauth users)
-- [ ] Build public quiz view (readonly)
-- [ ] Add public URL copy/share button
+- [-] Add `is_public` flag to quizzes
+- [-] Add toggle to make quiz public/private
+- [-] Build public quiz view (readonly)
+- [-] Add public URL copy/share button
 
 ---
 
