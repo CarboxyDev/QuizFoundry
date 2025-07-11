@@ -1,6 +1,7 @@
 "use client";
 
 import { ProtectedRouteGuard } from "@/components/AuthGuard";
+import { DifficultyIcon } from "@/components/DifficultyIcon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -28,15 +29,12 @@ import {
   Brain,
   ChevronLeft,
   ChevronRight,
-  Circle,
   Clock,
   Filter,
-  Flame,
   Play,
   Search,
   Sparkles,
   TrendingUp,
-  Triangle,
   Users,
   Zap,
 } from "lucide-react";
@@ -152,39 +150,6 @@ export default function PublicQuizzesPage() {
 
     return matchesSearch && matchesDifficulty && matchesType;
   });
-
-  const getDifficultyConfig = (difficulty: string) => {
-    switch (difficulty) {
-      case "easy":
-        return {
-          icon: Circle,
-          color: "text-green-600 dark:text-green-400",
-          hoverColor: "hover:text-green-700 dark:hover:text-green-300",
-          label: "Easy",
-        };
-      case "medium":
-        return {
-          icon: Triangle,
-          color: "text-yellow-600 dark:text-yellow-400",
-          hoverColor: "hover:text-yellow-700 dark:hover:text-yellow-300",
-          label: "Medium",
-        };
-      case "hard":
-        return {
-          icon: Flame,
-          color: "text-red-600 dark:text-red-400",
-          hoverColor: "hover:text-red-700 dark:hover:text-red-300",
-          label: "Hard",
-        };
-      default:
-        return {
-          icon: Circle,
-          color: "text-muted-foreground",
-          hoverColor: "hover:text-foreground",
-          label: "Unknown",
-        };
-    }
-  };
 
   const clearFilters = () => {
     setSearchTerm("");
@@ -603,10 +568,6 @@ export default function PublicQuizzesPage() {
                   >
                     <AnimatePresence>
                       {filteredQuizzes.map((quiz, index) => {
-                        const difficultyConfig = getDifficultyConfig(
-                          quiz.difficulty,
-                        );
-
                         return (
                           <motion.div
                             key={quiz.id}
@@ -643,14 +604,33 @@ export default function PublicQuizzesPage() {
                               <CardContent className="flex flex-grow flex-col pt-0">
                                 <div className="mb-4 flex items-center justify-between text-sm">
                                   <div className="text-muted-foreground flex items-center gap-3">
-                                    <span className="flex items-center gap-1">
-                                      <Brain className="h-3.5 w-3.5" />
-                                      {quiz.questions?.length || 0}
-                                    </span>
-                                    <span className="flex items-center gap-1">
-                                      <Play className="h-3.5 w-3.5" />
-                                      {quiz.attempts ?? 0}
-                                    </span>
+                                    <Tooltip delayDuration={500}>
+                                      <TooltipTrigger asChild>
+                                        <span className="hover:text-foreground flex cursor-pointer items-center gap-1 transition-colors">
+                                          <Brain className="h-3.5 w-3.5" />
+                                          {quiz.questions?.length || 0}
+                                        </span>
+                                      </TooltipTrigger>
+                                      <TooltipContent side="top">
+                                        <p className="font-medium">
+                                          {quiz.questions?.length || 0}{" "}
+                                          Questions
+                                        </p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                    <Tooltip delayDuration={500}>
+                                      <TooltipTrigger asChild>
+                                        <span className="hover:text-foreground flex cursor-pointer items-center gap-1 transition-colors">
+                                          <Play className="h-3.5 w-3.5" />
+                                          {quiz.attempts ?? 0}
+                                        </span>
+                                      </TooltipTrigger>
+                                      <TooltipContent side="top">
+                                        <p className="font-medium">
+                                          {quiz.attempts ?? 0} Attempts
+                                        </p>
+                                      </TooltipContent>
+                                    </Tooltip>
                                     <span className="flex items-center gap-1">
                                       <Clock className="h-3.5 w-3.5" />
                                       {formatDate(quiz.created_at)}
@@ -660,18 +640,23 @@ export default function PublicQuizzesPage() {
                                         <motion.span
                                           className={cn(
                                             "flex cursor-pointer items-center transition-colors",
-                                            difficultyConfig.color,
-                                            difficultyConfig.hoverColor,
+                                            "text-green-500 hover:text-green-600",
                                           )}
                                           whileHover={{ scale: 1.2 }}
                                           whileTap={{ scale: 0.9 }}
                                         >
-                                          <difficultyConfig.icon className="h-3.5 w-3.5" />
+                                          <DifficultyIcon
+                                            difficulty={quiz.difficulty}
+                                          />
                                         </motion.span>
                                       </TooltipTrigger>
                                       <TooltipContent side="top">
                                         <p className="font-medium">
-                                          {difficultyConfig.label} Difficulty
+                                          {quiz.difficulty
+                                            .charAt(0)
+                                            .toUpperCase() +
+                                            quiz.difficulty.slice(1)}{" "}
+                                          Difficulty
                                         </p>
                                       </TooltipContent>
                                     </Tooltip>
