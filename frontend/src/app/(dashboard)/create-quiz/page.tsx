@@ -31,6 +31,8 @@ import {
   Settings2,
   Sparkles,
   Wand2,
+  Wrench,
+  Zap,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -387,6 +389,11 @@ export default function CreateQuizPage() {
                         className="text-base font-medium"
                       >
                         {isAdvancedMode ? "Advanced Mode" : "Express Mode"}
+                        {isAdvancedMode ? (
+                          <Wrench className="text-primary h-4 w-4" />
+                        ) : (
+                          <Zap className="text-primary h-4 w-4" />
+                        )}
                       </Label>
                       <p className="text-muted-foreground text-sm">
                         {isAdvancedMode
