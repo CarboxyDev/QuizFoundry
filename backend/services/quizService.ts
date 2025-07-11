@@ -702,6 +702,26 @@ export async function getUserQuizzesWithStats(
   // Build a lookup for quick aggregation
   const quizIds = quizzes.map((q) => q.id);
 
+  // Fetch question counts for these quizzes (similar to getPublicQuizzes)
+  const { data: questionCounts, error: countsError } = await supabase
+    .from("questions")
+    .select("quiz_id")
+    .in("quiz_id", quizIds);
+
+  if (countsError) {
+    throw new AppError(
+      `Failed to fetch question counts: ${countsError.message}`,
+      500
+    );
+  }
+
+  // Count questions per quiz
+  const questionCountMap = new Map<string, number>();
+  (questionCounts || []).forEach((q: any) => {
+    const quizId = q.quiz_id;
+    questionCountMap.set(quizId, (questionCountMap.get(quizId) || 0) + 1);
+  });
+
   // Fetch all attempts for the fetched quizzes in one query
   const { data: attemptsData, error: attemptsError } = await supabase
     .from("quiz_attempts")
@@ -734,16 +754,23 @@ export async function getUserQuizzesWithStats(
     });
   });
 
-  // Merge stats back into quizzes array
+  // Merge stats and question counts back into quizzes array
   return quizzes.map((quiz) => {
     const stats = statsMap.get(quiz.id) || { attempts: 0, totalPercentage: 0 };
     const attempts = stats.attempts;
     const average_score =
       attempts > 0 ? Number((stats.totalPercentage / attempts).toFixed(1)) : 0;
+
+    // Add question count and mock questions array for frontend compatibility
+    const questionCount = questionCountMap.get(quiz.id) || 0;
+
     return {
       ...quiz,
       attempts,
       average_score,
+      questions: Array(questionCount)
+        .fill(null)
+        .map((_, index) => ({ id: `question-${index}` })),
     } as Quiz & { attempts: number; average_score: number };
   });
 }
