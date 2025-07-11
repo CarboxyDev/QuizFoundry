@@ -503,18 +503,77 @@ export default function MyQuizzesPage() {
                   ))
                 ) : filteredQuizzes.length === 0 ? (
                   <motion.div
-                    className="col-span-full text-center"
+                    className="col-span-full"
                     variants={emptyStateVariants}
                     initial="initial"
                     animate="animate"
                   >
-                    <Sparkles className="text-muted-foreground mx-auto h-16 w-16" />
-                    <h3 className="mt-4 text-lg font-semibold">
-                      No quizzes found
-                    </h3>
-                    <p className="text-muted-foreground mt-2">
-                      Try adjusting your filters or create a new quiz.
-                    </p>
+                    <Card className="bg-card/60 border-2 border-dashed backdrop-blur-sm">
+                      <CardContent className="pt-12 pb-12">
+                        <div className="text-center">
+                          <motion.div
+                            className="bg-muted mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full"
+                            animate={{
+                              scale: [1, 1.1, 1],
+                              rotate: [0, 10, -10, 0],
+                            }}
+                            transition={{
+                              duration: 2,
+                              repeat: Infinity,
+                              ease: "easeInOut",
+                            }}
+                          >
+                            <Brain className="text-muted-foreground h-10 w-10" />
+                          </motion.div>
+                          <h3 className="text-foreground mb-3 text-xl font-semibold">
+                            {searchTerm ||
+                            difficultyFilter !== "all" ||
+                            typeFilter !== "all" ||
+                            visibilityFilter !== "all"
+                              ? "No quizzes match your criteria"
+                              : "No quizzes created yet"}
+                          </h3>
+                          <p className="text-muted-foreground mx-auto mb-6 max-w-sm">
+                            {searchTerm ||
+                            difficultyFilter !== "all" ||
+                            typeFilter !== "all" ||
+                            visibilityFilter !== "all"
+                              ? "Try adjusting your search terms or filters to find your quizzes."
+                              : "Start creating quizzes to build your collection and share knowledge with others!"}
+                          </p>
+                          {!(
+                            searchTerm ||
+                            difficultyFilter !== "all" ||
+                            typeFilter !== "all" ||
+                            visibilityFilter !== "all"
+                          ) ? (
+                            <motion.div
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                            >
+                              <Link href="/create-quiz">
+                                <Button
+                                  size="lg"
+                                  className="from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 bg-gradient-to-r"
+                                >
+                                  <Sparkles className="mr-2 h-4 w-4" />
+                                  Create Your First Quiz
+                                </Button>
+                              </Link>
+                            </motion.div>
+                          ) : (
+                            <motion.div
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                            >
+                              <Button variant="outline" onClick={clearFilters}>
+                                Clear Filters
+                              </Button>
+                            </motion.div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
                   </motion.div>
                 ) : (
                   filteredQuizzes.map((quiz, index) => (
