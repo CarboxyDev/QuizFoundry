@@ -648,6 +648,10 @@ export default function PublicQuizzesPage() {
                                       {quiz.questions?.length || 0}
                                     </span>
                                     <span className="flex items-center gap-1">
+                                      <Play className="h-3.5 w-3.5" />
+                                      {quiz.attempts ?? 0}
+                                    </span>
+                                    <span className="flex items-center gap-1">
                                       <Clock className="h-3.5 w-3.5" />
                                       {formatDate(quiz.created_at)}
                                     </span>
@@ -721,13 +725,6 @@ export default function PublicQuizzesPage() {
                                             ease: "easeInOut",
                                           }}
                                         />
-                                        <motion.div
-                                          whileHover={{ scale: 1.1, rotate: 5 }}
-                                          transition={{ duration: 0.2 }}
-                                          className="mr-2"
-                                        >
-                                          <Play className="h-4 w-4" />
-                                        </motion.div>
                                         <span className="font-medium">
                                           Start Quiz
                                         </span>

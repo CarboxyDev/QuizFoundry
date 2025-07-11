@@ -31,10 +31,6 @@ export interface QuizGenerationInput {
   optionsCount: number;
 }
 
-// =============================================
-// ERROR TYPES
-// =============================================
-
 export class AIGenerationError extends AppError {
   constructor(
     message: string,
@@ -65,22 +61,16 @@ export class InvalidResponseError extends AppError {
   }
 }
 
-// =============================================
-// MAIN FUNCTION
-// =============================================
-
 export async function generateQuizWithAI(
   input: QuizGenerationInput,
   retryCount: number = 0
 ): Promise<GeneratedQuiz> {
   const MAX_RETRIES = 2;
 
-  // Validate API key
   if (!process.env.GEMINI_API_KEY) {
     throw new AIGenerationError("Gemini API key is not configured", false);
   }
 
-  // Validate input
   validateInput(input);
 
   try {
@@ -98,14 +88,12 @@ export async function generateQuizWithAI(
 
     const text = response.text?.trim();
 
-    // Validate response exists
     if (!text) {
       throw new AIGenerationError("No response received from Gemini API", true);
     }
 
     console.log(`[AI Generation] Received response (${text.length} chars)`);
 
-    // Check for content refusal
     if (isContentRefusal(text)) {
       const reasoning = extractRefusalReasoning(text);
       throw new ContentRefusalError(
@@ -114,7 +102,6 @@ export async function generateQuizWithAI(
       );
     }
 
-    // Parse and validate the response
     const parsedQuiz = parseAIResponse(text);
     const normalizedQuiz = normalizeAIResponse(parsedQuiz, input);
 
@@ -126,17 +113,15 @@ export async function generateQuizWithAI(
   } catch (error) {
     console.error(`[AI Generation] Error on attempt ${retryCount + 1}:`, error);
 
-    // Don't retry content refusal errors
     if (error instanceof ContentRefusalError) {
       throw error;
     }
 
-    // Don't retry validation errors
     if (error instanceof InvalidResponseError) {
       throw error;
     }
 
-    // Retry on network/temporary errors
+    // ! Only Retry on network/temporary errors
     if (
       error instanceof AIGenerationError &&
       error.retryable &&
@@ -149,7 +134,6 @@ export async function generateQuizWithAI(
       return generateQuizWithAI(input, retryCount + 1);
     }
 
-    // Handle unknown errors
     if (!(error instanceof AppError)) {
       console.error(`[AI Generation] Unexpected error:`, error);
       throw new AIGenerationError(
@@ -161,10 +145,6 @@ export async function generateQuizWithAI(
     throw error;
   }
 }
-
-// =============================================
-// VALIDATION FUNCTIONS
-// =============================================
 
 function validateInput(input: QuizGenerationInput): void {
   if (!input.prompt?.trim()) {
@@ -192,13 +172,9 @@ function validateInput(input: QuizGenerationInput): void {
   }
 }
 
-// =============================================
-// RESPONSE PARSING
-// =============================================
-
 function parseAIResponse(text: string): any {
   try {
-    // Try to extract JSON from the response
+    // Extract JSON from the response
     const jsonMatch =
       text.match(/```json\s*([\s\S]*?)\s*```/) ||
       text.match(/```\s*([\s\S]*?)\s*```/) ||
@@ -236,10 +212,6 @@ function parseAIResponse(text: string): any {
   }
 }
 
-// =============================================
-// CONTENT REFUSAL DETECTION
-// =============================================
-
 function isContentRefusal(text: string): boolean {
   if (!text) return false;
 
@@ -257,7 +229,6 @@ function isContentRefusal(text: string): boolean {
 function extractRefusalReasoning(text: string): string {
   const sentences = text.split(/[.!?]+/).filter((s) => s.trim().length > 10);
 
-  // Look for reasoning keywords
   const reasoningKeywords = [
     "because",
     "since",
@@ -283,7 +254,6 @@ function extractRefusalReasoning(text: string): string {
     }
   }
 
-  // Fallback to first substantial sentence
   const substantialSentence = sentences.find((s) => s.trim().length > 30);
   if (substantialSentence) {
     return substantialSentence.trim();
@@ -292,15 +262,13 @@ function extractRefusalReasoning(text: string): string {
   return "Content was deemed inappropriate by the AI";
 }
 
-// =============================================
-// RESPONSE NORMALIZATION
-// =============================================
-
 function normalizeAIResponse(
   parsedQuiz: any,
   input: QuizGenerationInput
 ): GeneratedQuiz {
-  // Validate quiz structure
+  /**
+   * ! Validate quiz structure
+   */
   if (!parsedQuiz.title || typeof parsedQuiz.title !== "string") {
     throw new InvalidResponseError("Quiz title is missing or invalid");
   }
@@ -313,24 +281,20 @@ function normalizeAIResponse(
     throw new InvalidResponseError("Quiz must have at least one question");
   }
 
-  // Normalize title (max 8 words)
   let title = parsedQuiz.title.trim();
   const titleWords = title.split(/\s+/);
   if (titleWords.length > 8) {
     title = titleWords.slice(0, 8).join(" ");
   }
 
-  // Validate and normalize questions
   const questions: GeneratedQuestion[] = parsedQuiz.questions.map(
     (q: any, qIndex: number) => {
-      // Validate question text
       if (!q.question_text || typeof q.question_text !== "string") {
         throw new InvalidResponseError(
           `Question ${qIndex + 1}: Missing or invalid question text`
         );
       }
 
-      // Validate options
       if (!Array.isArray(q.options)) {
         throw new InvalidResponseError(
           `Question ${qIndex + 1}: Missing or invalid options`
@@ -360,7 +324,7 @@ function normalizeAIResponse(
         }
       );
 
-      // Validate exactly one correct answer
+      // Validate that the response has exactly one correct answer
       const correctCount = options.filter((opt) => opt.is_correct).length;
       if (correctCount !== 1) {
         throw new InvalidResponseError(
@@ -368,7 +332,6 @@ function normalizeAIResponse(
         );
       }
 
-      // Warn about option count mismatch
       if (options.length !== input.optionsCount) {
         console.warn(
           `[AI Generation] Question ${qIndex + 1}: Generated ${options.length} options, expected ${input.optionsCount}`
@@ -384,7 +347,6 @@ function normalizeAIResponse(
     }
   );
 
-  // Warn about question count mismatch
   if (questions.length !== input.questionCount) {
     console.warn(
       `[AI Generation] Generated ${questions.length} questions, expected ${input.questionCount}`
@@ -400,10 +362,6 @@ function normalizeAIResponse(
     questions,
   };
 }
-
-// =============================================
-// PROMPT GENERATION
-// =============================================
 
 function createQuizPrompt(input: QuizGenerationInput): string {
   const suggestedTitle = generateTitleFromPrompt(input.prompt);
@@ -448,7 +406,7 @@ Respond with ONLY a valid JSON object in this exact format:
 }
 
 QUALITY GUIDELINES:
-1. Title should be engaging and descriptive (suggested: "${suggestedTitle}")
+1. Title should be engaging and concise (suggested: "${suggestedTitle}")
 2. For ${input.difficulty} difficulty:
    ${getDifficultyGuidelines(input.difficulty)}
 3. Each question must have EXACTLY ONE correct answer
@@ -464,7 +422,6 @@ Generate the quiz now:`;
 }
 
 function generateTitleFromPrompt(prompt: string): string {
-  // Extract meaningful words and create a title
   const words = prompt
     .toLowerCase()
     .replace(/[^\w\s]/g, "")
@@ -496,9 +453,6 @@ function getDifficultyGuidelines(difficulty: string): string {
   }
 }
 
-/**
- * Generate a creative quiz prompt (for "Surprise Me")
- */
 export async function generateCreativeQuizPrompt(): Promise<string> {
   if (!process.env.GEMINI_API_KEY) {
     throw new AppError("Gemini API key is not configured", 500);
@@ -506,35 +460,43 @@ export async function generateCreativeQuizPrompt(): Promise<string> {
 
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-  const prompt = `Generate a creative and engaging quiz topic with description. 
+  const prompt = `Generate a creative and engaging quiz topic title.
   The response should be a fun, educational, and interesting quiz idea that would make for great trivia.
+  It should be small and concise and good enough to generate a good quiz.
   
-  Consider topics like:
+
+  Choose topics from (but not limited to) areas like:
   - Pop culture and entertainment
-  - Science and nature mysteries  
+  - Science and nature
   - Historical events and figures
   - Geography and world cultures
   - Food and cooking traditions
   - Technology and innovations
   - Art and literature
-  - Sports and games
+  - Sports and video games
   - Mythology and legends
-  - Fun facts and trivia
+  - Fun facts and general trivia
+  - Other unique and engaging knowledge areas
 
-  
-  Return ONLY a brief text (ideally 1 sentence, at most 2 sentences) of the quiz topic that would be perfect for generating engaging multiple choice questions.
-  Make it specific enough to create good questions, but broad enough to be interesting.
-  Do not include the word "quiz" in the response.
-  Do not include markdown or any other formatting in the response.
-  The response must be simple without any filler words.
-  Keep the response simple and concise.
+  The response:
+  - Must be only 1 sentence (at most 2), with no extra explanation
+  - Should not include the word "quiz"
+  - Should not include markdown, emojis, or formatting
+  - Should avoid dramatic, poetic, or clickbait phrases (e.g., "unsung heroes", "unraveling the secrets", "the surprising science behind")
+  - Should avoid vague or filler-heavy phrases
+  - Must use simple, direct, and descriptive language
 
-  Examples of good responses:
+  Examples of excellent responses:
   "Food cultures from around the world",
   "Iconic video game soundtracks",
   "Popular mythological creatures from around the world",
   "Solar system planets and their characteristics",
-  
+
+
+  Examples of bad responses:
+  "Unsung heroes of scientific breakthroughs",
+  "Unraveling the secrets of the deep sea's most bizarre inhabitants."
+  "The surprising science behind everyday phenomena"
   `;
 
   const response = await ai.models.generateContent({

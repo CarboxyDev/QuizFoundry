@@ -19,6 +19,7 @@ import {
   createQuestion,
   getCreativeQuizPrompt,
   submitQuizAttempt,
+  getQuizAttempts,
 } from "../services/quizService";
 import {
   authMiddleware,
@@ -214,6 +215,36 @@ quizzesRouter.get(
           offset,
           count: quizzes.length,
         },
+      },
+    });
+  })
+);
+
+/**
+ * GET /quizzes/:id/attempts - Get all attempts for a quiz (owner only)
+ */
+quizzesRouter.get(
+  "/:id/attempts",
+  authMiddleware,
+  requireCompletedOnboarding,
+  asyncHandler(async (req: AuthenticatedRequest, res) => {
+    const { id } = req.params;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      throw new AppError("User not authenticated", 401);
+    }
+
+    if (!id || typeof id !== "string") {
+      throw new AppError("Quiz ID is required", 400);
+    }
+
+    const attempts = await getQuizAttempts(id, userId);
+
+    res.json({
+      success: true,
+      data: {
+        attempts,
       },
     });
   })

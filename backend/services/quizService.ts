@@ -36,6 +36,9 @@ export interface Quiz {
   original_prompt?: string;
   created_at: string;
   updated_at: string;
+  // Aggregate stats (optional, added for UI convenience)
+  attempts?: number;
+  average_score?: number;
 }
 
 export interface Question {
@@ -451,11 +454,33 @@ export async function getPublicQuizzes(
     countMap.set(quizId, (countMap.get(quizId) || 0) + 1);
   });
 
+  // Get attempts counts for these quizzes
+  const { data: attemptsData, error: attemptsError } = await supabase
+    .from("quiz_attempts")
+    .select("quiz_id")
+    .in("quiz_id", quizIds);
+
+  if (attemptsError) {
+    throw new AppError(
+      `Failed to fetch attempts counts: ${attemptsError.message}`,
+      500
+    );
+  }
+
+  // Count attempts per quiz
+  const attemptsMap = new Map<string, number>();
+  (attemptsData || []).forEach((a: any) => {
+    const quizId = a.quiz_id;
+    attemptsMap.set(quizId, (attemptsMap.get(quizId) || 0) + 1);
+  });
+
   // Add question count and mock questions array for frontend compatibility
   const quizzesWithQuestionCount = quizzesData.map((quiz: any) => {
     const questionCount = countMap.get(quiz.id) || 0;
+    const attempts = attemptsMap.get(quiz.id) || 0;
     return {
       ...quiz,
+      attempts,
       questions: Array(questionCount)
         .fill(null)
         .map((_, index) => ({ id: `question-${index}` })),
@@ -772,5 +797,73 @@ export async function getUserQuizzesWithStats(
         .fill(null)
         .map((_, index) => ({ id: `question-${index}` })),
     } as Quiz & { attempts: number; average_score: number };
+  });
+}
+
+// =============================================
+// QUIZ ATTEMPTS
+// =============================================
+
+/**
+ * Fetch all attempts for a quiz (owner-only access)
+ * Returns basic user info (id, name, avatar_url) together with score & timestamps.
+ */
+export interface QuizAttemptSummary {
+  attemptId: string;
+  userId: string;
+  userName: string | null;
+  userAvatarUrl: string | null;
+  score: number;
+  percentage: number;
+  completedAt: string;
+}
+
+export async function getQuizAttempts(
+  quizId: string,
+  ownerId: string
+): Promise<QuizAttemptSummary[]> {
+  // Ensure the requester owns the quiz
+  const { data: quizOwnerRow, error: quizOwnerError } = await supabase
+    .from("quizzes")
+    .select("user_id")
+    .eq("id", quizId)
+    .single();
+
+  if (quizOwnerError || !quizOwnerRow) {
+    throw new AppError("Quiz not found", 404);
+  }
+
+  if (quizOwnerRow.user_id !== ownerId) {
+    throw new AppError("Access denied to this quiz's attempts", 403);
+  }
+
+  // Fetch attempts joined with profile information
+  const { data: attemptsData, error: attemptsError } = await supabase
+    .from("quiz_attempts")
+    .select(
+      `id, user_id, score, percentage, completed_at, profiles ( id, name, avatar_url )`
+    )
+    .eq("quiz_id", quizId)
+    .order("completed_at", { ascending: false });
+
+  if (attemptsError) {
+    throw new AppError(
+      `Failed to fetch quiz attempts: ${attemptsError.message}`,
+      500
+    );
+  }
+
+  // Map to summary objects
+  return (attemptsData || []).map((attempt: any) => {
+    const profile = (attempt as any).profiles || {};
+    return {
+      attemptId: attempt.id,
+      userId: attempt.user_id,
+      userName: profile.name ?? null,
+      userAvatarUrl: profile.avatar_url ?? null,
+      score: attempt.score,
+      percentage: attempt.percentage,
+      completedAt: attempt.completed_at,
+    } as QuizAttemptSummary;
   });
 }
