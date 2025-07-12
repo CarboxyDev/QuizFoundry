@@ -15,6 +15,7 @@ import {
   getQuizByIdForPreview,
   getUserQuizzesWithStats,
   getPublicQuizzes,
+  getPublicQuizStats,
   updateQuiz,
   updateQuizWithQuestions,
   deleteQuiz,
@@ -221,6 +222,23 @@ quizzesRouter.get(
           offset,
           count: quizzes.length,
         },
+      },
+    });
+  })
+);
+
+/**
+ * GET /quizzes/public/stats - Get public quiz statistics
+ */
+quizzesRouter.get(
+  "/public/stats",
+  asyncHandler(async (req, res) => {
+    const stats = await getPublicQuizStats();
+
+    res.json({
+      success: true,
+      data: {
+        stats,
       },
     });
   })

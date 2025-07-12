@@ -175,6 +175,28 @@ export interface QuizWithQuestions extends Quiz {
   questions: Question[];
 }
 
+export interface PublicQuizStats {
+  totalQuizzes: number;
+  quizzesByType: {
+    aiGenerated: number;
+    humanCreated: number;
+  };
+  recentActivity: {
+    addedLast24Hours: number;
+    addedLastWeek: number;
+  };
+  difficulty: {
+    easy: number;
+    medium: number;
+    hard: number;
+  };
+  engagement: {
+    totalAttempts: number;
+    averageAttemptsPerQuiz: number;
+    averageQuestionsPerQuiz: number;
+  };
+}
+
 /**
  * Create a quiz using Express Mode (defaults: 5 questions, 4 options, medium difficulty)
  */
@@ -250,6 +272,22 @@ export async function getPublicQuizzes(
   }
 
   return response.data.data.quizzes;
+}
+
+/**
+ * Get public quiz statistics
+ */
+export async function getPublicQuizStats(): Promise<PublicQuizStats> {
+  const response = await axiosInstance.get<{
+    success: boolean;
+    data: { stats: PublicQuizStats };
+  }>("/quizzes/public/stats");
+
+  if (!response.data.success) {
+    throw new Error("Failed to fetch public quiz stats");
+  }
+
+  return response.data.data.stats;
 }
 
 /**

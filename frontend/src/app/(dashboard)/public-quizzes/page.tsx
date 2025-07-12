@@ -19,7 +19,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { formatDate } from "@/lib/date";
-import { getPublicQuizzes } from "@/lib/quiz-api";
+import { getPublicQuizStats, getPublicQuizzes } from "@/lib/quiz-api";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
@@ -132,6 +132,16 @@ export default function PublicQuizzesPage() {
     queryKey: ["public-quizzes", currentPage],
     queryFn: () =>
       getPublicQuizzes(QUIZZES_PER_PAGE, (currentPage - 1) * QUIZZES_PER_PAGE),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  const {
+    data: stats,
+    isLoading: statsLoading,
+    error: statsError,
+  } = useQuery({
+    queryKey: ["public-quiz-stats"],
+    queryFn: getPublicQuizStats,
     staleTime: 5 * 60 * 1000,
   });
 
@@ -299,31 +309,66 @@ export default function PublicQuizzesPage() {
                   </div>
                 </motion.div>
                 <motion.div
-                  className="text-primary-foreground/90 flex items-center gap-6 text-sm font-medium"
+                  className="text-primary-foreground/90 flex min-h-[32px] items-center gap-3 text-sm font-medium"
                   initial={{ y: 20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   transition={{ duration: 0.5, delay: 0.6 }}
                 >
-                  <motion.div
-                    className="bg-primary-foreground/10 flex items-center gap-2 rounded-full px-3 py-1.5 backdrop-blur-sm"
-                    whileHover={{
-                      scale: 1.05,
-                      backgroundColor: "rgba(255, 255, 255, 0.2)",
-                    }}
-                  >
-                    <TrendingUp className="h-4 w-4" />
-                    <span>{quizzes.length} quizzes available</span>
-                  </motion.div>
-                  <motion.div
-                    className="bg-primary-foreground/10 flex items-center gap-2 rounded-full px-3 py-1.5 backdrop-blur-sm"
-                    whileHover={{
-                      scale: 1.05,
-                      backgroundColor: "rgba(255, 255, 255, 0.2)",
-                    }}
-                  >
-                    <Sparkles className="h-4 w-4" />
-                    <span>AI-powered content</span>
-                  </motion.div>
+                  <AnimatePresence>
+                    {!statsLoading && (
+                      <>
+                        <motion.div
+                          className="bg-primary-foreground/10 flex items-center gap-2 rounded-full px-3 py-1.5 backdrop-blur-sm"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.8 }}
+                          transition={{ duration: 0.3 }}
+                          whileHover={{
+                            scale: 1.05,
+                            backgroundColor: "rgba(255, 255, 255, 0.2)",
+                          }}
+                        >
+                          <TrendingUp className="h-4 w-4" />
+                          <span>
+                            {stats?.totalQuizzes || 0} quizzes available
+                          </span>
+                        </motion.div>
+                        <motion.div
+                          className="bg-primary-foreground/10 flex items-center gap-2 rounded-full px-3 py-1.5 backdrop-blur-sm"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.8 }}
+                          transition={{ duration: 0.3, delay: 0.1 }}
+                          whileHover={{
+                            scale: 1.05,
+                            backgroundColor: "rgba(255, 255, 255, 0.2)",
+                          }}
+                        >
+                          <Sparkles className="h-4 w-4" />
+                          <span>
+                            {stats?.quizzesByType.aiGenerated || 0} AI-generated
+                          </span>
+                        </motion.div>
+                        <motion.div
+                          className="bg-primary-foreground/10 flex items-center gap-2 rounded-full px-3 py-1.5 backdrop-blur-sm"
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.8 }}
+                          transition={{ duration: 0.3, delay: 0.2 }}
+                          whileHover={{
+                            scale: 1.05,
+                            backgroundColor: "rgba(255, 255, 255, 0.2)",
+                          }}
+                        >
+                          <Clock className="h-4 w-4" />
+                          <span>
+                            {stats?.recentActivity.addedLast24Hours || 0} added
+                            today
+                          </span>
+                        </motion.div>
+                      </>
+                    )}
+                  </AnimatePresence>
                 </motion.div>
               </div>
               <motion.div
@@ -458,7 +503,7 @@ export default function PublicQuizzesPage() {
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
               >
-                {Array.from({ length: 8 }).map((_, i) => (
+                {Array.from({ length: 12 }).map((_, i) => (
                   <motion.div
                     key={i}
                     initial={{ opacity: 0, y: 20 }}

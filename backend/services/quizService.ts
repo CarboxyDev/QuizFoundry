@@ -1445,3 +1445,154 @@ export async function getQuizByIdForPreview(
     questions: questionsData || [],
   };
 }
+
+/**
+ * Get comprehensive statistics about public quizzes
+ */
+export interface PublicQuizStats {
+  totalQuizzes: number;
+  quizzesByType: {
+    aiGenerated: number;
+    humanCreated: number;
+  };
+  recentActivity: {
+    addedLast24Hours: number;
+    addedLastWeek: number;
+  };
+  difficulty: {
+    easy: number;
+    medium: number;
+    hard: number;
+  };
+  engagement: {
+    totalAttempts: number;
+    averageAttemptsPerQuiz: number;
+    averageQuestionsPerQuiz: number;
+  };
+}
+
+export async function getPublicQuizStats(): Promise<PublicQuizStats> {
+  console.log("[Quiz Service] Fetching public quiz statistics");
+
+  try {
+    // Get all public quizzes
+    const { data: quizzes, error: quizzesError } = await supabase
+      .from("quizzes")
+      .select("id, is_ai_generated, difficulty, created_at")
+      .eq("is_public", true);
+
+    if (quizzesError) {
+      throw new AppError(
+        `Failed to fetch public quizzes for stats: ${quizzesError.message}`,
+        500
+      );
+    }
+
+    const totalQuizzes = quizzes?.length || 0;
+    if (totalQuizzes === 0) {
+      return {
+        totalQuizzes: 0,
+        quizzesByType: { aiGenerated: 0, humanCreated: 0 },
+        recentActivity: { addedLast24Hours: 0, addedLastWeek: 0 },
+        difficulty: { easy: 0, medium: 0, hard: 0 },
+        engagement: {
+          totalAttempts: 0,
+          averageAttemptsPerQuiz: 0,
+          averageQuestionsPerQuiz: 0,
+        },
+      };
+    }
+
+    // Calculate time boundaries
+    const now = new Date();
+    const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    // Process quiz data
+    const quizzesByType = { aiGenerated: 0, humanCreated: 0 };
+    const difficulty = { easy: 0, medium: 0, hard: 0 };
+    const recentActivity = { addedLast24Hours: 0, addedLastWeek: 0 };
+
+    quizzes.forEach((quiz) => {
+      // Count by type
+      if (quiz.is_ai_generated) {
+        quizzesByType.aiGenerated++;
+      } else {
+        quizzesByType.humanCreated++;
+      }
+
+      // Count by difficulty
+      difficulty[quiz.difficulty as keyof typeof difficulty]++;
+
+      // Count recent activity
+      const createdAt = new Date(quiz.created_at);
+      if (createdAt > last24Hours) {
+        recentActivity.addedLast24Hours++;
+      }
+      if (createdAt > lastWeek) {
+        recentActivity.addedLastWeek++;
+      }
+    });
+
+    // Get question count statistics
+    const quizIds = quizzes.map((quiz) => quiz.id);
+    const { data: questionCounts, error: questionCountsError } = await supabase
+      .from("questions")
+      .select("quiz_id")
+      .in("quiz_id", quizIds);
+
+    if (questionCountsError) {
+      throw new AppError(
+        `Failed to fetch question counts for stats: ${questionCountsError.message}`,
+        500
+      );
+    }
+
+    // Calculate average questions per quiz
+    const totalQuestions = questionCounts?.length || 0;
+    const averageQuestionsPerQuiz =
+      totalQuizzes > 0
+        ? Math.round((totalQuestions / totalQuizzes) * 10) / 10
+        : 0;
+
+    // Get attempt statistics
+    const { data: attempts, error: attemptsError } = await supabase
+      .from("quiz_attempts")
+      .select("quiz_id")
+      .in("quiz_id", quizIds);
+
+    if (attemptsError) {
+      throw new AppError(
+        `Failed to fetch attempts for stats: ${attemptsError.message}`,
+        500
+      );
+    }
+
+    const totalAttempts = attempts?.length || 0;
+    const averageAttemptsPerQuiz =
+      totalQuizzes > 0
+        ? Math.round((totalAttempts / totalQuizzes) * 10) / 10
+        : 0;
+
+    const stats: PublicQuizStats = {
+      totalQuizzes,
+      quizzesByType,
+      recentActivity,
+      difficulty,
+      engagement: {
+        totalAttempts,
+        averageAttemptsPerQuiz,
+        averageQuestionsPerQuiz,
+      },
+    };
+
+    console.log(
+      `[Quiz Service] Successfully calculated public quiz stats: ${totalQuizzes} total quizzes, ${totalAttempts} total attempts`
+    );
+
+    return stats;
+  } catch (error) {
+    console.error("[Quiz Service] Error fetching public quiz stats:", error);
+    throw error;
+  }
+}
