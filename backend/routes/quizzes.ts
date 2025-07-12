@@ -11,7 +11,6 @@ import { AppError } from "../errors/AppError";
 import {
   createQuizExpressMode,
   createQuizAdvancedMode,
-  createManualQuiz,
   getQuizById,
   getQuizByIdForPreview,
   getUserQuizzesWithStats,
@@ -35,7 +34,6 @@ import {
   generalApiLimiter,
 } from "../lib/ratelimits";
 import type { Router } from "express";
-import { GoogleGenAI } from "@google/genai";
 import { z } from "zod";
 import type { SubmitQuizRequest } from "../types/api";
 
@@ -53,7 +51,6 @@ type OptionWithoutAnswer = Omit<
 >;
 
 function stripAnswersFromQuestion(question: any) {
-  // Handle both possible field names for options
   const optionsField = question.question_options || question.options;
   if (!optionsField) return question;
 
@@ -61,7 +58,6 @@ function stripAnswersFromQuestion(question: any) {
     ({ is_correct, ...rest }: any) => rest
   );
 
-  // Return with the same field name structure as input
   if (question.question_options) {
     return {
       ...question,
@@ -83,10 +79,6 @@ function stripAnswersFromQuiz(quiz: any) {
     questions: sanitizedQuestions,
   };
 }
-
-// =============================================
-// CREATE QUIZ ENDPOINTS
-// =============================================
 
 /**
  * POST /quizzes/create/express - Create quiz using Express Mode
@@ -164,7 +156,7 @@ quizzesRouter.post(
         quiz: responseQuiz,
         mode: "advanced",
         is_manual_mode: isManualMode,
-        is_prototype: isManualMode, // Indicate this is a prototype for frontend
+        is_prototype: isManualMode, // Indicate this is a prototype for frontend reference
         original_prompt: validationResult.data.prompt,
       },
       message: `Quiz created successfully in Advanced Mode${isManualMode ? " (Manual editing enabled)" : ""}`,
@@ -207,7 +199,7 @@ quizzesRouter.get(
     const limit = parseInt(req.query.limit as string) || 50;
     const offset = parseInt(req.query.offset as string) || 0;
 
-    // Validate pagination parameters
+    // Validate pagination params
     if (limit > 100) {
       throw new AppError("Limit cannot exceed 100", 400);
     }
@@ -235,7 +227,7 @@ quizzesRouter.get(
 );
 
 /**
- * GET /quizzes/:id/attempts - Get all attempts for a quiz (owner only)
+ * GET /quizzes/:id/attempts - Get all attempts for a quiz (OWNER ONLY)
  */
 quizzesRouter.get(
   "/:id/attempts",
@@ -265,7 +257,7 @@ quizzesRouter.get(
 );
 
 /**
- * GET /quizzes/:id/preview - Get a specific quiz by ID for preview (with answers)
+ * GET /quizzes/:id/preview - Get a specific quiz by ID for preview (with answers) (OWNER ONLY)
  */
 quizzesRouter.get(
   "/:id/preview",
@@ -336,7 +328,7 @@ quizzesRouter.get(
 
 /**
  * PUT /quizzes/:id - Update a quiz
- * Supports both metadata-only updates and full updates with questions
+ * Supports both metadata-only updates and full updates with questions (OWNER ONLY)
  */
 quizzesRouter.put(
   "/:id",

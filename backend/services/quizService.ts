@@ -254,9 +254,13 @@ export async function publishManualQuiz(
 
     /**
      * Do security checks with AI.
-     * But bypass if the BYPASS_CHECKS environment variable is set to tru (for local testing)
+     * Only validate if quiz will be public and BYPASS_CHECKS is not set to true
      */
-    if (env.BYPASS_CHECKS !== "true") {
+    if (env.BYPASS_CHECKS !== "true" && input.is_public) {
+      console.log(
+        `[Quiz Service] Quiz will be public - performing AI security validation`
+      );
+
       const securityResult = await validateQuizContent(contentForValidation);
 
       if (!securityResult.isApproved) {
@@ -286,6 +290,10 @@ export async function publishManualQuiz(
 
       console.log(
         `[Quiz Service] Manual quiz approved by AI security check (confidence: ${securityResult.confidence}%)`
+      );
+    } else if (!input.is_public) {
+      console.log(
+        `[Quiz Service] Quiz is private - skipping AI security validation`
       );
     }
 
@@ -681,6 +689,110 @@ export async function updateQuiz(
 ): Promise<Quiz> {
   console.log(`[Quiz Service] Updating quiz ${quizId} for user ${userId}`);
 
+  // Check if content fields (title or description) are being updated
+  const isContentUpdate =
+    input.title !== undefined || input.description !== undefined;
+
+  if (isContentUpdate) {
+    console.log(
+      `[Quiz Service] Content update detected - performing AI security validation`
+    );
+
+    // Fetch current quiz data to get the full content for validation
+    const { data: currentQuiz, error: fetchError } = await supabase
+      .from("quizzes")
+      .select("*")
+      .eq("id", quizId)
+      .eq("user_id", userId)
+      .single();
+
+    if (fetchError || !currentQuiz) {
+      throw new AppError("Quiz not found or access denied", 404);
+    }
+
+    // Fetch current questions to include in validation
+    const { data: questionsData, error: questionsError } = await supabase
+      .from("questions")
+      .select(
+        `
+        *,
+        question_options (*)
+      `
+      )
+      .eq("quiz_id", quizId)
+      .order("order_index");
+
+    if (questionsError) {
+      throw new AppError(
+        `Failed to fetch questions for validation: ${questionsError.message}`,
+        500
+      );
+    }
+
+    // Prepare content for validation with updated values
+    const contentForValidation: QuizContentForValidation = {
+      title: input.title ?? currentQuiz.title,
+      description: input.description ?? currentQuiz.description,
+      questions: (questionsData || []).map((q) => ({
+        question_text: q.question_text,
+        options: (q.question_options || []).map((opt: any) => ({
+          option_text: opt.option_text,
+          is_correct: opt.is_correct,
+        })),
+      })),
+    };
+
+    // Check if quiz is or will be public - only validate public quizzes
+    const willBePublic = input.is_public ?? currentQuiz.is_public;
+    const isCurrentlyPublic = currentQuiz.is_public;
+
+    // Apply AI security validation only if quiz is/will be public
+    if (env.BYPASS_CHECKS !== "true" && (isCurrentlyPublic || willBePublic)) {
+      console.log(
+        `[Quiz Service] Quiz is/will be public - performing AI security validation`
+      );
+
+      const securityResult = await validateQuizContent(contentForValidation);
+
+      if (!securityResult.isApproved) {
+        console.log(
+          `[Quiz Service] Quiz update rejected by AI security check: ${securityResult.reasoning}`
+        );
+
+        // Create a more detailed error that includes validation results
+        const detailedError = new AppError(
+          `Quiz content was rejected: ${securityResult.reasoning}${
+            securityResult.concerns.length > 0
+              ? ` Specific concerns: ${securityResult.concerns.join(", ")}`
+              : ""
+          }`,
+          400
+        );
+
+        // Add validation result details to the error
+        (detailedError as any).validationResult = {
+          reasoning: securityResult.reasoning,
+          confidence: securityResult.confidence,
+          concerns: securityResult.concerns,
+        };
+
+        throw detailedError;
+      }
+
+      console.log(
+        `[Quiz Service] Quiz update approved by AI security check (confidence: ${securityResult.confidence}%)`
+      );
+    } else if (!isCurrentlyPublic && !willBePublic) {
+      console.log(
+        `[Quiz Service] Quiz is private - skipping AI security validation`
+      );
+    }
+  } else {
+    console.log(
+      `[Quiz Service] Metadata-only update (no content validation needed)`
+    );
+  }
+
   const { data, error } = await supabase
     .from("quizzes")
     .update(input)
@@ -740,10 +852,13 @@ export async function updateQuizWithQuestions(
       })),
     };
 
-    // Apply AI security validation (same as manual quiz publishing)
-    if (env.BYPASS_CHECKS !== "true") {
+    // Check if quiz will be public - only validate public quizzes
+    const willBePublic = input.is_public;
+
+    // Apply AI security validation only if quiz will be public
+    if (env.BYPASS_CHECKS !== "true" && willBePublic) {
       console.log(
-        `[Quiz Service] Validating quiz content with AI security check`
+        `[Quiz Service] Quiz will be public - performing AI security validation`
       );
 
       const securityResult = await validateQuizContent(contentForValidation);
@@ -772,7 +887,11 @@ export async function updateQuizWithQuestions(
       }
 
       console.log(
-        `[Quiz Service] Quiz update approved by AI security check (confidence: ${securityResult.confidence}%)`
+        `[Quiz Service] Quiz update approved by AI security validation (confidence: ${securityResult.confidence}%)`
+      );
+    } else if (!willBePublic) {
+      console.log(
+        `[Quiz Service] Quiz is private - skipping AI security validation`
       );
     }
 
