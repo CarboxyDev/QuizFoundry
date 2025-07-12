@@ -883,18 +883,10 @@ export async function getQuizByIdForPreview(
     `[Quiz Service] Fetching quiz ${quizId} for preview by user ${userId || "anonymous"}`
   );
 
-  // Get the quiz with creator profile information
+  // Get the quiz first
   const { data: quizData, error: quizError } = await supabase
     .from("quizzes")
-    .select(
-      `
-      *,
-      profiles (
-        name,
-        avatar_url
-      )
-    `
-    )
+    .select("*")
     .eq("id", quizId)
     .single();
 
@@ -912,6 +904,20 @@ export async function getQuizByIdForPreview(
       `[Quiz Service] Access denied to preview quiz ${quizId} for user ${userId}`
     );
     throw new AppError("Access denied to this quiz", 403);
+  }
+
+  // Get the creator profile
+  const { data: profileData, error: profileError } = await supabase
+    .from("profiles")
+    .select("name, avatar_url")
+    .eq("id", quizData.user_id)
+    .single();
+
+  if (profileError) {
+    console.log(
+      `[Quiz Service] Warning: Could not fetch profile for user ${quizData.user_id}:`,
+      profileError
+    );
   }
 
   // Get questions with options (including correct answers)
@@ -938,7 +944,7 @@ export async function getQuizByIdForPreview(
   );
 
   // Extract creator profile
-  const creator = quizData.profiles || { name: "Unknown", avatar_url: null };
+  const creator = profileData || { name: "Unknown", avatar_url: null };
 
   return {
     ...quizData,
