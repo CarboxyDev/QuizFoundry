@@ -16,6 +16,7 @@ export interface Quiz {
   // Stats
   attempts?: number;
   average_score?: number;
+  question_count?: number;
 }
 
 export interface QuizWithCreator extends Quiz {

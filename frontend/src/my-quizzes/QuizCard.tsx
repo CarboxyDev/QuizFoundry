@@ -181,12 +181,12 @@ export default function QuizCard({ quiz, index, onAction }: QuizCardProps) {
                 <TooltipTrigger asChild>
                   <span className="hover:text-foreground flex cursor-pointer items-center gap-1 transition-colors">
                     <FileQuestion className="h-3.5 w-3.5" />
-                    {quiz.questions?.length || 0}
+                    {quiz.question_count || 0}
                   </span>
                 </TooltipTrigger>
                 <TooltipContent side="top">
                   <p className="font-medium">
-                    {quiz.questions?.length || 0} Questions
+                    {quiz.question_count || 0} Questions
                   </p>
                 </TooltipContent>
               </Tooltip>

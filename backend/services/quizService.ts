@@ -38,6 +38,7 @@ export interface Quiz {
   updated_at: string;
   attempts?: number;
   average_score?: number;
+  question_count?: number;
 }
 
 export interface Question {
@@ -655,23 +656,19 @@ export async function getPublicQuizzes(
     attemptsMap.set(quizId, (attemptsMap.get(quizId) || 0) + 1);
   });
 
-  // Add question count and mock questions array for frontend compatibility
-  const quizzesWithQuestionCount = quizzesData.map((quiz: any) => {
+  // Add question count and attempts
+  const quizzesWithStats = quizzesData.map((quiz: any) => {
     const questionCount = countMap.get(quiz.id) || 0;
     const attempts = attemptsMap.get(quiz.id) || 0;
     return {
       ...quiz,
       attempts,
-      questions: Array(questionCount)
-        .fill(null)
-        .map((_, index) => ({ id: `question-${index}` })),
+      question_count: questionCount,
     };
   });
 
-  console.log(
-    `[Quiz Service] Found ${quizzesWithQuestionCount.length} public quizzes`
-  );
-  return quizzesWithQuestionCount;
+  console.log(`[Quiz Service] Found ${quizzesWithStats.length} public quizzes`);
+  return quizzesWithStats;
 }
 
 /**
@@ -1149,16 +1146,14 @@ export async function getUserQuizzesWithStats(
     const average_score =
       attempts > 0 ? Number((stats.totalPercentage / attempts).toFixed(1)) : 0;
 
-    // Add question count and mock questions array for frontend compatibility
+    // Add question count
     const questionCount = questionCountMap.get(quiz.id) || 0;
 
     return {
       ...quiz,
       attempts,
       average_score,
-      questions: Array(questionCount)
-        .fill(null)
-        .map((_, index) => ({ id: `question-${index}` })),
+      question_count: questionCount,
     } as Quiz & { attempts: number; average_score: number };
   });
 }
