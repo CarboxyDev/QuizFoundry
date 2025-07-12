@@ -18,6 +18,13 @@ export interface Quiz {
   average_score?: number;
 }
 
+export interface QuizWithCreator extends Quiz {
+  creator: {
+    name: string;
+    avatar_url?: string;
+  };
+}
+
 export interface Question {
   id: string;
   quiz_id: string;
@@ -181,6 +188,26 @@ export async function getPublicQuizzes(
   }
 
   return response.data.data.quizzes;
+}
+
+/**
+ * Get a specific quiz by ID for preview (includes answers and creator info)
+ */
+export async function getQuizByIdForPreview(
+  id: string,
+): Promise<QuizWithCreator> {
+  const response = await axiosInstance.get<{
+    success: boolean;
+    data: {
+      quiz: QuizWithCreator;
+    };
+  }>(`/quizzes/${id}/preview`);
+
+  if (!response.data.success) {
+    throw new Error("Failed to fetch quiz for preview");
+  }
+
+  return response.data.data.quiz;
 }
 
 /**

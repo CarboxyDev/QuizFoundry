@@ -12,6 +12,7 @@ import {
   createQuizAdvancedMode,
   createManualQuiz,
   getQuizById,
+  getQuizByIdForPreview,
   getUserQuizzesWithStats,
   getPublicQuizzes,
   updateQuiz,
@@ -253,6 +254,40 @@ quizzesRouter.get(
       success: true,
       data: {
         attempts,
+      },
+    });
+  })
+);
+
+/**
+ * GET /quizzes/:id/preview - Get a specific quiz by ID for preview (with answers)
+ */
+quizzesRouter.get(
+  "/:id/preview",
+  authMiddleware,
+  requireCompletedOnboarding,
+  asyncHandler(async (req: AuthenticatedRequest, res) => {
+    const { id } = req.params;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      throw new AppError("User not authenticated", 401);
+    }
+
+    if (!id || typeof id !== "string") {
+      throw new AppError("Quiz ID is required", 400);
+    }
+
+    const quiz = await getQuizByIdForPreview(id, userId);
+
+    if (!quiz) {
+      throw new AppError("Quiz not found", 404);
+    }
+
+    res.json({
+      success: true,
+      data: {
+        quiz,
       },
     });
   })

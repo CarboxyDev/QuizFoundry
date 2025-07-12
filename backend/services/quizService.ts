@@ -867,3 +867,82 @@ export async function getQuizAttempts(
     } as QuizAttemptSummary;
   });
 }
+
+/**
+ * Get a quiz by ID for preview with creator information
+ * Unlike getQuizById, this includes answers and creator details
+ */
+export async function getQuizByIdForPreview(
+  quizId: string,
+  userId?: string
+): Promise<
+  | (QuizWithQuestions & { creator: { name: string; avatar_url?: string } })
+  | null
+> {
+  console.log(
+    `[Quiz Service] Fetching quiz ${quizId} for preview by user ${userId || "anonymous"}`
+  );
+
+  // Get the quiz with creator profile information
+  const { data: quizData, error: quizError } = await supabase
+    .from("quizzes")
+    .select(
+      `
+      *,
+      profiles (
+        name,
+        avatar_url
+      )
+    `
+    )
+    .eq("id", quizId)
+    .single();
+
+  if (quizError) {
+    if (quizError.code === "PGRST116") {
+      console.log(`[Quiz Service] Quiz ${quizId} not found`);
+      return null;
+    }
+    throw new AppError(`Failed to fetch quiz: ${quizError.message}`, 500);
+  }
+
+  // Check access permissions - only owner can preview
+  if (!userId || quizData.user_id !== userId) {
+    console.log(
+      `[Quiz Service] Access denied to preview quiz ${quizId} for user ${userId}`
+    );
+    throw new AppError("Access denied to this quiz", 403);
+  }
+
+  // Get questions with options (including correct answers)
+  const { data: questionsData, error: questionsError } = await supabase
+    .from("questions")
+    .select(
+      `
+      *,
+      question_options (*)
+    `
+    )
+    .eq("quiz_id", quizId)
+    .order("order_index");
+
+  if (questionsError) {
+    throw new AppError(
+      `Failed to fetch questions: ${questionsError.message}`,
+      500
+    );
+  }
+
+  console.log(
+    `[Quiz Service] Successfully fetched quiz ${quizId} for preview with ${questionsData?.length || 0} questions`
+  );
+
+  // Extract creator profile
+  const creator = quizData.profiles || { name: "Unknown", avatar_url: null };
+
+  return {
+    ...quizData,
+    creator,
+    questions: questionsData || [],
+  };
+}

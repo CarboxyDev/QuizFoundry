@@ -244,9 +244,8 @@ export default function QuizCard({ quiz, index, onAction }: QuizCardProps) {
             </motion.div>
           </div>
 
-          {/* Action Buttons */}
           <div className="mt-auto grid grid-cols-2 gap-2">
-            <Link href={`/quiz/${quiz.id}`}>
+            <Link href={`/my-quizzes/preview/${quiz.id}`}>
               <motion.div
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}

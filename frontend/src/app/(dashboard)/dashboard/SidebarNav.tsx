@@ -27,7 +27,7 @@ export function SidebarNav({ pathname }: SidebarNavProps) {
           <SidebarMenuItem key={item.title}>
             <SidebarMenuButton
               asChild
-              isActive={pathname === item.url}
+              isActive={pathname.includes(item.url)}
               tooltip={item.title}
             >
               <Link href={item.url}>
