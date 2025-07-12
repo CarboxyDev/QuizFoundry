@@ -17,7 +17,7 @@ export function DashboardCards() {
           <p className="text-muted-foreground mb-4 text-sm">
             Explore public quizzes created by the community.
           </p>
-          <Link href="/quizzes">
+          <Link href="/public-quizzes">
             <Button variant="outline" className="w-full">
               Browse All
             </Button>

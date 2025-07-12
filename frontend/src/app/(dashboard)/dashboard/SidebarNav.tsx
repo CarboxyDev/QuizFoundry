@@ -10,7 +10,7 @@ import Link from "next/link";
 const navigation = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "Create Quiz", url: "/create-quiz", icon: Sparkles },
-  { title: "Public Quizzes", url: "/quizzes", icon: BookOpen },
+  { title: "Public Quizzes", url: "/public-quizzes", icon: BookOpen },
   { title: "My Quizzes", url: "/my-quizzes", icon: FileText },
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
 ];
