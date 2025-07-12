@@ -70,11 +70,13 @@ export const createPrototypeQuizSchema = z.object({
 export const publishManualQuizSchema = z.object({
   title: z
     .string()
-    .min(1, "Title is required")
-    .max(200, "Title must be less than 200 characters"),
+    .min(3, "Title must be at least 3 characters")
+    .max(200, "Title must be less than 200 characters")
+    .transform((str) => str.trim()),
   description: z
     .string()
     .max(1000, "Description must be less than 1000 characters")
+    .transform((str) => str.trim())
     .optional(),
   difficulty: z.enum(["easy", "medium", "hard"]),
   is_public: z.boolean().default(true),
@@ -82,14 +84,16 @@ export const publishManualQuizSchema = z.object({
     .string()
     .min(10, "Original prompt must be at least 10 characters")
     .max(2000, "Original prompt must be less than 2000 characters")
+    .transform((str) => str.trim())
     .optional(),
   questions: z
     .array(
       z.object({
         question_text: z
           .string()
-          .min(1, "Question text is required")
-          .max(1000, "Question text must be less than 1000 characters"),
+          .min(10, "Question text must be at least 10 characters")
+          .max(500, "Question text must be less than 500 characters")
+          .transform((str) => str.trim()),
         question_type: z
           .enum(["multiple_choice", "short_answer"])
           .default("multiple_choice"),
@@ -100,7 +104,8 @@ export const publishManualQuizSchema = z.object({
               option_text: z
                 .string()
                 .min(1, "Option text is required")
-                .max(500, "Option text must be less than 500 characters"),
+                .max(200, "Option text must be less than 200 characters")
+                .transform((str) => str.trim()),
               is_correct: z.boolean(),
               order_index: z.number().int().min(0),
             })
@@ -130,11 +135,13 @@ export const publishManualQuizSchema = z.object({
 export const createManualQuizSchema = z.object({
   title: z
     .string()
-    .min(1, "Title is required")
-    .max(200, "Title must be less than 200 characters"),
+    .min(3, "Title must be at least 3 characters")
+    .max(200, "Title must be less than 200 characters")
+    .transform((str) => str.trim()),
   description: z
     .string()
     .max(1000, "Description must be less than 1000 characters")
+    .transform((str) => str.trim())
     .optional(),
   difficulty: z.enum(["easy", "medium", "hard"]),
   is_public: z.boolean().default(true),
@@ -147,12 +154,14 @@ export const createManualQuizSchema = z.object({
 export const updateQuizSchema = z.object({
   title: z
     .string()
-    .min(1, "Title is required")
+    .min(3, "Title must be at least 3 characters")
     .max(200, "Title must be less than 200 characters")
+    .transform((str) => str.trim())
     .optional(),
   description: z
     .string()
     .max(1000, "Description must be less than 1000 characters")
+    .transform((str) => str.trim())
     .optional(),
   difficulty: z.enum(["easy", "medium", "hard"]).optional(),
   is_public: z.boolean().optional(),
@@ -166,7 +175,8 @@ export const questionOptionSchema = z.object({
   option_text: z
     .string()
     .min(1, "Option text is required")
-    .max(500, "Option text must be less than 500 characters"),
+    .max(200, "Option text must be less than 200 characters")
+    .transform((str) => str.trim()),
   is_correct: z.boolean().default(false),
   order_index: z.number().int().min(0),
 });
@@ -174,8 +184,9 @@ export const questionOptionSchema = z.object({
 export const questionSchema = z.object({
   question_text: z
     .string()
-    .min(1, "Question text is required")
-    .max(1000, "Question text must be less than 1000 characters"),
+    .min(10, "Question text must be at least 10 characters")
+    .max(500, "Question text must be less than 500 characters")
+    .transform((str) => str.trim()),
   question_type: z
     .enum(["multiple_choice", "short_answer"])
     .default("multiple_choice"),

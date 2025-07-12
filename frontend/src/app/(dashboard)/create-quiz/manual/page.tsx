@@ -269,30 +269,82 @@ export default function ManualQuizEditPage() {
       return;
     }
 
+    if (quiz.title.trim().length < 3) {
+      toast.error("Quiz title must be at least 3 characters");
+      return;
+    }
+
+    if (quiz.title.trim().length > 200) {
+      toast.error("Quiz title must be less than 200 characters");
+      return;
+    }
+
+    if (quiz.description && quiz.description.trim().length > 1000) {
+      toast.error("Quiz description must be less than 1000 characters");
+      return;
+    }
+
     if (quiz.questions.length === 0) {
       toast.error("Quiz must have at least one question");
       return;
     }
 
-    for (const question of quiz.questions) {
+    if (quiz.questions.length > 20) {
+      toast.error("Quiz cannot have more than 20 questions");
+      return;
+    }
+
+    for (const [index, question] of quiz.questions.entries()) {
       if (!question.question_text.trim()) {
-        toast.error("All questions must have text");
+        toast.error(`Question ${index + 1} text is required`);
+        return;
+      }
+
+      if (question.question_text.trim().length < 10) {
+        toast.error(`Question ${index + 1} must be at least 10 characters`);
+        return;
+      }
+
+      if (question.question_text.trim().length > 500) {
+        toast.error(`Question ${index + 1} must be less than 500 characters`);
         return;
       }
 
       if (question.options.length < 2) {
-        toast.error("All questions must have at least 2 options");
+        toast.error(`Question ${index + 1} must have at least 2 options`);
+        return;
+      }
+
+      if (question.options.length > 8) {
+        toast.error(`Question ${index + 1} cannot have more than 8 options`);
         return;
       }
 
       if (!question.options.some((opt) => opt.is_correct)) {
-        toast.error("All questions must have a correct answer");
+        toast.error(`Question ${index + 1} must have a correct answer`);
         return;
       }
 
-      for (const option of question.options) {
+      const correctOptions = question.options.filter((opt) => opt.is_correct);
+      if (correctOptions.length > 1) {
+        toast.error(
+          `Question ${index + 1} must have exactly one correct answer`,
+        );
+        return;
+      }
+
+      for (const [optIndex, option] of question.options.entries()) {
         if (!option.option_text.trim()) {
-          toast.error("All options must have text");
+          toast.error(
+            `Question ${index + 1}, Option ${optIndex + 1} text is required`,
+          );
+          return;
+        }
+
+        if (option.option_text.trim().length > 200) {
+          toast.error(
+            `Question ${index + 1}, Option ${optIndex + 1} must be less than 200 characters`,
+          );
           return;
         }
       }
@@ -327,7 +379,12 @@ export default function ManualQuizEditPage() {
       }, 2000);
     } catch (error) {
       console.error("Error publishing quiz:", error);
-      toast.error("Failed to publish quiz. Please try again.");
+      // Extract the error message from the error object
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to publish quiz. Please try again.";
+      toast.error(errorMessage);
     } finally {
       setIsPublishing(false);
     }
@@ -356,7 +413,6 @@ export default function ManualQuizEditPage() {
             variants={pageVariants}
             className="mx-auto max-w-4xl"
           >
-            {/* Header */}
             <div className="mb-8 flex items-center justify-between">
               <motion.div whileHover={{ x: -4 }} whileTap={{ scale: 0.95 }}>
                 <Link href="/create-quiz">
@@ -392,7 +448,6 @@ export default function ManualQuizEditPage() {
               </div>
             </div>
 
-            {/* Quiz Settings */}
             <motion.div variants={cardVariants} className="mb-8">
               <Card className="shadow-lg">
                 <CardHeader>
@@ -402,7 +457,6 @@ export default function ManualQuizEditPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {/* Title */}
                   <div className="space-y-2">
                     <Label htmlFor="title">Quiz Title</Label>
                     <Input
@@ -413,7 +467,6 @@ export default function ManualQuizEditPage() {
                     />
                   </div>
 
-                  {/* Description */}
                   <div className="space-y-2">
                     <Label htmlFor="description">Description (Optional)</Label>
                     <Textarea
@@ -427,9 +480,7 @@ export default function ManualQuizEditPage() {
                     />
                   </div>
 
-                  {/* Settings Row */}
                   <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-                    {/* Difficulty */}
                     <div className="space-y-2">
                       <Label>Difficulty</Label>
                       <Select
@@ -466,7 +517,6 @@ export default function ManualQuizEditPage() {
                       </Select>
                     </div>
 
-                    {/* Visibility */}
                     <div className="space-y-2">
                       <Label>Visibility</Label>
                       <div className="flex items-center justify-between rounded-md border p-3">
@@ -500,7 +550,6 @@ export default function ManualQuizEditPage() {
               </Card>
             </motion.div>
 
-            {/* Questions */}
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold">
@@ -539,7 +588,6 @@ export default function ManualQuizEditPage() {
           </motion.div>
         </div>
 
-        {/* Success Overlay */}
         <AnimatePresence>
           {showSuccess && (
             <motion.div
@@ -628,7 +676,6 @@ function QuestionEditor({
             </div>
 
             <div className="flex items-center gap-2">
-              {/* Move buttons */}
               <Button
                 variant="ghost"
                 size="sm"
@@ -648,7 +695,6 @@ function QuestionEditor({
                 <ArrowDown className="h-4 w-4" />
               </Button>
 
-              {/* Remove button */}
               <Button
                 variant="ghost"
                 size="sm"
@@ -662,7 +708,6 @@ function QuestionEditor({
         </CardHeader>
 
         <CardContent className="space-y-6">
-          {/* Question Text */}
           <div className="space-y-2">
             <Label htmlFor={`question-${question.id}`}>Question Text</Label>
             <Textarea
@@ -674,7 +719,6 @@ function QuestionEditor({
             />
           </div>
 
-          {/* Options */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Label>Answer Options</Label>
@@ -701,7 +745,6 @@ function QuestionEditor({
                       : "border-border hover:border-primary/50",
                   )}
                 >
-                  {/* Correct answer radio */}
                   <button
                     type="button"
                     onClick={() => onSetCorrectOption(option.id)}
@@ -717,7 +760,6 @@ function QuestionEditor({
                     )}
                   </button>
 
-                  {/* Option text input */}
                   <Input
                     value={option.option_text}
                     onChange={(e) =>
@@ -727,7 +769,6 @@ function QuestionEditor({
                     className="flex-1"
                   />
 
-                  {/* Remove option button */}
                   <Button
                     variant="ghost"
                     size="sm"

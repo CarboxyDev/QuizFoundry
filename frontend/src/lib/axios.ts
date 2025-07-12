@@ -23,7 +23,12 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (res) => res,
   (err) => {
-    const message = err?.response?.data?.error || "API Error";
+    // Extract error message from response, checking both error and message fields
+    const message =
+      err?.response?.data?.error ||
+      err?.response?.data?.message ||
+      err?.message ||
+      "API Error";
     return Promise.reject(new Error(message));
   },
 );

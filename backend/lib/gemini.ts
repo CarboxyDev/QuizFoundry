@@ -411,12 +411,13 @@ QUALITY GUIDELINES:
    ${getDifficultyGuidelines(input.difficulty)}
 3. Each question must have EXACTLY ONE correct answer
 4. Incorrect options should be plausible but clearly wrong
-5. Use clear, unambiguous language
-6. Ensure all content relates to: "${input.prompt}"
-7. Number order_index starting from 0
-8. Generate exactly ${input.questionCount} questions with ${input.optionsCount} options each
-9. Do not include any other text in the response.
-10. Make sure you do not include "quiz" or "quiz on" or "Create a quiz on" in the title. The quiz title must consist of the key topic keywords only.
+5. The correct answer must be accurate and correct. Incorrect answers will result in a terrible experience for the user.
+6. Use clear, unambiguous language
+7. Ensure all content relates to: "${input.prompt}"
+8. Number order_index starting from 0
+9. Generate exactly ${input.questionCount} questions with ${input.optionsCount} options each
+10. Do not include any other text in the response.
+11. Make sure you do not include "quiz" or "quiz on" or "Create a quiz on" in the title. The quiz title must consist of the key topic keywords only.
 
 Generate the quiz now:`;
 }
@@ -601,22 +602,26 @@ QUESTIONS:
 ${questionsText}
 
 EVALUATION CRITERIA:
-Please evaluate this quiz content based on the following criteria:
+Please evaluate ALL parts of this quiz content (title, description, and questions) based on the following criteria:
 
 1. SAFETY:
-   - No harmful, offensive, or inappropriate content
-   - No hate speech, discrimination, or harassment
-   - No dangerous or illegal activities
+   - Title and description contain no harmful, offensive, or inappropriate content
+   - Questions and options contain no harmful, offensive, or inappropriate content
+   - No hate speech, discrimination, or harassment in any part
+   - No dangerous or illegal activities referenced
    - No adult content or explicit material
 
 2. QUALITY:
+   - Title is appropriate and relevant to the quiz content
+   - Description (if provided) accurately represents the quiz
    - Questions are clear and well-formed
    - Options are reasonable and relevant
    - Content is educational or entertaining
    - Factual accuracy where applicable
 
 3. AUTHENTICITY:
-   - Content appears to be genuine effort
+   - Title and description appear to be genuine effort
+   - Questions appear to be genuine effort
    - Not spam or low-effort content
    - Not misleading or deceptive
 

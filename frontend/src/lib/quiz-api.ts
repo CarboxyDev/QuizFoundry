@@ -378,14 +378,19 @@ export async function createPrototypeQuiz(
 export async function publishManualQuiz(
   input: PublishManualQuizInput,
 ): Promise<Quiz> {
-  const response = await axiosInstance.post<PublishManualQuizResponse>(
-    "/manual-quizzes/publish",
-    input,
-  );
+  try {
+    const response = await axiosInstance.post<PublishManualQuizResponse>(
+      "/manual-quizzes/publish",
+      input,
+    );
 
-  if (!response.data.success) {
-    throw new Error(response.data.message || "Failed to publish quiz");
+    if (!response.data.success) {
+      throw new Error(response.data.message || "Failed to publish quiz");
+    }
+
+    return response.data.data.quiz;
+  } catch (error) {
+    // Re-throw the error to preserve the detailed message from the backend
+    throw error;
   }
-
-  return response.data.data.quiz;
 }
