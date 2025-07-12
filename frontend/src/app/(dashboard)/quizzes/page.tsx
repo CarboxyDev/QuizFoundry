@@ -1,7 +1,6 @@
 "use client";
 
 import { ProtectedRouteGuard } from "@/components/AuthGuard";
-import { DifficultyIcon } from "@/components/DifficultyIcon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -30,6 +29,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
+  FileQuestion,
   Filter,
   Play,
   Search,
@@ -582,17 +582,17 @@ export default function PublicQuizzesPage() {
                               className={cn(
                                 "group border-border/50 bg-card/80 cursor-pointer overflow-hidden backdrop-blur-sm transition-all duration-300",
                                 "hover:shadow-primary/20 hover:bg-card hover:border-primary/50 hover:shadow-xl",
-                                "flex h-full flex-col",
+                                "relative flex h-full flex-col",
                               )}
                             >
                               <CardHeader className="flex-shrink-0 pb-4">
-                                <div className="flex items-start justify-between gap-3">
+                                <div className="flex h-[3rem] items-start justify-between gap-3">
                                   <h3 className="text-foreground group-hover:text-primary line-clamp-2 flex-1 leading-snug font-semibold transition-colors">
                                     {quiz.title}
                                   </h3>
                                 </div>
 
-                                <div className="flex h-10 items-start">
+                                <div className="flex h-[2.5rem] items-start">
                                   {quiz.description ? (
                                     <p className="text-muted-foreground line-clamp-2 text-sm leading-relaxed">
                                       {quiz.description}
@@ -602,12 +602,36 @@ export default function PublicQuizzesPage() {
                               </CardHeader>
 
                               <CardContent className="flex flex-grow flex-col pt-0">
+                                {/* AI Badge Row */}
+                                <div className="mb-2 flex min-h-[24px] items-center justify-end">
+                                  <motion.div
+                                    initial={{ scale: 0, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    transition={{
+                                      duration: 0.3,
+                                      delay: index * 0.1 + 0.5,
+                                    }}
+                                  >
+                                    <Badge
+                                      variant="secondary"
+                                      className={cn(
+                                        "border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-800 dark:bg-purple-900/20 dark:text-purple-400",
+                                        !quiz.is_ai_generated && "invisible",
+                                      )}
+                                    >
+                                      <Sparkles className="mr-1 h-3 w-3" />
+                                      AI
+                                    </Badge>
+                                  </motion.div>
+                                </div>
+
+                                {/* Stats Row */}
                                 <div className="mb-4 flex items-center justify-between text-sm">
                                   <div className="text-muted-foreground flex items-center gap-3">
                                     <Tooltip delayDuration={500}>
                                       <TooltipTrigger asChild>
                                         <span className="hover:text-foreground flex cursor-pointer items-center gap-1 transition-colors">
-                                          <Brain className="h-3.5 w-3.5" />
+                                          <FileQuestion className="h-3.5 w-3.5" />
                                           {quiz.questions?.length || 0}
                                         </span>
                                       </TooltipTrigger>
@@ -631,24 +655,19 @@ export default function PublicQuizzesPage() {
                                         </p>
                                       </TooltipContent>
                                     </Tooltip>
-                                    <span className="flex items-center gap-1">
-                                      <Clock className="h-3.5 w-3.5" />
-                                      {formatDate(quiz.created_at)}
-                                    </span>
                                     <Tooltip delayDuration={500}>
                                       <TooltipTrigger asChild>
-                                        <motion.span
+                                        <div
                                           className={cn(
-                                            "flex cursor-pointer items-center transition-colors",
-                                            "text-green-500 hover:text-green-600",
+                                            "h-2 w-2 cursor-pointer rounded-full transition-all duration-200 hover:scale-125",
+                                            quiz.difficulty === "easy" &&
+                                              "bg-green-500",
+                                            quiz.difficulty === "medium" &&
+                                              "bg-yellow-500",
+                                            quiz.difficulty === "hard" &&
+                                              "bg-red-500",
                                           )}
-                                          whileHover={{ scale: 1.2 }}
-                                          whileTap={{ scale: 0.9 }}
-                                        >
-                                          <DifficultyIcon
-                                            difficulty={quiz.difficulty}
-                                          />
-                                        </motion.span>
+                                        />
                                       </TooltipTrigger>
                                       <TooltipContent side="top">
                                         <p className="font-medium">
@@ -661,25 +680,10 @@ export default function PublicQuizzesPage() {
                                       </TooltipContent>
                                     </Tooltip>
                                   </div>
-
-                                  {quiz.is_ai_generated && (
-                                    <motion.div
-                                      initial={{ scale: 0, opacity: 0 }}
-                                      animate={{ scale: 1, opacity: 1 }}
-                                      transition={{
-                                        duration: 0.3,
-                                        delay: index * 0.1 + 0.5,
-                                      }}
-                                    >
-                                      <Badge
-                                        variant="secondary"
-                                        className="border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-800 dark:bg-purple-900/20 dark:text-purple-400"
-                                      >
-                                        <Sparkles className="mr-1 h-3 w-3" />
-                                        AI
-                                      </Badge>
-                                    </motion.div>
-                                  )}
+                                  <div className="text-muted-foreground flex items-center gap-1">
+                                    <Clock className="h-3.5 w-3.5" />
+                                    {formatDate(quiz.created_at)}
+                                  </div>
                                 </div>
 
                                 <div className="mt-auto">
