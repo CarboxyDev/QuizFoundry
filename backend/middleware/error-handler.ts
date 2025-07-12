@@ -19,5 +19,24 @@ export function errorHandler(
     timestamp: new Date().toISOString(),
   });
 
-  res.status(statusCode).json({ success: false, error: message });
+  // Base error response
+  const errorResponse: any = {
+    success: false,
+    error: message,
+  };
+
+  // Add additional error details if available
+  if (err.validationResult) {
+    errorResponse.validation_result = err.validationResult;
+  }
+
+  if (err.details) {
+    errorResponse.details = err.details;
+  }
+
+  if (err.code) {
+    errorResponse.code = err.code;
+  }
+
+  res.status(statusCode).json(errorResponse);
 }

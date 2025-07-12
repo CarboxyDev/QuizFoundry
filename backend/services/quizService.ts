@@ -261,7 +261,9 @@ export async function publishManualQuiz(
         console.log(
           `[Quiz Service] Manual quiz rejected by AI security check: ${securityResult.reasoning}`
         );
-        throw new AppError(
+
+        // Create a more detailed error that includes validation results
+        const detailedError = new AppError(
           `Quiz content was rejected: ${securityResult.reasoning}${
             securityResult.concerns.length > 0
               ? ` Specific concerns: ${securityResult.concerns.join(", ")}`
@@ -269,6 +271,15 @@ export async function publishManualQuiz(
           }`,
           400
         );
+
+        // Add validation result details to the error
+        (detailedError as any).validationResult = {
+          reasoning: securityResult.reasoning,
+          confidence: securityResult.confidence,
+          concerns: securityResult.concerns,
+        };
+
+        throw detailedError;
       }
 
       console.log(

@@ -4,6 +4,7 @@ import { ProtectedRouteGuard } from "@/components/AuthGuard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { enhancedToastError } from "@/components/ui/enhanced-toast";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -34,7 +35,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 interface EditableQuestion {
@@ -71,12 +72,97 @@ const cardVariants = {
   hover: { y: -2 },
 };
 
+const StickyManualQuizHeader = ({
+  show,
+  quiz,
+  isPublishing,
+  onPublish,
+}: {
+  show: boolean;
+  quiz: EditableQuiz | null;
+  isPublishing: boolean;
+  onPublish: () => void;
+}) => {
+  const questionCount = quiz?.questions.length || 0;
+
+  return (
+    <AnimatePresence>
+      {show && (
+        <motion.div
+          initial={{ y: -60, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          exit={{ y: -60, opacity: 0 }}
+          transition={{ duration: 0.25, ease: "easeInOut" }}
+          className="pointer-events-none fixed top-0 right-0 left-64 z-40 flex justify-center"
+        >
+          <div className="bg-background/80 pointer-events-auto mx-auto w-full max-w-4xl rounded-b-xl border-x border-b px-6 py-3 shadow-lg backdrop-blur-lg">
+            <div className="flex items-center justify-between">
+              <Link href="/create-quiz">
+                <Button variant="ghost" size="icon" className="h-8 w-8">
+                  <ArrowLeft className="h-4 w-4" />
+                </Button>
+              </Link>
+
+              <div className="flex items-center gap-4">
+                <h3 className="line-clamp-1 max-w-[200px] font-semibold xl:max-w-[400px] 2xl:max-w-[500px]">
+                  {quiz?.title || "Untitled Quiz"}
+                </h3>
+                <Badge
+                  variant="outline"
+                  className="bg-primary/10 text-primary rounded-full px-3 py-1"
+                >
+                  <Edit3 className="mr-1 h-3 w-3" />
+                  {questionCount} questions
+                </Badge>
+              </div>
+
+              <Button
+                onClick={onPublish}
+                disabled={isPublishing}
+                size="sm"
+                className="gap-2"
+              >
+                {isPublishing ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Publishing...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4" />
+                    Publish
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
 export default function ManualQuizEditPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [quiz, setQuiz] = useState<EditableQuiz | null>(null);
   const [isPublishing, setIsPublishing] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showStickyHeader, setShowStickyHeader] = useState(false);
+
+  const headerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!headerRef.current) return;
+      const { bottom } = headerRef.current.getBoundingClientRect();
+      setShowStickyHeader(bottom <= 0);
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     const dataParam = searchParams.get("data");
@@ -109,11 +195,11 @@ export default function ManualQuizEditPage() {
         setQuiz(editableQuiz);
       } catch (error) {
         console.error("Error parsing prototype data:", error);
-        toast.error("Failed to load prototype quiz data");
+        enhancedToastError("Failed to load prototype quiz data");
         router.push("/create-quiz");
       }
     } else {
-      toast.error("No quiz data found");
+      enhancedToastError("No quiz data found");
       router.push("/create-quiz");
     }
   }, [searchParams, router]);
@@ -379,12 +465,8 @@ export default function ManualQuizEditPage() {
       }, 2000);
     } catch (error) {
       console.error("Error publishing quiz:", error);
-      // Extract the error message from the error object
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "Failed to publish quiz. Please try again.";
-      toast.error(errorMessage);
+      // Pass the error object to preserve detailed information
+      enhancedToastError(error as Error);
     } finally {
       setIsPublishing(false);
     }
@@ -403,6 +485,13 @@ export default function ManualQuizEditPage() {
 
   return (
     <ProtectedRouteGuard>
+      <StickyManualQuizHeader
+        show={showStickyHeader}
+        quiz={quiz}
+        isPublishing={isPublishing}
+        onPublish={handlePublish}
+      />
+
       <div className="from-background via-muted/10 to-background min-h-screen bg-gradient-to-br">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(120,119,198,0.08),transparent_50%),radial-gradient(circle_at_70%_70%,rgba(255,255,255,0.02),transparent_50%)]" />
 
@@ -413,7 +502,10 @@ export default function ManualQuizEditPage() {
             variants={pageVariants}
             className="mx-auto max-w-4xl"
           >
-            <div className="mb-8 flex items-center justify-between">
+            <div
+              ref={headerRef}
+              className="mb-8 flex items-center justify-between"
+            >
               <motion.div whileHover={{ x: -4 }} whileTap={{ scale: 0.95 }}>
                 <Link href="/create-quiz">
                   <Button variant="ghost" className="hover:bg-accent">

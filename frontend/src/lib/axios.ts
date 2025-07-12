@@ -8,7 +8,6 @@ export const axiosInstance = axios.create({
   },
 });
 
-// Add auth token to requests
 axiosInstance.interceptors.request.use(
   (config) => {
     const { session } = getStoredAuth();
@@ -23,12 +22,44 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (res) => res,
   (err) => {
-    // Extract error message from response, checking both error and message fields
+    if (err?.response?.data) {
+      const errorData = err.response.data;
+
+      if (errorData.error && typeof errorData.error === "string") {
+        const enhancedError = new Error(errorData.error);
+
+        if (errorData.details) {
+          (enhancedError as any).details = errorData.details;
+        }
+
+        if (errorData.validation_result) {
+          (enhancedError as any).validationResult = errorData.validation_result;
+        }
+
+        if (errorData.code) {
+          (enhancedError as any).code = errorData.code;
+        }
+
+        (enhancedError as any).response = err.response;
+
+        return Promise.reject(enhancedError);
+      }
+
+      if (errorData.message) {
+        const enhancedError = new Error(errorData.message);
+        (enhancedError as any).response = err.response;
+        return Promise.reject(enhancedError);
+      }
+    }
+
     const message =
       err?.response?.data?.error ||
       err?.response?.data?.message ||
       err?.message ||
       "API Error";
-    return Promise.reject(new Error(message));
+
+    const enhancedError = new Error(message);
+    (enhancedError as any).response = err.response;
+    return Promise.reject(enhancedError);
   },
 );

@@ -29,7 +29,6 @@ import {
   Globe,
   Loader2,
   Lock,
-  Settings2,
   Sparkles,
   Wand2,
   Wrench,
@@ -438,7 +437,6 @@ export default function CreateQuizPage() {
                     />
                   </div>
 
-                  {/* Advanced Settings */}
                   <AnimatePresence>
                     {isAdvancedMode && (
                       <motion.div
@@ -447,13 +445,6 @@ export default function CreateQuizPage() {
                         exit={{ opacity: 0, height: 0 }}
                         className="space-y-6"
                       >
-                        <div className="flex items-center gap-2">
-                          <Settings2 className="text-primary h-5 w-5" />
-                          <h3 className="text-lg font-semibold">
-                            Advanced Settings
-                          </h3>
-                        </div>
-
                         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                           <div className="space-y-3">
                             <Label
