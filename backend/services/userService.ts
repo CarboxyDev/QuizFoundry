@@ -216,6 +216,7 @@ export async function signupUser(
 export async function createGoogleUserProfile(userData: {
   id: string;
   email: string;
+  avatar_url?: string | null;
 }): Promise<UserProfile> {
   const { data, error } = await supabaseAdmin
     .from("profiles")
@@ -223,7 +224,7 @@ export async function createGoogleUserProfile(userData: {
       id: userData.id,
       name: null, // Will be set during onboarding
       role: null, // Will be set during onboarding
-      avatar_url: null,
+      avatar_url: userData.avatar_url || null,
     })
     .select()
     .single();

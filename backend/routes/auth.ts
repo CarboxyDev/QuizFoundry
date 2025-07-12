@@ -68,6 +68,7 @@ authRouter.post(
   asyncHandler(async (req: AuthenticatedRequest, res) => {
     const userId = req.user?.id;
     const userEmail = req.user?.email;
+    const userAvatarUrl = req.user?.avatar_url;
     if (!userId || !userEmail) {
       throw new AppError("User not authenticated", 401);
     }
@@ -78,6 +79,7 @@ authRouter.post(
       userProfile = await createGoogleUserProfile({
         id: userId,
         email: userEmail,
+        avatar_url: userAvatarUrl,
       });
     }
     // Check onboarding status

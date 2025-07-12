@@ -8,6 +8,7 @@ import { supabaseAuth } from "../lib/supabase";
 export interface AuthenticatedUser {
   id: string;
   email: string;
+  avatar_url?: string | null;
 }
 
 // Extend Request type to include user
@@ -45,6 +46,8 @@ export const authMiddleware = async (
     req.user = {
       id: user.id,
       email: user.email || "",
+      avatar_url:
+        user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
     };
 
     next();
