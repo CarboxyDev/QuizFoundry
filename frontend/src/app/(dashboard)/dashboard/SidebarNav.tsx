@@ -30,9 +30,9 @@ export function SidebarNav({ pathname }: SidebarNavProps) {
               isActive={pathname.includes(item.url)}
               tooltip={item.title}
             >
-              <Link href={item.url}>
-                <item.icon className="h-4 w-4" />
-                <span>{item.title}</span>
+              <Link href={item.url} className="flex w-full items-center gap-3">
+                <item.icon className="h-4 w-4 flex-shrink-0" />
+                <span className="font-medium tracking-wide">{item.title}</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

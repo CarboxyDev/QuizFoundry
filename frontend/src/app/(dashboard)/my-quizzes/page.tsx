@@ -301,7 +301,7 @@ export default function MyQuizzesPage() {
               <Card className="bg-card/60 backdrop-blur-sm">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-purple-500/10 p-2 text-purple-500">
+                    <div className="rounded-lg bg-red-500/10 p-2 text-red-500">
                       <LockIcon className="h-5 w-5" />
                     </div>
                     <div>
@@ -319,7 +319,7 @@ export default function MyQuizzesPage() {
               <Card className="bg-card/60 backdrop-blur-sm">
                 <CardContent className="p-4">
                   <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-red-500/10 p-2 text-red-500">
+                    <div className="rounded-lg bg-amber-500/10 p-2 text-amber-500">
                       <Clock className="h-5 w-5" />
                     </div>
                     <div>
