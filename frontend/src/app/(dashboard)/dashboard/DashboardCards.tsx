@@ -1,67 +1,100 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { motion } from "framer-motion";
 import { BookOpen, FileText, Sparkles } from "lucide-react";
 import Link from "next/link";
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.3,
+    },
+  },
+};
+
 export function DashboardCards() {
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BookOpen className="text-primary h-5 w-5" />
-            Browse Quizzes
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground mb-4 text-sm">
-            Explore public quizzes created by the community.
-          </p>
-          <Link href="/public-quizzes">
-            <Button variant="outline" className="w-full">
-              Browse All
-            </Button>
-          </Link>
-        </CardContent>
-      </Card>
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+    >
+      <motion.div variants={cardVariants} whileHover={{ scale: 1.02 }}>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BookOpen className="text-primary h-5 w-5" />
+              Browse Quizzes
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground mb-4 text-sm">
+              Explore public quizzes created by the community.
+            </p>
+            <Link href="/public-quizzes">
+              <Button variant="outline" className="w-full">
+                Browse All
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </motion.div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="text-primary h-5 w-5" />
-            My Quizzes
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground mb-4 text-sm">
-            View and manage all the quizzes you&apos;ve created.
-          </p>
-          <Link href="/my-quizzes">
-            <Button variant="outline" className="w-full">
-              View My Quizzes
-            </Button>
-          </Link>
-        </CardContent>
-      </Card>
+      <motion.div variants={cardVariants} whileHover={{ scale: 1.02 }}>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <FileText className="text-primary h-5 w-5" />
+              My Quizzes
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground mb-4 text-sm">
+              View and manage all the quizzes you&apos;ve created.
+            </p>
+            <Link href="/my-quizzes">
+              <Button variant="outline" className="w-full">
+                View My Quizzes
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </motion.div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Sparkles className="text-primary h-5 w-5" />
-            Create Quiz
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground mb-4 text-sm">
-            Generate intelligent quizzes with AI on any topic in seconds.
-          </p>
-          <Link href="/create-quiz">
-            <Button variant="default" className="w-full">
+      <motion.div variants={cardVariants} whileHover={{ scale: 1.02 }}>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="text-primary h-5 w-5" />
               Create Quiz
-            </Button>
-          </Link>
-        </CardContent>
-      </Card>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground mb-4 text-sm">
+              Generate intelligent quizzes with AI on any topic in seconds.
+            </p>
+            <Link href="/create-quiz">
+              <Button variant="default" className="w-full">
+                Create Quiz
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* <Card className="col-span-full md:col-span-2">
         <CardHeader>
@@ -84,6 +117,6 @@ export function DashboardCards() {
           </Link>
         </CardContent>
       </Card> */}
-    </div>
+    </motion.div>
   );
 }

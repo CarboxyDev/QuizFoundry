@@ -563,13 +563,29 @@ export async function getQuizById(
     );
   }
 
+  // Get total attempts count for this quiz
+  const { data: attemptsData, error: attemptsError } = await supabase
+    .from("quiz_attempts")
+    .select("id")
+    .eq("quiz_id", quizId);
+
+  if (attemptsError) {
+    throw new AppError(
+      `Failed to fetch attempts count: ${attemptsError.message}`,
+      500
+    );
+  }
+
+  const attemptsCount = attemptsData?.length || 0;
+
   console.log(
-    `[Quiz Service] Successfully fetched quiz ${quizId} with ${questionsData?.length || 0} questions`
+    `[Quiz Service] Successfully fetched quiz ${quizId} with ${questionsData?.length || 0} questions and ${attemptsCount} attempts`
   );
 
   return {
     ...quizData,
     questions: questionsData || [],
+    attempts: attemptsCount,
   };
 }
 

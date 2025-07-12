@@ -4,6 +4,7 @@ import { ProtectedRouteGuard } from "@/components/AuthGuard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatDate } from "@/lib/date";
 import type {
   Question,
   QuestionOption,
@@ -26,6 +27,7 @@ import {
   Share2,
   Sparkles,
   Trophy,
+  Users,
   XCircle,
   Zap,
 } from "lucide-react";
@@ -296,7 +298,7 @@ const QuizHeader = ({
             <Trophy className="h-4 w-4" />
             <span className="capitalize">{quiz.difficulty}</span>
           </motion.div>
-          {quiz.is_ai_generated && (
+          {quiz.is_ai_generated ? (
             <motion.div
               className="bg-primary-foreground/10 flex items-center gap-2 rounded-full px-3 py-1.5 backdrop-blur-sm"
               whileHover={{
@@ -307,8 +309,7 @@ const QuizHeader = ({
               <Sparkles className="h-4 w-4" />
               <span>AI Generated</span>
             </motion.div>
-          )}
-          {!isSubmitted && (
+          ) : (
             <motion.div
               className="bg-primary-foreground/10 flex items-center gap-2 rounded-full px-3 py-1.5 backdrop-blur-sm"
               whileHover={{
@@ -316,16 +317,32 @@ const QuizHeader = ({
                 backgroundColor: "rgba(255, 255, 255, 0.2)",
               }}
             >
-              <Check className="h-4 w-4" />
-              <span>
-                {userAnswersCount}/{quiz.questions?.length || 0} completed
-              </span>
+              <Brain className="h-4 w-4" />
+              <span>Human Made</span>
             </motion.div>
           )}
+          <motion.div
+            className="bg-primary-foreground/10 flex items-center gap-2 rounded-full px-3 py-1.5 backdrop-blur-sm"
+            whileHover={{
+              scale: 1.05,
+              backgroundColor: "rgba(255, 255, 255, 0.2)",
+            }}
+          >
+            <Users className="h-4 w-4" />
+            <span>{quiz.attempts || 0} attempts</span>
+          </motion.div>
+          <motion.div
+            className="bg-primary-foreground/10 flex items-center gap-2 rounded-full px-3 py-1.5 backdrop-blur-sm"
+            whileHover={{
+              scale: 1.05,
+              backgroundColor: "rgba(255, 255, 255, 0.2)",
+            }}
+          >
+            <span>Created {formatDate(quiz.created_at)}</span>
+          </motion.div>
         </motion.div>
       </div>
 
-      {/* Decorative elements */}
       <motion.div
         className="bg-primary-foreground/10 absolute -top-4 -right-4 h-24 w-24 rounded-full"
         animate={{ scale: [1, 1.1, 1], rotate: [0, 180, 360] }}
@@ -822,9 +839,11 @@ const StickyQuizHeader = ({
                 <h3 className="line-clamp-1 max-w-[200px] font-semibold xl:max-w-[400px] 2xl:max-w-[500px]">
                   {quiz.title}
                 </h3>
-                <Badge variant="outline" className="rounded-full px-3 py-1">
-                  {attempted}/{total}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="rounded-full px-3 py-1">
+                    {attempted}/{total}
+                  </Badge>
+                </div>
               </div>
 
               <Button

@@ -1,5 +1,27 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { motion } from "framer-motion";
 import { Rocket } from "lucide-react";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const stepVariants = {
+  hidden: { opacity: 0, x: -20 },
+  visible: {
+    opacity: 1,
+    x: 0,
+    transition: {
+      duration: 0.3,
+    },
+  },
+};
 
 export function GettingStarted() {
   return (
@@ -11,8 +33,16 @@ export function GettingStarted() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-4 md:grid-cols-3">
-          <div className="flex items-start gap-3">
+        <motion.div
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="grid gap-4 md:grid-cols-3"
+        >
+          <motion.div
+            variants={stepVariants}
+            className="flex items-start gap-3"
+          >
             <div className="bg-primary/10 text-primary flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md">
               1
             </div>
@@ -22,8 +52,12 @@ export function GettingStarted() {
                 Start by creating your first AI-powered quiz on any topic.
               </p>
             </div>
-          </div>
-          <div className="flex items-start gap-3">
+          </motion.div>
+
+          <motion.div
+            variants={stepVariants}
+            className="flex items-start gap-3"
+          >
             <div className="bg-primary/10 text-primary flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md">
               2
             </div>
@@ -33,8 +67,12 @@ export function GettingStarted() {
                 Share your quiz with others or explore community quizzes.
               </p>
             </div>
-          </div>
-          <div className="flex items-start gap-3">
+          </motion.div>
+
+          <motion.div
+            variants={stepVariants}
+            className="flex items-start gap-3"
+          >
             <div className="bg-primary/10 text-primary flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md">
               3
             </div>
@@ -44,8 +82,8 @@ export function GettingStarted() {
                 View quiz performance and see detailed analytics.
               </p>
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </CardContent>
     </Card>
   );
