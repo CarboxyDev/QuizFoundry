@@ -197,8 +197,7 @@ export default function MyQuizzesPage() {
         setDeleteDialogOpen(true);
       }
     } else if (action === "edit") {
-      // TODO: Implement edit functionality
-      toast.info("Edit functionality coming soon");
+      router.push(`/my-quizzes/edit/${quizId}`);
     } else if (action === "analytics") {
       router.push("/analytics");
     }

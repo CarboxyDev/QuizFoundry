@@ -4,6 +4,7 @@ import {
   createQuizExpressModeSchema,
   createQuizAdvancedModeSchema,
   updateQuizSchema,
+  updateQuizWithQuestionsSchema,
   createQuestionSchema,
 } from "../schemas/quizSchemas";
 import { AppError } from "../errors/AppError";
@@ -16,6 +17,7 @@ import {
   getUserQuizzesWithStats,
   getPublicQuizzes,
   updateQuiz,
+  updateQuizWithQuestions,
   deleteQuiz,
   createQuestion,
   getCreativeQuizPrompt,
@@ -334,6 +336,7 @@ quizzesRouter.get(
 
 /**
  * PUT /quizzes/:id - Update a quiz
+ * Supports both metadata-only updates and full updates with questions
  */
 quizzesRouter.put(
   "/:id",
@@ -351,22 +354,53 @@ quizzesRouter.put(
       throw new AppError("Quiz ID is required", 400);
     }
 
-    const validationResult = updateQuizSchema.safeParse(req.body);
+    // Check if the request includes questions (full update) or just metadata
+    const includesQuestions =
+      req.body.questions && Array.isArray(req.body.questions);
 
-    if (!validationResult.success) {
-      const errors = validationResult.error.errors.map((err) => err.message);
-      throw new AppError(errors.join("; "), 400);
+    if (includesQuestions) {
+      // Full quiz update with questions
+      const validationResult = updateQuizWithQuestionsSchema.safeParse(
+        req.body
+      );
+
+      if (!validationResult.success) {
+        const errors = validationResult.error.errors.map((err) => err.message);
+        throw new AppError(errors.join("; "), 400);
+      }
+
+      const quiz = await updateQuizWithQuestions(
+        id,
+        userId,
+        validationResult.data
+      );
+
+      res.json({
+        success: true,
+        data: {
+          quiz,
+        },
+        message: "Quiz updated successfully with questions",
+      });
+    } else {
+      // Regular metadata-only update
+      const validationResult = updateQuizSchema.safeParse(req.body);
+
+      if (!validationResult.success) {
+        const errors = validationResult.error.errors.map((err) => err.message);
+        throw new AppError(errors.join("; "), 400);
+      }
+
+      const quiz = await updateQuiz(id, userId, validationResult.data);
+
+      res.json({
+        success: true,
+        data: {
+          quiz,
+        },
+        message: "Quiz updated successfully",
+      });
     }
-
-    const quiz = await updateQuiz(id, userId, validationResult.data);
-
-    res.json({
-      success: true,
-      data: {
-        quiz,
-      },
-      message: "Quiz updated successfully",
-    });
   })
 );
 

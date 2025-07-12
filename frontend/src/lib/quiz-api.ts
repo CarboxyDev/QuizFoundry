@@ -306,6 +306,48 @@ export async function updateQuiz(
 }
 
 /**
+ * Update a quiz with complete questions and options
+ */
+export async function updateQuizWithQuestions(
+  id: string,
+  input: {
+    title: string;
+    description?: string;
+    difficulty: "easy" | "medium" | "hard";
+    is_public: boolean;
+    questions: Array<{
+      question_text: string;
+      question_type: "multiple_choice" | "short_answer";
+      order_index: number;
+      options: Array<{
+        option_text: string;
+        is_correct: boolean;
+        order_index: number;
+      }>;
+    }>;
+  },
+): Promise<QuizWithQuestions> {
+  try {
+    const response = await axiosInstance.put<{
+      success: boolean;
+      data: {
+        quiz: QuizWithQuestions;
+      };
+      message: string;
+    }>(`/quizzes/${id}`, input);
+
+    if (!response.data.success) {
+      throw new Error(response.data.message || "Failed to update quiz");
+    }
+
+    return response.data.data.quiz;
+  } catch (error) {
+    // Re-throw the error to preserve detailed information from the backend
+    throw error;
+  }
+}
+
+/**
  * Delete a quiz
  */
 export async function deleteQuiz(id: string): Promise<void> {

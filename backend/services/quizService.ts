@@ -14,6 +14,7 @@ import type {
   CreatePrototypeQuizInput,
   PublishManualQuizInput,
   UpdateQuizInput,
+  UpdateQuizWithQuestionsInput,
   CreateQuestionInput,
 } from "../schemas/quizSchemas";
 import type {
@@ -700,6 +701,188 @@ export async function updateQuiz(
 
   console.log(`[Quiz Service] Successfully updated quiz ${quizId}`);
   return data;
+}
+
+/**
+ * Update a quiz with complete questions and options
+ * This function validates the content and replaces all questions/options
+ * When editing an AI-generated quiz, it becomes a manual quiz
+ */
+export async function updateQuizWithQuestions(
+  quizId: string,
+  userId: string,
+  input: UpdateQuizWithQuestionsInput
+): Promise<QuizWithQuestions> {
+  try {
+    console.log(
+      `[Quiz Service] Updating quiz ${quizId} with questions for user ${userId}`
+    );
+
+    // First, verify the user owns the quiz
+    const { data: existingQuiz, error: quizError } = await supabase
+      .from("quizzes")
+      .select("user_id, is_ai_generated")
+      .eq("id", quizId)
+      .eq("user_id", userId)
+      .single();
+
+    if (quizError || !existingQuiz) {
+      throw new AppError("Quiz not found or access denied", 404);
+    }
+
+    // Prepare content for validation
+    const contentForValidation: QuizContentForValidation = {
+      title: input.title,
+      description: input.description,
+      questions: input.questions.map((q) => ({
+        question_text: q.question_text,
+        options: q.options.map((opt) => ({
+          option_text: opt.option_text,
+          is_correct: opt.is_correct,
+        })),
+      })),
+    };
+
+    // Apply AI security validation (same as manual quiz publishing)
+    if (env.BYPASS_CHECKS !== "true") {
+      console.log(
+        `[Quiz Service] Validating quiz content with AI security check`
+      );
+
+      const securityResult = await validateQuizContent(contentForValidation);
+
+      if (!securityResult.isApproved) {
+        console.log(
+          `[Quiz Service] Quiz update rejected by AI security check: ${securityResult.reasoning}`
+        );
+
+        const detailedError = new AppError(
+          `Quiz content was rejected: ${securityResult.reasoning}${
+            securityResult.concerns.length > 0
+              ? ` Specific concerns: ${securityResult.concerns.join(", ")}`
+              : ""
+          }`,
+          400
+        );
+
+        (detailedError as any).validationResult = {
+          reasoning: securityResult.reasoning,
+          confidence: securityResult.confidence,
+          concerns: securityResult.concerns,
+        };
+
+        throw detailedError;
+      }
+
+      console.log(
+        `[Quiz Service] Quiz update approved by AI security check (confidence: ${securityResult.confidence}%)`
+      );
+    }
+
+    // Start transaction by updating the quiz metadata
+    // When editing, the quiz becomes manual and loses AI-generated status
+    const { data: updatedQuiz, error: updateError } = await supabase
+      .from("quizzes")
+      .update({
+        title: input.title,
+        description: input.description,
+        difficulty: input.difficulty,
+        is_public: input.is_public,
+        is_ai_generated: false, // Loses AI-generated status when edited
+        is_manual: true, // Becomes manual quiz
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", quizId)
+      .eq("user_id", userId)
+      .select()
+      .single();
+
+    if (updateError || !updatedQuiz) {
+      throw new AppError(`Failed to update quiz: ${updateError?.message}`, 500);
+    }
+
+    console.log(`[Quiz Service] Updated quiz metadata: ${updatedQuiz.id}`);
+
+    // Delete all existing questions (this will cascade delete options)
+    const { error: deleteError } = await supabase
+      .from("questions")
+      .delete()
+      .eq("quiz_id", quizId);
+
+    if (deleteError) {
+      throw new AppError(
+        `Failed to delete existing questions: ${deleteError.message}`,
+        500
+      );
+    }
+
+    console.log(`[Quiz Service] Deleted existing questions for quiz ${quizId}`);
+
+    // Insert new questions and options
+    const questions: Question[] = [];
+
+    for (const [index, inputQuestion] of input.questions.entries()) {
+      console.log(
+        `[Quiz Service] Creating question ${index + 1}/${input.questions.length}`
+      );
+
+      // Create the question
+      const { data: questionData, error: questionError } = await supabase
+        .from("questions")
+        .insert({
+          quiz_id: quizId,
+          question_text: inputQuestion.question_text,
+          question_type: inputQuestion.question_type,
+          order_index: inputQuestion.order_index,
+        })
+        .select()
+        .single();
+
+      if (questionError || !questionData) {
+        throw new AppError(
+          `Failed to create question ${index + 1}: ${questionError?.message}`,
+          500
+        );
+      }
+
+      // Create options for the question
+      const optionsToInsert = inputQuestion.options.map((option) => ({
+        question_id: questionData.id,
+        option_text: option.option_text,
+        is_correct: option.is_correct,
+        order_index: option.order_index,
+      }));
+
+      const { data: optionsData, error: optionsError } = await supabase
+        .from("question_options")
+        .insert(optionsToInsert)
+        .select();
+
+      if (optionsError) {
+        throw new AppError(
+          `Failed to create options for question ${index + 1}: ${optionsError.message}`,
+          500
+        );
+      }
+
+      questions.push({
+        ...questionData,
+        options: optionsData || [],
+      });
+    }
+
+    console.log(
+      `[Quiz Service] Successfully updated quiz with ${questions.length} questions`
+    );
+
+    return {
+      ...updatedQuiz,
+      questions,
+    };
+  } catch (error) {
+    console.error("[Quiz Service] Error updating quiz with questions:", error);
+    throw error;
+  }
 }
 
 /**
