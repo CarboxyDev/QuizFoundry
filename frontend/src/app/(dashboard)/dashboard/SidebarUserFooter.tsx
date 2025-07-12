@@ -10,6 +10,7 @@ import {
 import { SidebarMenu, SidebarMenuItem } from "@/components/ui/sidebar";
 import { capitalize } from "@/lib/string";
 import { LogOut, Settings } from "lucide-react";
+import Link from "next/link";
 
 interface UserProfile {
   name: string | null;
@@ -53,9 +54,11 @@ export function SidebarUserFooter({ user, logout }: SidebarUserFooterProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuItem>
-              <Settings className="h-4 w-4" />
-              Settings
+            <DropdownMenuItem asChild>
+              <Link href="/settings">
+                <Settings className="h-4 w-4" />
+                Settings
+              </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logout} variant="destructive">
