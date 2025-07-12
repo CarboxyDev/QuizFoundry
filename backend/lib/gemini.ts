@@ -510,3 +510,206 @@ export async function generateCreativeQuizPrompt(): Promise<string> {
   }
   return generatedPrompt;
 }
+
+// =============================================
+// AI SECURITY CHECK FOR MANUAL QUIZZES
+// =============================================
+
+export interface AISecurityCheckResult {
+  isApproved: boolean;
+  reasoning: string;
+  confidence: number;
+  concerns: string[];
+}
+
+export interface QuizContentForValidation {
+  title: string;
+  description?: string;
+  questions: {
+    question_text: string;
+    options: {
+      option_text: string;
+      is_correct: boolean;
+    }[];
+  }[];
+}
+
+export async function validateQuizContent(
+  quizContent: QuizContentForValidation
+): Promise<AISecurityCheckResult> {
+  if (!process.env.GEMINI_API_KEY) {
+    throw new AppError("Gemini API key is not configured", 500);
+  }
+
+  try {
+    console.log(`[AI Security Check] Validating quiz: "${quizContent.title}"`);
+
+    const prompt = createSecurityCheckPrompt(quizContent);
+
+    const response = await ai.models.generateContent({
+      model,
+      contents: prompt,
+    });
+
+    const text = response.text?.trim();
+
+    if (!text) {
+      throw new AppError("No response received from AI security check", 500);
+    }
+
+    console.log(`[AI Security Check] Received response (${text.length} chars)`);
+
+    const result = parseSecurityCheckResponse(text);
+
+    console.log(
+      `[AI Security Check] Result: ${result.isApproved ? "APPROVED" : "REJECTED"} (confidence: ${result.confidence}%)`
+    );
+
+    return result;
+  } catch (error) {
+    console.error("[AI Security Check] Error during validation:", error);
+
+    if (error instanceof AppError) {
+      throw error;
+    }
+
+    throw new AppError(
+      "Failed to validate quiz content. Please try again.",
+      500
+    );
+  }
+}
+
+function createSecurityCheckPrompt(
+  quizContent: QuizContentForValidation
+): string {
+  const questionsText = quizContent.questions
+    .map(
+      (q, index) =>
+        `Question ${index + 1}: ${q.question_text}
+${q.options.map((opt, optIndex) => `  ${optIndex + 1}. ${opt.option_text}`).join("\n")}`
+    )
+    .join("\n\n");
+
+  return `You are an AI content moderator responsible for reviewing user-generated quiz content for quality and safety. 
+
+QUIZ TO REVIEW:
+Title: ${quizContent.title}
+Description: ${quizContent.description || "No description provided"}
+
+QUESTIONS:
+${questionsText}
+
+EVALUATION CRITERIA:
+Please evaluate this quiz content based on the following criteria:
+
+1. SAFETY:
+   - No harmful, offensive, or inappropriate content
+   - No hate speech, discrimination, or harassment
+   - No dangerous or illegal activities
+   - No adult content or explicit material
+
+2. QUALITY:
+   - Questions are clear and well-formed
+   - Options are reasonable and relevant
+   - Content is educational or entertaining
+   - Factual accuracy where applicable
+
+3. AUTHENTICITY:
+   - Content appears to be genuine effort
+   - Not spam or low-effort content
+   - Not misleading or deceptive
+
+RESPONSE FORMAT:
+Respond with ONLY a valid JSON object in this exact format:
+
+{
+  "isApproved": true|false,
+  "reasoning": "Clear explanation of the decision (1-2 sentences)",
+  "confidence": 85,
+  "concerns": ["List any specific concerns or issues found"]
+}
+
+GUIDELINES:
+- Set isApproved to true if the content meets all criteria
+- Set isApproved to false if there are significant violations
+- confidence should be a number between 0-100
+- concerns should be an array of specific issues (empty array if none)
+- Keep reasoning concise but informative
+
+Evaluate the quiz now:`;
+}
+
+function parseSecurityCheckResponse(text: string): AISecurityCheckResult {
+  try {
+    // Extract JSON from the response
+    const jsonMatch =
+      text.match(/```json\s*([\s\S]*?)\s*```/) ||
+      text.match(/```\s*([\s\S]*?)\s*```/) ||
+      text.match(/\{[\s\S]*\}/);
+
+    const jsonText = jsonMatch ? jsonMatch[1] || jsonMatch[0] : text;
+
+    if (!jsonText?.trim()) {
+      throw new InvalidResponseError(
+        "No JSON content found in AI security check response",
+        text.substring(0, 500)
+      );
+    }
+
+    const parsed = JSON.parse(jsonText);
+
+    if (!parsed || typeof parsed !== "object") {
+      throw new InvalidResponseError(
+        "AI security check response is not a valid object",
+        text.substring(0, 500)
+      );
+    }
+
+    // Validate the response structure
+    if (typeof parsed.isApproved !== "boolean") {
+      throw new InvalidResponseError(
+        "AI security check response missing or invalid isApproved field"
+      );
+    }
+
+    if (typeof parsed.reasoning !== "string") {
+      throw new InvalidResponseError(
+        "AI security check response missing or invalid reasoning field"
+      );
+    }
+
+    if (
+      typeof parsed.confidence !== "number" ||
+      parsed.confidence < 0 ||
+      parsed.confidence > 100
+    ) {
+      throw new InvalidResponseError(
+        "AI security check response missing or invalid confidence field"
+      );
+    }
+
+    if (!Array.isArray(parsed.concerns)) {
+      throw new InvalidResponseError(
+        "AI security check response missing or invalid concerns field"
+      );
+    }
+
+    return {
+      isApproved: parsed.isApproved,
+      reasoning: parsed.reasoning.trim(),
+      confidence: Math.round(parsed.confidence),
+      concerns: parsed.concerns.map((concern: any) => String(concern).trim()),
+    };
+  } catch (error) {
+    if (error instanceof InvalidResponseError) {
+      throw error;
+    }
+
+    console.error("[AI Security Check] Parse error:", error);
+    throw new InvalidResponseError(
+      "Failed to parse AI security check response",
+      text.substring(0, 500)
+    );
+  }
+}

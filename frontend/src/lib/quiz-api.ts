@@ -113,6 +113,67 @@ export interface SubmitQuizResult {
   completedAt: string;
 }
 
+// Manual quiz creation interfaces
+export interface CreatePrototypeQuizInput {
+  prompt: string;
+  questionCount: number;
+  optionsCount: number;
+  difficulty: "easy" | "medium" | "hard";
+}
+
+export interface CreatePrototypeQuizResponse {
+  success: boolean;
+  data: {
+    prototype: {
+      title: string;
+      description?: string;
+      difficulty: "easy" | "medium" | "hard";
+      questions: Array<{
+        question_text: string;
+        question_type: "multiple_choice" | "short_answer";
+        order_index: number;
+        options: Array<{
+          option_text: string;
+          is_correct: boolean;
+          order_index: number;
+        }>;
+      }>;
+    };
+    original_prompt: string;
+  };
+  message: string;
+}
+
+export interface PublishManualQuizInput {
+  title: string;
+  description?: string;
+  difficulty: "easy" | "medium" | "hard";
+  is_public: boolean;
+  original_prompt?: string;
+  questions: Array<{
+    question_text: string;
+    question_type: "multiple_choice" | "short_answer";
+    order_index: number;
+    options: Array<{
+      option_text: string;
+      is_correct: boolean;
+      order_index: number;
+    }>;
+  }>;
+}
+
+export interface PublishManualQuizResponse {
+  success: boolean;
+  data: {
+    quiz: Quiz;
+  };
+  message: string;
+}
+
+export interface QuizWithQuestions extends Quiz {
+  questions: Question[];
+}
+
 /**
  * Create a quiz using Express Mode (defaults: 5 questions, 4 options, medium difficulty)
  */
@@ -285,4 +346,46 @@ export async function submitQuiz(
     throw new Error(response.data.message || "Failed to submit quiz");
   }
   return response.data.data;
+}
+
+/**
+ * Create a prototype quiz for manual editing (AI generated but not saved to DB)
+ */
+export async function createPrototypeQuiz(
+  input: CreatePrototypeQuizInput,
+): Promise<{
+  prototype: CreatePrototypeQuizResponse["data"]["prototype"];
+  originalPrompt: string;
+}> {
+  const response = await axiosInstance.post<CreatePrototypeQuizResponse>(
+    "/manual-quizzes/create-prototype",
+    input,
+  );
+
+  if (!response.data.success) {
+    throw new Error(response.data.message || "Failed to create prototype quiz");
+  }
+
+  return {
+    prototype: response.data.data.prototype,
+    originalPrompt: response.data.data.original_prompt,
+  };
+}
+
+/**
+ * Publish a manually edited quiz after AI security validation
+ */
+export async function publishManualQuiz(
+  input: PublishManualQuizInput,
+): Promise<Quiz> {
+  const response = await axiosInstance.post<PublishManualQuizResponse>(
+    "/manual-quizzes/publish",
+    input,
+  );
+
+  if (!response.data.success) {
+    throw new Error(response.data.message || "Failed to publish quiz");
+  }
+
+  return response.data.data.quiz;
 }

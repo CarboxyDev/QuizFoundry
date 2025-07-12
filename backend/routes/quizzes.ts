@@ -150,17 +150,20 @@ quizzesRouter.post(
     }
 
     const quiz = await createQuizAdvancedMode(userId, validationResult.data);
-
-    const sanitizedQuiz = stripAnswersFromQuiz(quiz);
-
     const isManualMode = validationResult.data.isManualMode;
+
+    // For manual mode, return the prototype with answers intact for editing
+    // For regular mode, strip answers as usual
+    const responseQuiz = isManualMode ? quiz : stripAnswersFromQuiz(quiz);
 
     res.status(201).json({
       success: true,
       data: {
-        quiz: sanitizedQuiz,
+        quiz: responseQuiz,
         mode: "advanced",
         is_manual_mode: isManualMode,
+        is_prototype: isManualMode, // Indicate this is a prototype for frontend
+        original_prompt: validationResult.data.prompt,
       },
       message: `Quiz created successfully in Advanced Mode${isManualMode ? " (Manual editing enabled)" : ""}`,
     });

@@ -3,26 +3,25 @@ import { AppError } from "../errors/AppError";
 import {
   generateQuizWithAI,
   type GeneratedQuiz,
-  type QuizGenerationInput,
   generateCreativeQuizPrompt,
+  validateQuizContent,
+  type QuizContentForValidation,
 } from "../lib/gemini";
 import type {
   CreateQuizExpressModeInput,
   CreateQuizAdvancedModeInput,
   CreateManualQuizInput,
+  CreatePrototypeQuizInput,
+  PublishManualQuizInput,
   UpdateQuizInput,
   CreateQuestionInput,
-  UpdateQuestionInput,
 } from "../schemas/quizSchemas";
 import type {
   SubmitQuizRequest,
   SubmitQuizResult,
   SubmitQuizQuestionResult,
 } from "../types/api";
-
-// =============================================
-// TYPES
-// =============================================
+import { env } from "../env";
 
 export interface Quiz {
   id: string;
@@ -36,7 +35,6 @@ export interface Quiz {
   original_prompt?: string;
   created_at: string;
   updated_at: string;
-  // Aggregate stats (optional, added for UI convenience)
   attempts?: number;
   average_score?: number;
 }
@@ -64,10 +62,6 @@ export interface QuestionOption {
 export interface QuizWithQuestions extends Quiz {
   questions: Question[];
 }
-
-// =============================================
-// EXPRESS MODE - Simple quiz creation with defaults
-// =============================================
 
 /**
  * Create a quiz using Express Mode
@@ -115,14 +109,10 @@ export async function createQuizExpressMode(
   }
 }
 
-// =============================================
-// ADVANCED MODE - Custom settings with optional Manual Mode
-// =============================================
-
 /**
  * Create a quiz using Advanced Mode
  * Uses custom settings provided by user
- * Manual Mode determines is_manual flag
+ * Manual Mode determines whether to save to DB or return prototype
  */
 export async function createQuizAdvancedMode(
   userId: string,
@@ -141,13 +131,54 @@ export async function createQuizAdvancedMode(
       difficulty: input.difficulty,
     });
 
-    // Save to database
-    // is_manual = true if Manual Mode is ON, false otherwise
+    // If manual mode is enabled, return the prototype without saving to DB
+    if (input.isManualMode) {
+      console.log(
+        `[Quiz Service] Manual mode enabled - returning prototype quiz: "${generatedQuiz.title}"`
+      );
+
+      // Convert GeneratedQuiz to QuizWithQuestions format for consistent response
+      const prototypeQuiz: QuizWithQuestions = {
+        // Temporary fields for prototype (no real DB values)
+        id: "prototype",
+        user_id: userId,
+        title: generatedQuiz.title,
+        description: generatedQuiz.description,
+        difficulty: generatedQuiz.difficulty,
+        is_public: input.is_public,
+        is_ai_generated: true, // Initially AI generated
+        is_manual: true, // Will be manual after editing
+        original_prompt: input.prompt,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        questions: generatedQuiz.questions.map((q) => ({
+          id: `prototype-question-${q.order_index}`,
+          quiz_id: "prototype",
+          question_text: q.question_text,
+          question_type: q.question_type,
+          order_index: q.order_index,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          options: q.options.map((opt) => ({
+            id: `prototype-option-${opt.order_index}`,
+            question_id: `prototype-question-${q.order_index}`,
+            option_text: opt.option_text,
+            is_correct: opt.is_correct,
+            order_index: opt.order_index,
+            created_at: new Date().toISOString(),
+          })),
+        })),
+      };
+
+      return prototypeQuiz;
+    }
+
+    // Regular advanced mode - save to database
     const quiz = await saveGeneratedQuiz(
       userId,
       input.prompt,
       generatedQuiz,
-      input.isManualMode,
+      false,
       input.is_public
     );
 
@@ -164,9 +195,171 @@ export async function createQuizAdvancedMode(
   }
 }
 
-// =============================================
-// HELPER FUNCTIONS
-// =============================================
+/**
+ * Create a prototype quiz using AI but don't save to database
+ * This is used for manual mode where user will edit the quiz before publishing
+ */
+export async function createPrototypeQuiz(
+  input: CreatePrototypeQuizInput
+): Promise<GeneratedQuiz> {
+  try {
+    console.log(`[Quiz Service] Creating prototype quiz for manual mode`);
+
+    // Generate quiz with AI using custom settings
+    const generatedQuiz = await generateQuizWithAI({
+      prompt: input.prompt,
+      questionCount: input.questionCount,
+      optionsCount: input.optionsCount,
+      difficulty: input.difficulty,
+    });
+
+    console.log(
+      `[Quiz Service] Successfully created prototype quiz: "${generatedQuiz.title}"`
+    );
+
+    // Return the generated quiz without saving to database
+    return generatedQuiz;
+  } catch (error) {
+    console.error("[Quiz Service] Error creating prototype quiz:", error);
+    throw error;
+  }
+}
+
+/**
+ * Publish a manually edited quiz after AI security validation
+ * This validates the content and saves it to the database
+ */
+export async function publishManualQuiz(
+  userId: string,
+  input: PublishManualQuizInput
+): Promise<QuizWithQuestions> {
+  try {
+    console.log(
+      `[Quiz Service] Publishing manual quiz for user ${userId}: "${input.title}"`
+    );
+
+    const contentForValidation: QuizContentForValidation = {
+      title: input.title,
+      description: input.description,
+      questions: input.questions.map((q) => ({
+        question_text: q.question_text,
+        options: q.options.map((opt) => ({
+          option_text: opt.option_text,
+          is_correct: opt.is_correct,
+        })),
+      })),
+    };
+
+    /**
+     * Do security checks with AI.
+     * But bypass if the BYPASS_CHECKS environment variable is set to tru (for local testing)
+     */
+    if (env.BYPASS_CHECKS !== "true") {
+      const securityResult = await validateQuizContent(contentForValidation);
+
+      if (!securityResult.isApproved) {
+        console.log(
+          `[Quiz Service] Manual quiz rejected by AI security check: ${securityResult.reasoning}`
+        );
+        throw new AppError(
+          `Quiz content was rejected: ${securityResult.reasoning}${
+            securityResult.concerns.length > 0
+              ? ` Specific concerns: ${securityResult.concerns.join(", ")}`
+              : ""
+          }`,
+          400
+        );
+      }
+
+      console.log(
+        `[Quiz Service] Manual quiz approved by AI security check (confidence: ${securityResult.confidence}%)`
+      );
+    }
+
+    const { data: quizData, error: quizError } = await supabase
+      .from("quizzes")
+      .insert({
+        user_id: userId,
+        title: input.title,
+        description: input.description,
+        difficulty: input.difficulty,
+        is_public: input.is_public,
+        is_ai_generated: false,
+        is_manual: true,
+        original_prompt: input.original_prompt,
+      })
+      .select()
+      .single();
+
+    if (quizError || !quizData) {
+      throw new AppError(`Failed to create quiz: ${quizError?.message}`, 500);
+    }
+
+    console.log(`[Quiz Service] Created manual quiz record: ${quizData.id}`);
+
+    const questions: Question[] = [];
+
+    for (const [index, inputQuestion] of input.questions.entries()) {
+      console.log(
+        `[Quiz Service] Saving question ${index + 1}/${input.questions.length}`
+      );
+
+      const { data: questionData, error: questionError } = await supabase
+        .from("questions")
+        .insert({
+          quiz_id: quizData.id,
+          question_text: inputQuestion.question_text,
+          question_type: inputQuestion.question_type,
+          order_index: inputQuestion.order_index,
+        })
+        .select()
+        .single();
+
+      if (questionError || !questionData) {
+        throw new AppError(
+          `Failed to create question ${index + 1}: ${questionError?.message}`,
+          500
+        );
+      }
+
+      const optionsToInsert = inputQuestion.options.map((option) => ({
+        question_id: questionData.id,
+        option_text: option.option_text,
+        is_correct: option.is_correct,
+        order_index: option.order_index,
+      }));
+
+      const { data: optionsData, error: optionsError } = await supabase
+        .from("question_options")
+        .insert(optionsToInsert)
+        .select();
+
+      if (optionsError) {
+        throw new AppError(
+          `Failed to create options for question ${index + 1}: ${optionsError.message}`,
+          500
+        );
+      }
+
+      questions.push({
+        ...questionData,
+        options: optionsData || [],
+      });
+    }
+
+    console.log(
+      `[Quiz Service] Successfully published manual quiz with ${questions.length} questions`
+    );
+
+    return {
+      ...quizData,
+      questions,
+    };
+  } catch (error) {
+    console.error("[Quiz Service] Error publishing manual quiz:", error);
+    throw error;
+  }
+}
 
 /**
  * Save AI-generated quiz to database
@@ -183,7 +376,6 @@ async function saveGeneratedQuiz(
       `[Quiz Service] Saving quiz to database: "${generatedQuiz.title}"`
     );
 
-    // Create quiz record
     const { data: quizData, error: quizError } = await supabase
       .from("quizzes")
       .insert({
@@ -191,9 +383,9 @@ async function saveGeneratedQuiz(
         title: generatedQuiz.title,
         description: generatedQuiz.description,
         difficulty: generatedQuiz.difficulty,
-        is_public: isPublic, // Use provided visibility setting
-        is_ai_generated: true, // Always true for AI-generated content
-        is_manual: isManual, // Set based on mode
+        is_public: isPublic,
+        is_ai_generated: true,
+        is_manual: isManual,
         original_prompt: originalPrompt,
       })
       .select()
@@ -205,7 +397,6 @@ async function saveGeneratedQuiz(
 
     console.log(`[Quiz Service] Created quiz record: ${quizData.id}`);
 
-    // Save questions and options
     const questions: Question[] = [];
 
     for (const [
@@ -216,7 +407,6 @@ async function saveGeneratedQuiz(
         `[Quiz Service] Saving question ${index + 1}/${generatedQuiz.questions.length}`
       );
 
-      // Insert question
       const { data: questionData, error: questionError } = await supabase
         .from("questions")
         .insert({
@@ -235,7 +425,6 @@ async function saveGeneratedQuiz(
         );
       }
 
-      // Insert options for this question
       const optionsToInsert = generatedQuestion.options.map((option) => ({
         question_id: questionData.id,
         option_text: option.option_text,
@@ -275,13 +464,6 @@ async function saveGeneratedQuiz(
   }
 }
 
-// =============================================
-// MANUAL QUIZ CREATION (separate from AI)
-// =============================================
-
-/**
- * Create a manual quiz (without AI)
- */
 export async function createManualQuiz(
   userId: string,
   input: CreateManualQuizInput
@@ -298,8 +480,8 @@ export async function createManualQuiz(
       description: input.description,
       difficulty: input.difficulty,
       is_public: input.is_public ?? true,
-      is_ai_generated: false, // Manual creation, not AI
-      is_manual: true, // Manual quiz creation
+      is_ai_generated: false,
+      is_manual: true,
     })
     .select()
     .single();
@@ -313,13 +495,6 @@ export async function createManualQuiz(
   return data;
 }
 
-// =============================================
-// QUIZ RETRIEVAL AND MANAGEMENT
-// =============================================
-
-/**
- * Get a quiz by ID with questions
- */
 export async function getQuizById(
   quizId: string,
   userId?: string
@@ -328,7 +503,6 @@ export async function getQuizById(
     `[Quiz Service] Fetching quiz ${quizId} for user ${userId || "anonymous"}`
   );
 
-  // Get the quiz
   const { data: quizData, error: quizError } = await supabase
     .from("quizzes")
     .select("*")
@@ -343,7 +517,6 @@ export async function getQuizById(
     throw new AppError(`Failed to fetch quiz: ${quizError.message}`, 500);
   }
 
-  // Check access permissions
   if (!quizData.is_public && (!userId || quizData.user_id !== userId)) {
     console.log(
       `[Quiz Service] Access denied to quiz ${quizId} for user ${userId}`
@@ -351,7 +524,6 @@ export async function getQuizById(
     throw new AppError("Access denied to this quiz", 403);
   }
 
-  // Get questions with options
   const { data: questionsData, error: questionsError } = await supabase
     .from("questions")
     .select(
@@ -413,7 +585,6 @@ export async function getPublicQuizzes(
     `[Quiz Service] Fetching public quizzes (limit: ${limit}, offset: ${offset})`
   );
 
-  // First get the quizzes
   const { data: quizzesData, error: quizzesError } = await supabase
     .from("quizzes")
     .select("*")
@@ -433,7 +604,6 @@ export async function getPublicQuizzes(
     return [];
   }
 
-  // Get question counts for these quizzes
   const quizIds = quizzesData.map((quiz) => quiz.id);
   const { data: questionCounts, error: countsError } = await supabase
     .from("questions")
@@ -447,7 +617,6 @@ export async function getPublicQuizzes(
     );
   }
 
-  // Count questions per quiz
   const countMap = new Map<string, number>();
   (questionCounts || []).forEach((q: any) => {
     const quizId = q.quiz_id;

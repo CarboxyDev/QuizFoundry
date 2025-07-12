@@ -17,6 +17,7 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  createPrototypeQuiz,
   createQuizAdvanced,
   createQuizExpress,
   surpriseMe,
@@ -102,16 +103,44 @@ export default function CreateQuizPage() {
 
       let result;
       if (isAdvancedMode) {
-        // Map form data to advanced API input
-        const advancedInput = {
-          prompt: formData.prompt,
-          difficulty: formData.difficulty,
-          questionCount: formData.questionCount,
-          optionsCount: formData.optionsCount,
-          isManualMode: formData.isManual,
-          is_public: formData.isPublic,
-        };
-        result = await createQuizAdvanced(advancedInput);
+        // Check if manual mode is enabled
+        if (formData.isManual) {
+          // Create prototype quiz for manual editing
+          const prototypeResult = await createPrototypeQuiz({
+            prompt: formData.prompt,
+            questionCount: formData.questionCount,
+            optionsCount: formData.optionsCount,
+            difficulty: formData.difficulty,
+          });
+
+          toast.success("Prototype quiz created! Redirecting to editor...");
+
+          // Store prototype data and redirect to manual editing page
+          const prototypeData = {
+            prototype: prototypeResult.prototype,
+            originalPrompt: prototypeResult.originalPrompt,
+            isPublic: formData.isPublic,
+          };
+
+          // Use URL searchParams to pass the data
+          const searchParams = new URLSearchParams({
+            data: JSON.stringify(prototypeData),
+          });
+
+          router.push(`/create-quiz/manual?${searchParams.toString()}`);
+          return;
+        } else {
+          // Regular advanced mode
+          const advancedInput = {
+            prompt: formData.prompt,
+            difficulty: formData.difficulty,
+            questionCount: formData.questionCount,
+            optionsCount: formData.optionsCount,
+            isManualMode: false,
+            is_public: formData.isPublic,
+          };
+          result = await createQuizAdvanced(advancedInput);
+        }
       } else {
         // Map form data to express API input
         const expressInput = {
@@ -540,7 +569,7 @@ export default function CreateQuizPage() {
                               onCheckedChange={(checked) =>
                                 handleFormDataChange({ isManual: !!checked })
                               }
-                              disabled={isGenerating || true}
+                              disabled={isGenerating}
                             />
                             <div className="space-y-1">
                               <Label
@@ -548,7 +577,7 @@ export default function CreateQuizPage() {
                                 className="flex cursor-pointer items-center gap-2 text-sm font-medium"
                               >
                                 <Edit3 className="h-4 w-4" />
-                                Manual Mode (Coming Soon)
+                                Manual Mode
                               </Label>
                               <p className="text-muted-foreground text-xs">
                                 Generate a prototype quiz that you can edit

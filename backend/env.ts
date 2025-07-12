@@ -10,6 +10,7 @@ const envSchema = z.object({
   SUPABASE_ANON_KEY: z.string().min(1),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
   GEMINI_API_KEY: z.string().min(1, "Gemini API key is required"),
+  BYPASS_CHECKS: z.string().default("false"),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);
