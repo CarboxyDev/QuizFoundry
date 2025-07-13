@@ -12,7 +12,7 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/hooks/auth/useAuth";
-import { Sparkles } from "lucide-react";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { ReactNode } from "react";
 
@@ -30,9 +30,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <Sidebar>
           <SidebarHeader className="border-sidebar-border">
             <div className="flex h-12 items-center gap-2 px-4">
-              <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-lg">
-                <Sparkles className="h-4 w-4" />
-              </div>
+              <Image src="/logo.png" alt="QuizFoundry" width={40} height={40} />
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-semibold">QuizFoundry</span>
                 <span className="text-muted-foreground truncate text-xs">

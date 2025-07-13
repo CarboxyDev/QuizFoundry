@@ -178,7 +178,8 @@ function PerformanceByDifficultyCard({
                     )}
                   >
                     {data.improvement > 0 ? "+" : ""}
-                    {data.improvement.toFixed(1)}% improvement
+                    {data.improvement.toFixed(1)}%{" "}
+                    {data.improvement > 0 ? "improvement" : "decline"}
                   </span>
                 )}
               </div>
@@ -506,7 +507,7 @@ function StreaksCard({
               {streaks.currentStreak > 0 && (
                 <div className="mt-3 rounded-lg border border-green-500/20 bg-green-500/5 p-3">
                   <p className="text-sm font-medium text-green-600">
-                    🎉 You're on fire! Keep your streak alive!
+                    🎉 You&apos;re on fire! Keep your streak alive!
                   </p>
                   <p className="text-muted-foreground mt-1 text-xs">
                     Complete a quiz today to maintain your{" "}
