@@ -4,7 +4,14 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { BarChart3, BookOpen, FileText, Home, Sparkles } from "lucide-react";
+import {
+  BarChart3,
+  BookOpen,
+  FileText,
+  Home,
+  Settings,
+  Sparkles,
+} from "lucide-react";
 import Link from "next/link";
 
 const navigation = [
@@ -13,6 +20,7 @@ const navigation = [
   { title: "Public Quizzes", url: "/public-quizzes", icon: BookOpen },
   { title: "My Quizzes", url: "/my-quizzes", icon: FileText },
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
+  { title: "Settings", url: "/settings", icon: Settings },
 ];
 
 interface SidebarNavProps {

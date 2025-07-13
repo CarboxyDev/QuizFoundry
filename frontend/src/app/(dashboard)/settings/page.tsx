@@ -10,7 +10,14 @@ import { useAuth } from "@/hooks/auth/useAuth";
 import { updateProfile, uploadAvatar } from "@/lib/user-api";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { AlertCircle, Save, Settings, Upload, User } from "lucide-react";
+import {
+  AlertCircle,
+  LogOut,
+  Save,
+  Settings,
+  Upload,
+  User,
+} from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -66,7 +73,7 @@ interface ValidationErrors {
 }
 
 export default function SettingsPage() {
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, logout } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [errors, setErrors] = useState<ValidationErrors>({});
@@ -454,6 +461,45 @@ export default function SettingsPage() {
                       <Save className="mr-2 h-4 w-4" />
                       {isLoading ? "Saving..." : "Save Changes"}
                     </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            <motion.div variants={cardVariants}>
+              <Card className={cn("bg-card/60 backdrop-blur-sm")}>
+                <CardHeader className="pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="rounded-lg bg-red-500/10 p-2 text-red-500">
+                      <LogOut className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <CardTitle className="text-xl">
+                        Account Management
+                      </CardTitle>
+                      <p className={cn("text-muted-foreground text-sm")}>
+                        Manage your account access and session
+                      </p>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="mb-2 font-medium">Sign Out</h3>
+                      <p className={cn("text-muted-foreground mb-4 text-sm")}>
+                        This will sign you out of your account and redirect you
+                        to the login page.
+                      </p>
+                      <Button
+                        variant="destructive"
+                        onClick={logout}
+                        className="w-full sm:w-auto"
+                      >
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Sign Out
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
