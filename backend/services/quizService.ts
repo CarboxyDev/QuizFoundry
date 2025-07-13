@@ -1275,7 +1275,7 @@ export async function getUserQuizzesWithStats(
   });
 
   // Merge stats and question counts back into quizzes array
-  return quizzes.map((quiz) => {
+  return quizzes.map((quiz: any) => {
     const stats = statsMap.get(quiz.id) || { attempts: 0, totalPercentage: 0 };
     const attempts = stats.attempts;
     const average_score =
@@ -1951,5 +1951,900 @@ export async function getQuizAnalytics(
     `[Quiz Service] Successfully calculated analytics for quiz ${quizId}: ${totalAttempts} attempts, ${uniqueUsers} unique users`
   );
 
+  return analytics;
+}
+
+/**
+ * Analytics for all quizzes created by a user
+ */
+export interface CreatorAnalytics {
+  overview: {
+    totalQuizzes: number;
+    totalAttempts: number;
+    totalUniqueUsers: number;
+    averageScore: number;
+    averageAttemptsPerQuiz: number;
+    averageQuestionsPerQuiz: number;
+    totalQuestions: number;
+  };
+  breakdown: {
+    byDifficulty: {
+      easy: { count: number; avgScore: number; attempts: number };
+      medium: { count: number; avgScore: number; attempts: number };
+      hard: { count: number; avgScore: number; attempts: number };
+    };
+    byType: {
+      aiGenerated: { count: number; avgScore: number; attempts: number };
+      humanCreated: { count: number; avgScore: number; attempts: number };
+    };
+  };
+  performance: {
+    topPerformingQuizzes: {
+      quizId: string;
+      title: string;
+      avgScore: number;
+      attempts: number;
+      uniqueUsers: number;
+      difficulty: string;
+      createdAt: string;
+    }[];
+    scoreDistribution: {
+      range: string;
+      count: number;
+      percentage: number;
+    }[];
+  };
+  engagement: {
+    creationTrend: {
+      date: string;
+      count: number;
+    }[];
+    attemptsTrend: {
+      date: string;
+      count: number;
+    }[];
+    recentActivity: {
+      last24Hours: number;
+      last7Days: number;
+      last30Days: number;
+    };
+  };
+  topQuizzes: {
+    mostPopular: {
+      quizId: string;
+      title: string;
+      attempts: number;
+      uniqueUsers: number;
+      avgScore: number;
+    }[];
+    highestRated: {
+      quizId: string;
+      title: string;
+      avgScore: number;
+      attempts: number;
+      difficulty: string;
+    }[];
+  };
+}
+
+/**
+ * Analytics for all quizzes attempted by a user
+ */
+export interface ParticipantAnalytics {
+  overview: {
+    totalAttempts: number;
+    uniqueQuizzes: number;
+    averageScore: number;
+    highestScore: number;
+    lowestScore: number;
+    totalTimeSpent: number;
+    averageTimePerQuiz: number;
+  };
+  performance: {
+    scoreDistribution: {
+      range: string;
+      count: number;
+      percentage: number;
+    }[];
+    progressTrend: {
+      date: string;
+      avgScore: number;
+      attempts: number;
+    }[];
+    strengthsByDifficulty: {
+      easy: { attempts: number; avgScore: number; improvement: number };
+      medium: { attempts: number; avgScore: number; improvement: number };
+      hard: { attempts: number; avgScore: number; improvement: number };
+    };
+  };
+  engagement: {
+    activityTrend: {
+      date: string;
+      attempts: number;
+    }[];
+    streaks: {
+      currentStreak: number;
+      longestStreak: number;
+      lastActive: string;
+    };
+    favoriteTopics: {
+      topic: string;
+      attempts: number;
+      avgScore: number;
+    }[];
+  };
+  achievements: {
+    perfectScores: number;
+    improvementRate: number;
+    consistencyScore: number;
+    challenges: {
+      name: string;
+      description: string;
+      completed: boolean;
+      progress: number;
+    }[];
+  };
+  recentAttempts: {
+    quizId: string;
+    quizTitle: string;
+    score: number;
+    percentage: number;
+    difficulty: string;
+    completedAt: string;
+    creatorName: string | null;
+  }[];
+}
+
+/**
+ * Get comprehensive analytics for all quizzes created by a user
+ */
+export async function getCreatorAnalytics(
+  userId: string
+): Promise<CreatorAnalytics> {
+  console.log(`[Quiz Service] Getting creator analytics for user ${userId}`);
+
+  // Get all quizzes created by the user
+  const { data: quizzes, error: quizzesError } = await supabase
+    .from("quizzes")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+
+  if (quizzesError) {
+    throw new AppError(
+      `Failed to fetch user quizzes: ${quizzesError.message}`,
+      500
+    );
+  }
+
+  const totalQuizzes = quizzes?.length || 0;
+  const quizIds = (quizzes || []).map((q) => q.id);
+
+  if (totalQuizzes === 0) {
+    // Return empty analytics for users with no quizzes
+    return {
+      overview: {
+        totalQuizzes: 0,
+        totalAttempts: 0,
+        totalUniqueUsers: 0,
+        averageScore: 0,
+        averageAttemptsPerQuiz: 0,
+        averageQuestionsPerQuiz: 0,
+        totalQuestions: 0,
+      },
+      breakdown: {
+        byDifficulty: {
+          easy: { count: 0, avgScore: 0, attempts: 0 },
+          medium: { count: 0, avgScore: 0, attempts: 0 },
+          hard: { count: 0, avgScore: 0, attempts: 0 },
+        },
+        byType: {
+          aiGenerated: { count: 0, avgScore: 0, attempts: 0 },
+          humanCreated: { count: 0, avgScore: 0, attempts: 0 },
+        },
+      },
+      performance: {
+        topPerformingQuizzes: [],
+        scoreDistribution: [
+          { range: "0-20%", count: 0, percentage: 0 },
+          { range: "21-40%", count: 0, percentage: 0 },
+          { range: "41-60%", count: 0, percentage: 0 },
+          { range: "61-80%", count: 0, percentage: 0 },
+          { range: "81-100%", count: 0, percentage: 0 },
+        ],
+      },
+      engagement: {
+        creationTrend: [],
+        attemptsTrend: [],
+        recentActivity: {
+          last24Hours: 0,
+          last7Days: 0,
+          last30Days: 0,
+        },
+      },
+      topQuizzes: {
+        mostPopular: [],
+        highestRated: [],
+      },
+    };
+  }
+
+  // Get all attempts for user's quizzes
+  const { data: attempts, error: attemptsError } = await supabase
+    .from("quiz_attempts")
+    .select("*")
+    .in("quiz_id", quizIds)
+    .order("completed_at", { ascending: false });
+
+  if (attemptsError) {
+    throw new AppError(
+      `Failed to fetch quiz attempts: ${attemptsError.message}`,
+      500
+    );
+  }
+
+  // Get question counts for each quiz
+  const { data: questionCounts, error: questionsError } = await supabase
+    .from("questions")
+    .select("quiz_id")
+    .in("quiz_id", quizIds);
+
+  if (questionsError) {
+    throw new AppError(
+      `Failed to fetch question counts: ${questionsError.message}`,
+      500
+    );
+  }
+
+  // Calculate question counts per quiz
+  const questionCountsMap = new Map();
+  (questionCounts || []).forEach((q) => {
+    questionCountsMap.set(
+      q.quiz_id,
+      (questionCountsMap.get(q.quiz_id) || 0) + 1
+    );
+  });
+
+  // Calculate overview metrics
+  const totalAttempts = attempts?.length || 0;
+  const totalUniqueUsers = new Set((attempts || []).map((a) => a.user_id)).size;
+  const averageScore =
+    totalAttempts > 0
+      ? Number(
+          (
+            (attempts || []).reduce((sum, a) => sum + a.percentage, 0) /
+            totalAttempts
+          ).toFixed(1)
+        )
+      : 0;
+  const averageAttemptsPerQuiz =
+    totalQuizzes > 0 ? Number((totalAttempts / totalQuizzes).toFixed(1)) : 0;
+  const totalQuestions = Array.from(questionCountsMap.values()).reduce(
+    (sum, count) => sum + count,
+    0
+  );
+  const averageQuestionsPerQuiz =
+    totalQuizzes > 0 ? Number((totalQuestions / totalQuizzes).toFixed(1)) : 0;
+
+  // Breakdown by difficulty
+  const difficultyBreakdown = {
+    easy: { count: 0, avgScore: 0, attempts: 0 },
+    medium: { count: 0, avgScore: 0, attempts: 0 },
+    hard: { count: 0, avgScore: 0, attempts: 0 },
+  };
+
+  (quizzes || []).forEach((quiz) => {
+    const difficulty = quiz.difficulty as "easy" | "medium" | "hard";
+    difficultyBreakdown[difficulty].count++;
+    const quizAttempts = (attempts || []).filter((a) => a.quiz_id === quiz.id);
+    difficultyBreakdown[difficulty].attempts += quizAttempts.length;
+    if (quizAttempts.length > 0) {
+      const avgScore =
+        quizAttempts.reduce((sum, a) => sum + a.percentage, 0) /
+        quizAttempts.length;
+      difficultyBreakdown[difficulty].avgScore = Number(
+        ((difficultyBreakdown[difficulty].avgScore + avgScore) / 2).toFixed(1)
+      );
+    }
+  });
+
+  // Breakdown by type
+  const typeBreakdown = {
+    aiGenerated: { count: 0, avgScore: 0, attempts: 0 },
+    humanCreated: { count: 0, avgScore: 0, attempts: 0 },
+  };
+
+  (quizzes || []).forEach((quiz) => {
+    const type = quiz.is_manual ? "humanCreated" : "aiGenerated";
+    typeBreakdown[type].count++;
+    const quizAttempts = (attempts || []).filter((a) => a.quiz_id === quiz.id);
+    typeBreakdown[type].attempts += quizAttempts.length;
+    if (quizAttempts.length > 0) {
+      const avgScore =
+        quizAttempts.reduce((sum, a) => sum + a.percentage, 0) /
+        quizAttempts.length;
+      typeBreakdown[type].avgScore = Number(
+        ((typeBreakdown[type].avgScore + avgScore) / 2).toFixed(1)
+      );
+    }
+  });
+
+  // Score distribution across all attempts
+  const scoreDistribution = [
+    { range: "0-20%", count: 0, percentage: 0 },
+    { range: "21-40%", count: 0, percentage: 0 },
+    { range: "41-60%", count: 0, percentage: 0 },
+    { range: "61-80%", count: 0, percentage: 0 },
+    { range: "81-100%", count: 0, percentage: 0 },
+  ];
+
+  (attempts || []).forEach((attempt) => {
+    const score = attempt.percentage;
+    if (score <= 20) scoreDistribution[0].count++;
+    else if (score <= 40) scoreDistribution[1].count++;
+    else if (score <= 60) scoreDistribution[2].count++;
+    else if (score <= 80) scoreDistribution[3].count++;
+    else scoreDistribution[4].count++;
+  });
+
+  scoreDistribution.forEach((dist) => {
+    dist.percentage =
+      totalAttempts > 0
+        ? Number(((dist.count / totalAttempts) * 100).toFixed(1))
+        : 0;
+  });
+
+  // Top performing quizzes
+  const quizStats = (quizzes || []).map((quiz) => {
+    const quizAttempts = (attempts || []).filter((a) => a.quiz_id === quiz.id);
+    const avgScore =
+      quizAttempts.length > 0
+        ? Number(
+            (
+              quizAttempts.reduce((sum, a) => sum + a.percentage, 0) /
+              quizAttempts.length
+            ).toFixed(1)
+          )
+        : 0;
+    const uniqueUsers = new Set(quizAttempts.map((a) => a.user_id)).size;
+
+    return {
+      quizId: quiz.id,
+      title: quiz.title,
+      avgScore,
+      attempts: quizAttempts.length,
+      uniqueUsers,
+      difficulty: quiz.difficulty,
+      createdAt: quiz.created_at,
+    };
+  });
+
+  const topPerformingQuizzes = quizStats
+    .filter((q) => q.attempts > 0)
+    .sort((a, b) => b.avgScore - a.avgScore)
+    .slice(0, 5);
+
+  // Creation and attempts trends (last 30 days)
+  const now = new Date();
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+  const creationTrend: { date: string; count: number }[] = [];
+  const attemptsTrend: { date: string; count: number }[] = [];
+
+  for (let i = 29; i >= 0; i--) {
+    const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+    const dateStr = date.toISOString().split("T")[0];
+
+    const quizzesCreated = (quizzes || []).filter((q) =>
+      q.created_at.startsWith(dateStr)
+    ).length;
+
+    const attemptsOnDate = (attempts || []).filter((a) =>
+      a.completed_at.startsWith(dateStr)
+    ).length;
+
+    creationTrend.push({ date: dateStr, count: quizzesCreated });
+    attemptsTrend.push({ date: dateStr, count: attemptsOnDate });
+  }
+
+  // Recent activity
+  const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+  const recentActivity = {
+    last24Hours: (attempts || []).filter(
+      (a) => new Date(a.completed_at) > last24Hours
+    ).length,
+    last7Days: (attempts || []).filter(
+      (a) => new Date(a.completed_at) > last7Days
+    ).length,
+    last30Days: (attempts || []).filter(
+      (a) => new Date(a.completed_at) > last30Days
+    ).length,
+  };
+
+  // Top quizzes (most popular and highest rated)
+  const mostPopular = quizStats
+    .sort((a, b) => b.attempts - a.attempts)
+    .slice(0, 5)
+    .map((q) => ({
+      quizId: q.quizId,
+      title: q.title,
+      attempts: q.attempts,
+      uniqueUsers: q.uniqueUsers,
+      avgScore: q.avgScore,
+    }));
+
+  const highestRated = quizStats
+    .filter((q) => q.attempts >= 3) // Only include quizzes with at least 3 attempts
+    .sort((a, b) => b.avgScore - a.avgScore)
+    .slice(0, 5)
+    .map((q) => ({
+      quizId: q.quizId,
+      title: q.title,
+      avgScore: q.avgScore,
+      attempts: q.attempts,
+      difficulty: q.difficulty,
+    }));
+
+  const analytics: CreatorAnalytics = {
+    overview: {
+      totalQuizzes,
+      totalAttempts,
+      totalUniqueUsers,
+      averageScore,
+      averageAttemptsPerQuiz,
+      averageQuestionsPerQuiz,
+      totalQuestions,
+    },
+    breakdown: {
+      byDifficulty: difficultyBreakdown,
+      byType: typeBreakdown,
+    },
+    performance: {
+      topPerformingQuizzes,
+      scoreDistribution,
+    },
+    engagement: {
+      creationTrend,
+      attemptsTrend,
+      recentActivity,
+    },
+    topQuizzes: {
+      mostPopular,
+      highestRated,
+    },
+  };
+
+  console.log(
+    `[Quiz Service] Successfully calculated creator analytics for user ${userId}: ${totalQuizzes} quizzes, ${totalAttempts} total attempts`
+  );
+  return analytics;
+}
+
+/**
+ * Get comprehensive analytics for all quizzes attempted by a user
+ */
+export async function getParticipantAnalytics(
+  userId: string
+): Promise<ParticipantAnalytics> {
+  console.log(
+    `[Quiz Service] Getting participant analytics for user ${userId}`
+  );
+
+  // Get all attempts by the user
+  const { data: attempts, error: attemptsError } = await supabase
+    .from("quiz_attempts")
+    .select(
+      `
+      *,
+      quizzes (
+        id,
+        title,
+        difficulty,
+        user_id,
+        original_prompt
+      )
+    `
+    )
+    .eq("user_id", userId)
+    .order("completed_at", { ascending: false });
+
+  if (attemptsError) {
+    throw new AppError(
+      `Failed to fetch user attempts: ${attemptsError.message}`,
+      500
+    );
+  }
+
+  const totalAttempts = attempts?.length || 0;
+
+  if (totalAttempts === 0) {
+    // Return empty analytics for users with no attempts
+    return {
+      overview: {
+        totalAttempts: 0,
+        uniqueQuizzes: 0,
+        averageScore: 0,
+        highestScore: 0,
+        lowestScore: 0,
+        totalTimeSpent: 0,
+        averageTimePerQuiz: 0,
+      },
+      performance: {
+        scoreDistribution: [
+          { range: "0-20%", count: 0, percentage: 0 },
+          { range: "21-40%", count: 0, percentage: 0 },
+          { range: "41-60%", count: 0, percentage: 0 },
+          { range: "61-80%", count: 0, percentage: 0 },
+          { range: "81-100%", count: 0, percentage: 0 },
+        ],
+        progressTrend: [],
+        strengthsByDifficulty: {
+          easy: { attempts: 0, avgScore: 0, improvement: 0 },
+          medium: { attempts: 0, avgScore: 0, improvement: 0 },
+          hard: { attempts: 0, avgScore: 0, improvement: 0 },
+        },
+      },
+      engagement: {
+        activityTrend: [],
+        streaks: {
+          currentStreak: 0,
+          longestStreak: 0,
+          lastActive: "",
+        },
+        favoriteTopics: [],
+      },
+      achievements: {
+        perfectScores: 0,
+        improvementRate: 0,
+        consistencyScore: 0,
+        challenges: [],
+      },
+      recentAttempts: [],
+    };
+  }
+
+  // Get creator names for recent attempts
+  const creatorIds = [
+    ...new Set((attempts || []).map((a) => a.quizzes?.user_id).filter(Boolean)),
+  ];
+  const { data: creators, error: creatorsError } = await supabase
+    .from("profiles")
+    .select("id, name")
+    .in("id", creatorIds);
+
+  if (creatorsError) {
+    console.warn(`Failed to fetch creator profiles: ${creatorsError.message}`);
+  }
+
+  const creatorsMap = new Map();
+  (creators || []).forEach((creator) => {
+    creatorsMap.set(creator.id, creator.name);
+  });
+
+  // Calculate overview metrics
+  const uniqueQuizzes = new Set((attempts || []).map((a) => a.quiz_id)).size;
+  const scores = (attempts || []).map((a) => a.percentage);
+  const averageScore = Number(
+    (scores.reduce((sum, score) => sum + score, 0) / totalAttempts).toFixed(1)
+  );
+  const highestScore = Math.max(...scores);
+  const lowestScore = Math.min(...scores);
+
+  // Time calculations (placeholder for now, would need proper time tracking)
+  const totalTimeSpent = (attempts || []).reduce(
+    (sum, a) => sum + (a.time_spent_seconds || 0),
+    0
+  );
+  const averageTimePerQuiz =
+    totalAttempts > 0 ? Math.round(totalTimeSpent / totalAttempts) : 0;
+
+  // Score distribution
+  const scoreDistribution = [
+    { range: "0-20%", count: 0, percentage: 0 },
+    { range: "21-40%", count: 0, percentage: 0 },
+    { range: "41-60%", count: 0, percentage: 0 },
+    { range: "61-80%", count: 0, percentage: 0 },
+    { range: "81-100%", count: 0, percentage: 0 },
+  ];
+
+  scores.forEach((score) => {
+    if (score <= 20) scoreDistribution[0].count++;
+    else if (score <= 40) scoreDistribution[1].count++;
+    else if (score <= 60) scoreDistribution[2].count++;
+    else if (score <= 80) scoreDistribution[3].count++;
+    else scoreDistribution[4].count++;
+  });
+
+  scoreDistribution.forEach((dist) => {
+    dist.percentage = Number(((dist.count / totalAttempts) * 100).toFixed(1));
+  });
+
+  // Progress trend (last 30 days)
+  const now = new Date();
+  const progressTrend: { date: string; avgScore: number; attempts: number }[] =
+    [];
+
+  for (let i = 29; i >= 0; i--) {
+    const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+    const dateStr = date.toISOString().split("T")[0];
+
+    const dayAttempts = (attempts || []).filter((a) =>
+      a.completed_at.startsWith(dateStr)
+    );
+    const avgScore =
+      dayAttempts.length > 0
+        ? Number(
+            (
+              dayAttempts.reduce((sum, a) => sum + a.percentage, 0) /
+              dayAttempts.length
+            ).toFixed(1)
+          )
+        : 0;
+
+    progressTrend.push({
+      date: dateStr,
+      avgScore,
+      attempts: dayAttempts.length,
+    });
+  }
+
+  // Strengths by difficulty
+  const strengthsByDifficulty = {
+    easy: { attempts: 0, avgScore: 0, improvement: 0 },
+    medium: { attempts: 0, avgScore: 0, improvement: 0 },
+    hard: { attempts: 0, avgScore: 0, improvement: 0 },
+  };
+
+  (attempts || []).forEach((attempt) => {
+    const difficulty = attempt.quizzes?.difficulty as
+      | "easy"
+      | "medium"
+      | "hard"
+      | undefined;
+    if (difficulty && strengthsByDifficulty[difficulty]) {
+      strengthsByDifficulty[difficulty].attempts++;
+    }
+  });
+
+  // Calculate average scores and improvements for each difficulty
+  (
+    Object.keys(strengthsByDifficulty) as Array<"easy" | "medium" | "hard">
+  ).forEach((difficulty) => {
+    const difficultyAttempts = (attempts || []).filter(
+      (a) => a.quizzes?.difficulty === difficulty
+    );
+    if (difficultyAttempts.length > 0) {
+      const avgScore =
+        difficultyAttempts.reduce((sum, a) => sum + a.percentage, 0) /
+        difficultyAttempts.length;
+      strengthsByDifficulty[difficulty].avgScore = Number(avgScore.toFixed(1));
+
+      // Calculate improvement (compare first half vs second half of attempts)
+      if (difficultyAttempts.length >= 4) {
+        const half = Math.floor(difficultyAttempts.length / 2);
+        const firstHalf = difficultyAttempts.slice(-half);
+        const secondHalf = difficultyAttempts.slice(0, half);
+
+        const firstAvg =
+          firstHalf.reduce((sum, a) => sum + a.percentage, 0) /
+          firstHalf.length;
+        const secondAvg =
+          secondHalf.reduce((sum, a) => sum + a.percentage, 0) /
+          secondHalf.length;
+
+        strengthsByDifficulty[difficulty].improvement = Number(
+          (secondAvg - firstAvg).toFixed(1)
+        );
+      }
+    }
+  });
+
+  // Activity trend
+  const activityTrend: { date: string; attempts: number }[] = [];
+  for (let i = 29; i >= 0; i--) {
+    const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+    const dateStr = date.toISOString().split("T")[0];
+    const dayAttempts = (attempts || []).filter((a) =>
+      a.completed_at.startsWith(dateStr)
+    ).length;
+    activityTrend.push({ date: dateStr, attempts: dayAttempts });
+  }
+
+  // Calculate streaks
+  let currentStreak = 0;
+  let longestStreak = 0;
+  let tempStreak = 0;
+  let lastActiveDate = "";
+
+  if (attempts && attempts.length > 0) {
+    lastActiveDate = attempts[0].completed_at.split("T")[0];
+
+    // Sort attempts by date to calculate streaks
+    const sortedDates = [
+      ...new Set((attempts || []).map((a) => a.completed_at.split("T")[0])),
+    ].sort();
+
+    for (let i = 0; i < sortedDates.length; i++) {
+      if (
+        i === 0 ||
+        new Date(sortedDates[i]).getTime() -
+          new Date(sortedDates[i - 1]).getTime() <=
+          86400000 * 2
+      ) {
+        tempStreak++;
+      } else {
+        longestStreak = Math.max(longestStreak, tempStreak);
+        tempStreak = 1;
+      }
+    }
+    longestStreak = Math.max(longestStreak, tempStreak);
+
+    // Current streak (consecutive days from today backwards)
+    const today = new Date().toISOString().split("T")[0];
+    const recentDates = sortedDates.reverse();
+
+    if (
+      recentDates[0] === today ||
+      new Date(today).getTime() - new Date(recentDates[0]).getTime() <= 86400000
+    ) {
+      currentStreak = 1;
+      for (let i = 1; i < recentDates.length; i++) {
+        if (
+          new Date(recentDates[i - 1]).getTime() -
+            new Date(recentDates[i]).getTime() <=
+          86400000 * 2
+        ) {
+          currentStreak++;
+        } else {
+          break;
+        }
+      }
+    }
+  }
+
+  // Favorite topics (extract from quiz prompts/titles)
+  const topicMap = new Map();
+  (attempts || []).forEach((attempt) => {
+    const prompt =
+      attempt.quizzes?.original_prompt || attempt.quizzes?.title || "";
+    // Simple topic extraction - look for common keywords
+    const topics = prompt
+      .toLowerCase()
+      .match(
+        /\b(science|math|history|geography|literature|technology|sports|music|art|programming|business|psychology|philosophy|politics|economics|biology|chemistry|physics|english|spanish|french|german)\b/g
+      );
+
+    if (topics) {
+      topics.forEach((topic: string) => {
+        const existing = topicMap.get(topic) || { attempts: 0, totalScore: 0 };
+        existing.attempts++;
+        existing.totalScore += attempt.percentage;
+        topicMap.set(topic, existing);
+      });
+    }
+  });
+
+  const favoriteTopics = Array.from(topicMap.entries())
+    .map(([topic, data]) => ({
+      topic,
+      attempts: data.attempts,
+      avgScore: Number((data.totalScore / data.attempts).toFixed(1)),
+    }))
+    .sort((a, b) => b.attempts - a.attempts)
+    .slice(0, 5);
+
+  // Achievements
+  const perfectScores = (attempts || []).filter(
+    (a) => a.percentage === 100
+  ).length;
+
+  // Calculate improvement rate (compare first 10 attempts vs last 10)
+  let improvementRate = 0;
+  if (totalAttempts >= 10) {
+    const first10 = (attempts || []).slice(-10);
+    const last10 = (attempts || []).slice(0, 10);
+
+    const first10Avg = first10.reduce((sum, a) => sum + a.percentage, 0) / 10;
+    const last10Avg = last10.reduce((sum, a) => sum + a.percentage, 0) / 10;
+
+    improvementRate = Number((last10Avg - first10Avg).toFixed(1));
+  }
+
+  // Consistency score (1 - coefficient of variation)
+  const scoreVariation =
+    scores.length > 1
+      ? Math.sqrt(
+          scores.reduce(
+            (sum, score) => sum + Math.pow(score - averageScore, 2),
+            0
+          ) / scores.length
+        )
+      : 0;
+  const consistencyScore =
+    averageScore > 0
+      ? Math.max(
+          0,
+          Number((100 - (scoreVariation / averageScore) * 100).toFixed(1))
+        )
+      : 0;
+
+  // Challenges (gamification elements)
+  const challenges = [
+    {
+      name: "Perfect Score Master",
+      description: "Get 3 perfect scores",
+      completed: perfectScores >= 3,
+      progress: Math.min(100, (perfectScores / 3) * 100),
+    },
+    {
+      name: "Quiz Explorer",
+      description: "Attempt 25 different quizzes",
+      completed: uniqueQuizzes >= 25,
+      progress: Math.min(100, (uniqueQuizzes / 25) * 100),
+    },
+    {
+      name: "Consistency Champion",
+      description: "Achieve 80%+ consistency score",
+      completed: consistencyScore >= 80,
+      progress: Math.min(100, (consistencyScore / 80) * 100),
+    },
+    {
+      name: "Streak Warrior",
+      description: "Maintain a 7-day streak",
+      completed: longestStreak >= 7,
+      progress: Math.min(100, (longestStreak / 7) * 100),
+    },
+  ];
+
+  // Recent attempts (last 10)
+  const recentAttempts = (attempts || []).slice(0, 10).map((attempt) => ({
+    quizId: attempt.quiz_id,
+    quizTitle: attempt.quizzes?.title || "Unknown Quiz",
+    score: attempt.score,
+    percentage: attempt.percentage,
+    difficulty: attempt.quizzes?.difficulty || "medium",
+    completedAt: attempt.completed_at,
+    creatorName: creatorsMap.get(attempt.quizzes?.user_id) || null,
+  }));
+
+  const analytics: ParticipantAnalytics = {
+    overview: {
+      totalAttempts,
+      uniqueQuizzes,
+      averageScore,
+      highestScore,
+      lowestScore,
+      totalTimeSpent,
+      averageTimePerQuiz,
+    },
+    performance: {
+      scoreDistribution,
+      progressTrend,
+      strengthsByDifficulty,
+    },
+    engagement: {
+      activityTrend,
+      streaks: {
+        currentStreak,
+        longestStreak,
+        lastActive: lastActiveDate,
+      },
+      favoriteTopics,
+    },
+    achievements: {
+      perfectScores,
+      improvementRate,
+      consistencyScore,
+      challenges,
+    },
+    recentAttempts,
+  };
+
+  console.log(
+    `[Quiz Service] Successfully calculated participant analytics for user ${userId}: ${totalAttempts} attempts, ${uniqueQuizzes} unique quizzes`
+  );
   return analytics;
 }

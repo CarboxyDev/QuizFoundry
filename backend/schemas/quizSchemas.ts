@@ -293,4 +293,16 @@ export const getQuizAnalyticsSchema = z.object({
   quizId: z.string().uuid("Quiz ID must be a valid UUID"),
 });
 
+// Creator Analytics Schema - for all quizzes created by a user
+export const getCreatorAnalyticsSchema = z.object({});
+
+// Participant Analytics Schema - for all quizzes attempted by a user
+export const getParticipantAnalyticsSchema = z.object({});
+
 export type GetQuizAnalyticsInput = z.infer<typeof getQuizAnalyticsSchema>;
+export type GetCreatorAnalyticsInput = z.infer<
+  typeof getCreatorAnalyticsSchema
+>;
+export type GetParticipantAnalyticsInput = z.infer<
+  typeof getParticipantAnalyticsSchema
+>;

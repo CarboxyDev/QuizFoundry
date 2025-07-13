@@ -20,6 +20,8 @@ interface SidebarNavProps {
 }
 
 export function SidebarNav({ pathname }: SidebarNavProps) {
+  const firstUrlToken = pathname.split("/")[1];
+
   return (
     <SidebarGroup>
       <SidebarMenu>
@@ -27,7 +29,7 @@ export function SidebarNav({ pathname }: SidebarNavProps) {
           <SidebarMenuItem key={item.title}>
             <SidebarMenuButton
               asChild
-              isActive={pathname.includes(item.url)}
+              isActive={firstUrlToken === item.url.split("/")[1]}
               tooltip={item.title}
             >
               <Link href={item.url} className="flex w-full items-center gap-3">

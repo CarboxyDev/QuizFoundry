@@ -533,9 +533,155 @@ export async function publishManualQuiz(
   }
 }
 
+export interface CreatorAnalytics {
+  overview: {
+    totalQuizzes: number;
+    totalAttempts: number;
+    totalUniqueUsers: number;
+    averageScore: number;
+    averageAttemptsPerQuiz: number;
+    averageQuestionsPerQuiz: number;
+    totalQuestions: number;
+  };
+  breakdown: {
+    byDifficulty: {
+      easy: { count: number; avgScore: number; attempts: number };
+      medium: { count: number; avgScore: number; attempts: number };
+      hard: { count: number; avgScore: number; attempts: number };
+    };
+    byType: {
+      aiGenerated: { count: number; avgScore: number; attempts: number };
+      humanCreated: { count: number; avgScore: number; attempts: number };
+    };
+  };
+  performance: {
+    topPerformingQuizzes: Array<{
+      quizId: string;
+      title: string;
+      avgScore: number;
+      attempts: number;
+      uniqueUsers: number;
+      difficulty: string;
+      createdAt: string;
+    }>;
+    scoreDistribution: Array<{
+      range: string;
+      count: number;
+      percentage: number;
+    }>;
+  };
+  engagement: {
+    creationTrend: Array<{
+      date: string;
+      count: number;
+    }>;
+    attemptsTrend: Array<{
+      date: string;
+      count: number;
+    }>;
+    recentActivity: {
+      last24Hours: number;
+      last7Days: number;
+      last30Days: number;
+    };
+  };
+  topQuizzes: {
+    mostPopular: Array<{
+      quizId: string;
+      title: string;
+      attempts: number;
+      uniqueUsers: number;
+      avgScore: number;
+    }>;
+    highestRated: Array<{
+      quizId: string;
+      title: string;
+      avgScore: number;
+      attempts: number;
+      difficulty: string;
+    }>;
+  };
+}
+
+export interface ParticipantAnalytics {
+  overview: {
+    totalAttempts: number;
+    uniqueQuizzes: number;
+    averageScore: number;
+    highestScore: number;
+    lowestScore: number;
+    totalTimeSpent: number;
+    averageTimePerQuiz: number;
+  };
+  performance: {
+    scoreDistribution: Array<{
+      range: string;
+      count: number;
+      percentage: number;
+    }>;
+    progressTrend: Array<{
+      date: string;
+      avgScore: number;
+      attempts: number;
+    }>;
+    strengthsByDifficulty: {
+      easy: { attempts: number; avgScore: number; improvement: number };
+      medium: { attempts: number; avgScore: number; improvement: number };
+      hard: { attempts: number; avgScore: number; improvement: number };
+    };
+  };
+  engagement: {
+    activityTrend: Array<{
+      date: string;
+      attempts: number;
+    }>;
+    streaks: {
+      currentStreak: number;
+      longestStreak: number;
+      lastActive: string;
+    };
+    favoriteTopics: Array<{
+      topic: string;
+      attempts: number;
+      avgScore: number;
+    }>;
+  };
+  achievements: {
+    perfectScores: number;
+    improvementRate: number;
+    consistencyScore: number;
+    challenges: Array<{
+      name: string;
+      description: string;
+      completed: boolean;
+      progress: number;
+    }>;
+  };
+  recentAttempts: Array<{
+    quizId: string;
+    quizTitle: string;
+    score: number;
+    percentage: number;
+    difficulty: string;
+    completedAt: string;
+    creatorName: string | null;
+  }>;
+}
+
 export const getQuizAnalytics = async (
   quizId: string,
 ): Promise<QuizAnalytics> => {
   const response = await axiosInstance.get(`/analytics/quiz/${quizId}`);
   return response.data.data.analytics;
 };
+
+export const getCreatorAnalytics = async (): Promise<CreatorAnalytics> => {
+  const response = await axiosInstance.get("/analytics/creator");
+  return response.data.data.analytics;
+};
+
+export const getParticipantAnalytics =
+  async (): Promise<ParticipantAnalytics> => {
+    const response = await axiosInstance.get("/analytics/participant");
+    return response.data.data.analytics;
+  };
