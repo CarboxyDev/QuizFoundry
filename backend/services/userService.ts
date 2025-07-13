@@ -71,9 +71,40 @@ export async function updateUserProfile(
   id: string,
   userData: UpdateUserInput
 ): Promise<UserProfile> {
+  const existingUser = await getUserById(id);
+  if (!existingUser) {
+    throw new AppError("User not found", 404);
+  }
+
+  const sanitizedData: Record<string, any> = {};
+
+  if (userData.name !== undefined) {
+    const trimmedName = userData.name.trim();
+    if (trimmedName.length === 0) {
+      throw new AppError("Name cannot be empty", 400);
+    }
+    sanitizedData.name = trimmedName;
+  }
+
+  if (userData.bio !== undefined) {
+    const trimmedBio = userData.bio.trim();
+    sanitizedData.bio = trimmedBio === "" ? null : trimmedBio;
+  }
+
+  if (userData.role !== undefined) {
+    sanitizedData.role = userData.role;
+  }
+  if (userData.avatar_url !== undefined) {
+    sanitizedData.avatar_url = userData.avatar_url;
+  }
+
+  if (Object.keys(sanitizedData).length === 0) {
+    throw new AppError("No valid fields to update", 400);
+  }
+
   const { data, error } = await supabase
     .from("profiles")
-    .update(userData)
+    .update(sanitizedData)
     .eq("id", id)
     .select()
     .single();
@@ -94,7 +125,6 @@ export async function updateUserProfile(
 export async function loginUser(loginData: LoginInput): Promise<LoginResponse> {
   const { email, password } = loginData;
 
-  // Authenticate user with Supabase Auth
   const { data: authData, error: authError } =
     await supabase.auth.signInWithPassword({
       email,
@@ -105,7 +135,6 @@ export async function loginUser(loginData: LoginInput): Promise<LoginResponse> {
     throw new AppError("Invalid email or password", 401);
   }
 
-  // Get user profile
   const { data: profileData, error: profileError } = await supabase
     .from("profiles")
     .select("*")
@@ -116,7 +145,6 @@ export async function loginUser(loginData: LoginInput): Promise<LoginResponse> {
     throw new AppError("User profile not found", 404);
   }
 
-  // Check onboarding status
   const onboardingProgress = await getOnboardingProgress(authData.user.id);
   const isOnboardingComplete = onboardingProgress?.is_complete || false;
 
@@ -143,12 +171,11 @@ export async function signupUser(
 ): Promise<LoginResponse> {
   const { email, password, name } = signupData;
 
-  // Create user in Supabase Auth using admin client
   const { data: authData, error: authError } =
     await supabaseAdmin.auth.admin.createUser({
       email,
       password,
-      email_confirm: true, // Skip email confirmation
+      email_confirm: true,
     });
 
   if (authError || !authData.user) {
@@ -158,19 +185,17 @@ export async function signupUser(
     );
   }
 
-  // Use admin client to bypass RLS for profile creation
   const { data: profileData, error: profileError } = await supabaseAdmin
     .from("profiles")
     .insert({
       id: authData.user.id,
       name: name || null,
-      role: null, // Will be set during onboarding
+      role: null,
       avatar_url: null,
     })
     .select()
     .single();
 
-  // In case profile creation fails, clean up the auth user
   if (profileError) {
     await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
     throw new AppError(
@@ -179,7 +204,7 @@ export async function signupUser(
     );
   }
 
-  // Now sign in the user to create a session
+  // ! Now sign in the user to create a session
   const { data: signInData, error: signInError } =
     await supabase.auth.signInWithPassword({
       email,
@@ -187,7 +212,7 @@ export async function signupUser(
     });
 
   if (signInError || !signInData.user || !signInData.session) {
-    // If sign-in fails, we should still clean up
+    // In case thje sign-in fails, we should still clean shit up
     await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
     await supabaseAdmin.from("profiles").delete().eq("id", authData.user.id);
     throw new AppError(
@@ -199,13 +224,13 @@ export async function signupUser(
   return {
     user: {
       ...profileData,
-      is_onboarding_complete: false, // New users always need onboarding
+      is_onboarding_complete: false,
     },
     session: {
       access_token: signInData.session.access_token,
       refresh_token: signInData.session.refresh_token,
       expires_at:
-        signInData.session.expires_at || Math.floor(Date.now() / 1000) + 3600, // Default to 1 hour from now
+        signInData.session.expires_at || Math.floor(Date.now() / 1000) + 3600, //  1 hour from now ( potential FIXME )
     },
   };
 }
@@ -222,8 +247,8 @@ export async function createGoogleUserProfile(userData: {
     .from("profiles")
     .insert({
       id: userData.id,
-      name: null, // Will be set during onboarding
-      role: null, // Will be set during onboarding
+      name: null,
+      role: null,
       avatar_url: userData.avatar_url || null,
     })
     .select()
@@ -237,4 +262,89 @@ export async function createGoogleUserProfile(userData: {
   }
 
   return data;
+}
+
+/**
+ * Upload user avatar to Supabase Storage
+ */
+export async function uploadUserAvatar(
+  userId: string,
+  file: Express.Multer.File
+): Promise<{ avatar_url: string }> {
+  try {
+    if (!file || !file.buffer) {
+      throw new AppError("Invalid file data", 400);
+    }
+
+    if (file.size === 0) {
+      throw new AppError("File is empty", 400);
+    }
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    if (!allowedTypes.includes(file.mimetype)) {
+      throw new AppError(
+        "Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed",
+        400
+      );
+    }
+
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      throw new AppError("File size exceeds 5MB limit", 400);
+    }
+
+    const user = await getUserById(userId);
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+
+    const timestamp = Date.now();
+    const fileExtension = file.originalname.split(".").pop();
+    const fileName = `${userId}/${timestamp}.${fileExtension}`;
+
+    // Upload to Supa Storage
+    const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
+      .from("avatars")
+      .upload(fileName, file.buffer, {
+        contentType: file.mimetype,
+        upsert: true,
+      });
+
+    if (uploadError) {
+      throw new AppError(
+        `Failed to upload avatar: ${uploadError.message}`,
+        400
+      );
+    }
+
+    const { data: publicUrlData } = supabaseAdmin.storage
+      .from("avatars")
+      .getPublicUrl(fileName);
+
+    const avatar_url = publicUrlData.publicUrl;
+
+    const { data: profileData, error: profileError } = await supabaseAdmin
+      .from("profiles")
+      .update({ avatar_url })
+      .eq("id", userId)
+      .select()
+      .single();
+
+    if (profileError) {
+      // Cleanup in case the profile avatar update fails
+      await supabaseAdmin.storage.from("avatars").remove([fileName]);
+
+      throw new AppError(
+        `Failed to update profile: ${profileError.message}`,
+        400
+      );
+    }
+
+    return { avatar_url };
+  } catch (error) {
+    if (error instanceof AppError) {
+      throw error;
+    }
+    throw new AppError("Failed to upload avatar", 500);
+  }
 }

@@ -5,7 +5,7 @@ alwaysApply: true
 ---
 
 You are a Senior Full-stack Developer and an Expert in ReactJS, NextJS 15, React 19, TypeScript, TailwindCSS, ExpressJS, Supabase and modern UI/UX frameworks like Shadcn UI.
-You will be collaborating with a human developer who is **very skilled at frontend**, but **hasn't worked with backend technologies like Express or Supabase in a while**. When working on backend code, write it cleanly and include light comments or brief explanations where needed.
+You will be collaborating with a human developer who is **very skilled at frontend**, but **hasn't worked with backend technologies like Express or Supabase in a while**.
 
 # Code Style and Structure
 
@@ -24,7 +24,7 @@ You will be collaborating with a human developer who is **very skilled at fronte
 - Use `axios` with a pre-configured instance in `lib/axios.ts` called `axiosInstance`
 - Use `Jotai` for global or shared non-server state when `useState` isn't sufficient.
 - Always define types for API payloads and responses.
-- Avoid adding comments to the frontend code. Add comments only when something is non-obvious or when edge cases are handled. If adding comments, keep them small and brief.
+- Avoid adding comments to the frontend and backend code. Add comments only when something is non-obvious or when very non-obvious edge cases are handled. If adding comments, keep them small and brief. I will reiterate myself to make it clear that comments should not be added unless absolutely necessary. The developer can easily infer from the code and in most cases, comments will just make the code harder to read.
 
 # UI Development Guidelines
 
@@ -45,11 +45,6 @@ Apps:
 
 - `frontend/`: Next.js 15 app (React 19, Tailwind, Shadcn UI)
 - `backend/`: ExpressJS server with Supabase integration
-
-Shared packages:
-
-- `packages/types/`: Shared TypeScript types between frontend and backend
-- `packages/utils/`: Shared helpers and utilities
 
 Paths inside each app follow a typical structure:
 
@@ -127,9 +122,6 @@ types/ # API request/response types
 Use TypeScript path aliases for cleaner imports. These are configured in `tsconfig.json`.
 
 - `@/*` → `frontend/src/*`
-- `@shared/*` → `shared/*` (shared code used by both frontend and backend)
-- `@shared/types/*` → `shared/types/*`
-- `@shared/utils/*` → `shared/utils/*`
 
 # Project Docs and Notes
 

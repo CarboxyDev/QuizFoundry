@@ -35,6 +35,7 @@ export interface UserProfile {
   name: string | null;
   role: string | null;
   avatar_url: string | null;
+  bio: string | null;
   created_at: string;
   is_onboarding_complete: boolean;
 }

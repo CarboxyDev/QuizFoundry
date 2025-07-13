@@ -7,9 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/auth/useAuth";
+import { updateProfile, uploadAvatar } from "@/lib/user-api";
+import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { Save, Settings, User } from "lucide-react";
-import { useState } from "react";
+import { AlertCircle, Save, Settings, Upload, User } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 const pageVariants = {
@@ -44,32 +46,237 @@ const staggerContainer = {
   },
 };
 
+const VALIDATION_RULES = {
+  name: {
+    min: 2,
+    max: 50,
+  },
+  bio: {
+    max: 500,
+  },
+  avatar: {
+    maxSize: 5 * 1024 * 1024,
+    allowedTypes: ["image/jpeg", "image/png", "image/gif", "image/webp"],
+  },
+} as const;
+
+interface ValidationErrors {
+  name?: string;
+  bio?: string;
+}
+
 export default function SettingsPage() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [errors, setErrors] = useState<ValidationErrors>({});
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [profile, setProfile] = useState({
     name: user?.name || "",
-    bio: "",
+    bio: user?.bio || "",
     avatar: user?.avatar_url || "",
   });
 
+  const [initialProfile, setInitialProfile] = useState({
+    name: user?.name || "",
+    bio: user?.bio || "",
+  });
+
+  useEffect(() => {
+    if (user) {
+      const newProfile = {
+        name: user.name || "",
+        bio: user.bio || "",
+        avatar: user.avatar_url || "",
+      };
+      setProfile(newProfile);
+      setInitialProfile({
+        name: user.name || "",
+        bio: user.bio || "",
+      });
+    }
+  }, [user]);
+
+  useEffect(() => {
+    const hasChanges =
+      profile.name !== initialProfile.name ||
+      profile.bio !== initialProfile.bio;
+    setHasUnsavedChanges(hasChanges);
+  }, [profile, initialProfile]);
+
+  const validateName = useCallback((name: string): string | undefined => {
+    const trimmed = name.trim();
+    if (trimmed.length === 0) {
+      return "Name is required";
+    }
+    if (trimmed.length < VALIDATION_RULES.name.min) {
+      return `Name must be at least ${VALIDATION_RULES.name.min} characters`;
+    }
+    if (trimmed.length > VALIDATION_RULES.name.max) {
+      return `Name must not exceed ${VALIDATION_RULES.name.max} characters`;
+    }
+    return undefined;
+  }, []);
+
+  const validateBio = useCallback((bio: string): string | undefined => {
+    if (bio.length > VALIDATION_RULES.bio.max) {
+      return `Bio must not exceed ${VALIDATION_RULES.bio.max} characters`;
+    }
+    if (bio.trim() !== bio && bio.trim().length > 0) {
+      return "Bio cannot contain leading or trailing whitespace";
+    }
+    return undefined;
+  }, []);
+
+  const validateForm = useCallback((): boolean => {
+    const newErrors: ValidationErrors = {};
+
+    const nameError = validateName(profile.name);
+    if (nameError) newErrors.name = nameError;
+
+    const bioError = validateBio(profile.bio);
+    if (bioError) newErrors.bio = bioError;
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }, [profile, validateName, validateBio]);
+
+  const handleInputChange = useCallback(
+    (field: "name" | "bio", value: string) => {
+      setProfile((prev) => ({ ...prev, [field]: value }));
+
+      if (errors[field]) {
+        setErrors((prev) => ({ ...prev, [field]: undefined }));
+      }
+    },
+    [errors],
+  );
+
   const handleSaveProfile = async () => {
+    if (!user) return;
+
+    if (!validateForm()) {
+      toast.error("Please fix the validation errors before saving");
+      return;
+    }
+
     setIsLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const updateData: Record<string, any> = {};
+
+      if (profile.name !== initialProfile.name) {
+        updateData.name = profile.name.trim();
+      }
+
+      if (profile.bio !== initialProfile.bio) {
+        const trimmedBio = profile.bio.trim();
+        updateData.bio = trimmedBio;
+      }
+
+      if (Object.keys(updateData).length === 0) {
+        toast.info("No changes to save");
+        return;
+      }
+
+      const updatedProfile = await updateProfile(user.id, updateData);
+
+      updateUser({
+        ...user,
+        name: updatedProfile.name,
+        bio: updatedProfile.bio,
+      });
+
+      setInitialProfile({
+        name: updatedProfile.name || "",
+        bio: updatedProfile.bio || "",
+      });
+
       toast.success("Profile updated successfully!");
-    } catch (error) {
-      toast.error("Failed to update profile");
+    } catch (error: any) {
+      console.error("Error updating profile:", error);
+      const errorMessage =
+        error.response?.data?.message || "Failed to update profile";
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
+  const validateAvatarFile = (file: File): string | null => {
+    if (file.size > VALIDATION_RULES.avatar.maxSize) {
+      return "File size must be less than 5MB";
+    }
+
+    if (!VALIDATION_RULES.avatar.allowedTypes.includes(file.type as any)) {
+      return "Please select a JPEG, PNG, GIF, or WebP image";
+    }
+
+    return null;
+  };
+
+  const handleAvatarUpload = async (file: File) => {
+    if (!user) return;
+
+    const validationError = validateAvatarFile(file);
+    if (validationError) {
+      toast.error(validationError);
+      return;
+    }
+
+    setIsUploadingAvatar(true);
+    try {
+      const avatarUrl = await uploadAvatar(user.id, file);
+
+      setProfile((prev) => ({ ...prev, avatar: avatarUrl }));
+
+      updateUser({
+        ...user,
+        avatar_url: avatarUrl,
+      });
+
+      toast.success("Avatar updated successfully!");
+    } catch (error: any) {
+      console.error("Error uploading avatar:", error);
+      const errorMessage =
+        error.response?.data?.message || "Failed to upload avatar";
+      toast.error(errorMessage);
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      handleAvatarUpload(file);
+    }
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
+
+  const nameCharCount = profile.name.length;
+  const bioCharCount = profile.bio.length;
+
+  const getCharCountColor = (count: number, max: number) => {
+    if (count > max) return "text-red-500";
+    if (count > max * 0.8) return "text-orange-500";
+    return "text-muted-foreground";
+  };
+
   return (
     <div className="mt-4 flex flex-1 flex-col gap-4 p-4 pt-0">
       <motion.div
-        className="from-background via-muted/30 to-muted/50 min-h-screen flex-1 bg-gradient-to-br"
+        className={cn(
+          "from-background via-muted/30 to-muted/50 min-h-screen flex-1 bg-gradient-to-br",
+        )}
         initial="initial"
         animate="animate"
         exit="exit"
@@ -77,7 +284,6 @@ export default function SettingsPage() {
         transition={{ duration: 0.6, ease: "easeOut" }}
       >
         <div className="container mx-auto max-w-4xl px-4 py-8">
-          {/* Header */}
           <motion.div
             className="mb-8"
             variants={headerVariants}
@@ -85,12 +291,12 @@ export default function SettingsPage() {
             animate="animate"
           >
             <div className="mb-2 flex items-center gap-3">
-              <div className="bg-primary/10 text-primary rounded-lg p-2">
+              <div className={cn("bg-primary/10 text-primary rounded-lg p-2")}>
                 <Settings className="h-6 w-6" />
               </div>
               <h1 className="text-4xl font-bold tracking-tight">Settings</h1>
             </div>
-            <p className="text-muted-foreground">
+            <p className={cn("text-muted-foreground")}>
               Manage your account settings and preferences
             </p>
           </motion.div>
@@ -102,7 +308,7 @@ export default function SettingsPage() {
             animate="animate"
           >
             <motion.div variants={cardVariants}>
-              <Card className="bg-card/60 backdrop-blur-sm">
+              <Card className={cn("bg-card/60 backdrop-blur-sm")}>
                 <CardHeader className="pb-4">
                   <div className="flex items-center gap-3">
                     <div className="rounded-lg bg-blue-500/10 p-2 text-blue-500">
@@ -112,7 +318,7 @@ export default function SettingsPage() {
                       <CardTitle className="text-xl">
                         Profile Information
                       </CardTitle>
-                      <p className="text-muted-foreground text-sm">
+                      <p className={cn("text-muted-foreground text-sm")}>
                         Update your personal details and profile picture
                       </p>
                     </div>
@@ -122,7 +328,9 @@ export default function SettingsPage() {
                   <div className="flex items-center gap-4">
                     <Avatar className="h-20 w-20">
                       <AvatarImage src={profile.avatar} alt={profile.name} />
-                      <AvatarFallback className="bg-primary/10 text-primary text-xl">
+                      <AvatarFallback
+                        className={cn("bg-primary/10 text-primary text-xl")}
+                      >
                         {profile.name
                           .split(" ")
                           .map((n) => n[0])
@@ -131,28 +339,66 @@ export default function SettingsPage() {
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1">
-                      <Button variant="outline" size="sm" className="mb-2">
-                        Change Avatar
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mb-2"
+                        onClick={triggerFileInput}
+                        disabled={isUploadingAvatar}
+                      >
+                        <Upload className="mr-2 h-4 w-4" />
+                        {isUploadingAvatar ? "Uploading..." : "Change Avatar"}
                       </Button>
-                      <p className="text-muted-foreground text-sm">
-                        JPG, PNG or GIF. Max size of 5MB.
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/jpeg,image/png,image/gif,image/webp"
+                        onChange={handleFileSelect}
+                        className="hidden"
+                      />
+                      <p className={cn("text-muted-foreground text-sm")}>
+                        JPEG, PNG, GIF, or WebP. Max size of 5MB.
                       </p>
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="name">Full Name</Label>
+                    <Label htmlFor="name" className="flex items-center gap-2">
+                      Full Name
+                      <span className="text-red-500">*</span>
+                    </Label>
                     <Input
                       id="name"
                       value={profile.name}
                       onChange={(e) =>
-                        setProfile((prev) => ({
-                          ...prev,
-                          name: e.target.value,
-                        }))
+                        handleInputChange("name", e.target.value)
                       }
-                      className="bg-background/50"
+                      className={cn(
+                        "bg-background/50",
+                        errors.name &&
+                          "border-red-500 focus-visible:ring-red-500",
+                      )}
+                      maxLength={VALIDATION_RULES.name.max}
                     />
+                    <div className="flex items-center justify-between">
+                      {errors.name && (
+                        <div className="flex items-center gap-1 text-sm text-red-500">
+                          <AlertCircle className="h-4 w-4" />
+                          {errors.name}
+                        </div>
+                      )}
+                      <span
+                        className={cn(
+                          "ml-auto text-sm",
+                          getCharCountColor(
+                            nameCharCount,
+                            VALIDATION_RULES.name.max,
+                          ),
+                        )}
+                      >
+                        {nameCharCount}/{VALIDATION_RULES.name.max}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="space-y-2">
@@ -161,15 +407,50 @@ export default function SettingsPage() {
                       id="bio"
                       placeholder="Tell us about yourself..."
                       value={profile.bio}
-                      onChange={(e) =>
-                        setProfile((prev) => ({ ...prev, bio: e.target.value }))
-                      }
-                      className="bg-background/50 min-h-[80px]"
+                      onChange={(e) => handleInputChange("bio", e.target.value)}
+                      className={cn(
+                        "bg-background/50 min-h-[80px] resize-none",
+                        errors.bio &&
+                          "border-red-500 focus-visible:ring-red-500",
+                      )}
+                      maxLength={VALIDATION_RULES.bio.max}
                     />
+                    <div className="flex items-center justify-between">
+                      {errors.bio && (
+                        <div className="flex items-center gap-1 text-sm text-red-500">
+                          <AlertCircle className="h-4 w-4" />
+                          {errors.bio}
+                        </div>
+                      )}
+                      <span
+                        className={cn(
+                          "ml-auto text-sm",
+                          getCharCountColor(
+                            bioCharCount,
+                            VALIDATION_RULES.bio.max,
+                          ),
+                        )}
+                      >
+                        {bioCharCount}/{VALIDATION_RULES.bio.max}
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="flex justify-end">
-                    <Button onClick={handleSaveProfile} disabled={isLoading}>
+                  <div className="flex items-center justify-between">
+                    {hasUnsavedChanges && (
+                      <p className="text-sm text-amber-500">
+                        You have unsaved changes
+                      </p>
+                    )}
+                    <Button
+                      onClick={handleSaveProfile}
+                      disabled={
+                        isLoading ||
+                        !hasUnsavedChanges ||
+                        Object.keys(errors).length > 0
+                      }
+                      className="ml-auto"
+                    >
                       <Save className="mr-2 h-4 w-4" />
                       {isLoading ? "Saving..." : "Save Changes"}
                     </Button>
@@ -177,145 +458,6 @@ export default function SettingsPage() {
                 </CardContent>
               </Card>
             </motion.div>
-
-            {/* Preferences Section */}
-            {/* <motion.div variants={cardVariants}>
-              <Card className="bg-card/60 backdrop-blur-sm">
-                <CardHeader className="pb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-green-500/10 p-2 text-green-500">
-                      <Palette className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-xl">
-                        General Preferences
-                      </CardTitle>
-                      <p className="text-muted-foreground text-sm">
-                        Customize your experience and notification settings
-                      </p>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Bell className="text-muted-foreground h-4 w-4" />
-                        <div>
-                          <Label>Push Notifications</Label>
-                          <p className="text-muted-foreground text-sm">
-                            Receive notifications about quiz activities
-                          </p>
-                        </div>
-                      </div>
-                      <Switch
-                        checked={preferences.notifications}
-                        onCheckedChange={(checked) =>
-                          setPreferences((prev) => ({
-                            ...prev,
-                            notifications: checked,
-                          }))
-                        }
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Globe className="text-muted-foreground h-4 w-4" />
-                        <div>
-                          <Label>Email Notifications</Label>
-                          <p className="text-muted-foreground text-sm">
-                            Get email updates about your quizzes
-                          </p>
-                        </div>
-                      </div>
-                      <Switch
-                        checked={preferences.emailNotifications}
-                        onCheckedChange={(checked) =>
-                          setPreferences((prev) => ({
-                            ...prev,
-                            emailNotifications: checked,
-                          }))
-                        }
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Volume2 className="text-muted-foreground h-4 w-4" />
-                        <div>
-                          <Label>Sound Effects</Label>
-                          <p className="text-muted-foreground text-sm">
-                            Play sounds for quiz interactions
-                          </p>
-                        </div>
-                      </div>
-                      <Switch
-                        checked={preferences.soundEffects}
-                        onCheckedChange={(checked) =>
-                          setPreferences((prev) => ({
-                            ...prev,
-                            soundEffects: checked,
-                          }))
-                        }
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Save className="text-muted-foreground h-4 w-4" />
-                        <div>
-                          <Label>Auto-save</Label>
-                          <p className="text-muted-foreground text-sm">
-                            Automatically save quiz progress
-                          </p>
-                        </div>
-                      </div>
-                      <Switch
-                        checked={preferences.autoSave}
-                        onCheckedChange={(checked) =>
-                          setPreferences((prev) => ({
-                            ...prev,
-                            autoSave: checked,
-                          }))
-                        }
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Eye className="text-muted-foreground h-4 w-4" />
-                        <div>
-                          <Label>Public Profile</Label>
-                          <p className="text-muted-foreground text-sm">
-                            Make your profile visible to other users
-                          </p>
-                        </div>
-                      </div>
-                      <Switch
-                        checked={preferences.publicProfile}
-                        onCheckedChange={(checked) =>
-                          setPreferences((prev) => ({
-                            ...prev,
-                            publicProfile: checked,
-                          }))
-                        }
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex justify-end">
-                    <Button
-                      onClick={handleSavePreferences}
-                      disabled={isLoading}
-                    >
-                      <Save className="mr-2 h-4 w-4" />
-                      {isLoading ? "Saving..." : "Save Preferences"}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div> */}
           </motion.div>
         </div>
       </motion.div>

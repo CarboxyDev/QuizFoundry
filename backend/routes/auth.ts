@@ -90,6 +90,7 @@ authRouter.post(
       name: userProfile.name,
       role: userProfile.role,
       avatar_url: userProfile.avatar_url,
+      bio: userProfile.bio,
       created_at: userProfile.created_at,
       is_onboarding_complete: isOnboardingComplete,
     };
