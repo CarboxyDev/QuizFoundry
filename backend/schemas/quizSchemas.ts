@@ -284,3 +284,13 @@ export type QuestionInput = z.infer<typeof questionSchema>;
 export type CreateQuestionInput = z.infer<typeof createQuestionSchema>;
 export type UpdateQuestionInput = z.infer<typeof updateQuestionSchema>;
 export type QuestionOptionInput = z.infer<typeof questionOptionSchema>;
+
+// =============================================
+// ANALYTICS SCHEMAS
+// =============================================
+
+export const getQuizAnalyticsSchema = z.object({
+  quizId: z.string().uuid("Quiz ID must be a valid UUID"),
+});
+
+export type GetQuizAnalyticsInput = z.infer<typeof getQuizAnalyticsSchema>;

@@ -199,7 +199,7 @@ export default function MyQuizzesPage() {
     } else if (action === "edit") {
       router.push(`/my-quizzes/edit/${quizId}`);
     } else if (action === "analytics") {
-      router.push("/analytics");
+      router.push(`/analytics/quiz/${quizId}`);
     }
   };
 

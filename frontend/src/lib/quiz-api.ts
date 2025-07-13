@@ -197,6 +197,63 @@ export interface PublicQuizStats {
   };
 }
 
+export interface QuizAnalytics {
+  overview: {
+    totalAttempts: number;
+    uniqueUsers: number;
+    averageScore: number;
+    averageTimeSpent: number;
+    completionRate: number;
+    highestScore: number;
+    lowestScore: number;
+  };
+  performance: {
+    scoreDistribution: Array<{
+      range: string;
+      count: number;
+      percentage: number;
+    }>;
+    difficultyRating: {
+      perceived: string;
+      actualDifficulty: number;
+    };
+  };
+  engagement: {
+    attemptsOverTime: Array<{
+      date: string;
+      count: number;
+    }>;
+    topPerformers: Array<{
+      userId: string;
+      userName: string;
+      userAvatarUrl: string;
+      score: number;
+      percentage: number;
+      completedAt: string;
+    }>;
+    recentActivity: {
+      last24Hours: number;
+      last7Days: number;
+      last30Days: number;
+    };
+  };
+  questions: Array<{
+    questionId: string;
+    questionText: string;
+    orderIndex: number;
+    correctRate: number;
+    totalAnswers: number;
+    difficulty: string;
+    optionAnalysis: Array<{
+      optionId: string;
+      optionText: string;
+      isCorrect: boolean;
+      selectedCount: number;
+      percentage: number;
+    }>;
+  }>;
+}
+
 /**
  * Create a quiz using Express Mode (defaults: 5 questions, 4 options, medium difficulty)
  */
@@ -475,3 +532,10 @@ export async function publishManualQuiz(
     throw error;
   }
 }
+
+export const getQuizAnalytics = async (
+  quizId: string,
+): Promise<QuizAnalytics> => {
+  const response = await axiosInstance.get(`/analytics/quiz/${quizId}`);
+  return response.data.data.analytics;
+};

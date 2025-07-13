@@ -1330,12 +1330,10 @@ export async function getQuizAttempts(
     throw new AppError("Access denied to this quiz's attempts", 403);
   }
 
-  // Fetch attempts joined with profile information
+  // Fetch attempts
   const { data: attemptsData, error: attemptsError } = await supabase
     .from("quiz_attempts")
-    .select(
-      `id, user_id, score, percentage, completed_at, profiles ( id, name, avatar_url )`
-    )
+    .select("id, user_id, score, percentage, completed_at")
     .eq("quiz_id", quizId)
     .order("completed_at", { ascending: false });
 
@@ -1346,9 +1344,29 @@ export async function getQuizAttempts(
     );
   }
 
+  // Get user profiles for all attempt users
+  const userIds = [...new Set((attemptsData || []).map((a) => a.user_id))];
+  const { data: profiles, error: profilesError } = await supabase
+    .from("profiles")
+    .select("id, name, avatar_url")
+    .in("id", userIds);
+
+  if (profilesError) {
+    throw new AppError(
+      `Failed to fetch user profiles: ${profilesError.message}`,
+      500
+    );
+  }
+
+  // Create a map of user profiles for quick lookup
+  const profilesMap = new Map();
+  (profiles || []).forEach((profile) => {
+    profilesMap.set(profile.id, profile);
+  });
+
   // Map to summary objects
   return (attemptsData || []).map((attempt: any) => {
-    const profile = (attempt as any).profiles || {};
+    const profile = profilesMap.get(attempt.user_id) || {};
     return {
       attemptId: attempt.id,
       userId: attempt.user_id,
@@ -1595,4 +1613,343 @@ export async function getPublicQuizStats(): Promise<PublicQuizStats> {
     console.error("[Quiz Service] Error fetching public quiz stats:", error);
     throw error;
   }
+}
+
+// =============================================
+// QUIZ ANALYTICS
+// =============================================
+
+export interface QuizAnalytics {
+  overview: {
+    totalAttempts: number;
+    uniqueUsers: number;
+    averageScore: number;
+    averageTimeSpent: number;
+    completionRate: number;
+    highestScore: number;
+    lowestScore: number;
+  };
+  performance: {
+    scoreDistribution: {
+      range: string;
+      count: number;
+      percentage: number;
+    }[];
+    difficultyRating: {
+      perceived: "easy" | "medium" | "hard";
+      actualDifficulty: number;
+    };
+  };
+  engagement: {
+    attemptsOverTime: {
+      date: string;
+      count: number;
+    }[];
+    topPerformers: {
+      userId: string;
+      userName: string | null;
+      userAvatarUrl: string | null;
+      score: number;
+      percentage: number;
+      completedAt: string;
+    }[];
+    recentActivity: {
+      last24Hours: number;
+      last7Days: number;
+      last30Days: number;
+    };
+  };
+  questions: {
+    questionId: string;
+    questionText: string;
+    orderIndex: number;
+    correctRate: number;
+    totalAnswers: number;
+    difficulty: "easy" | "medium" | "hard";
+    optionAnalysis: {
+      optionId: string;
+      optionText: string;
+      isCorrect: boolean;
+      selectedCount: number;
+      percentage: number;
+    }[];
+  }[];
+}
+
+export async function getQuizAnalytics(
+  quizId: string,
+  ownerId: string
+): Promise<QuizAnalytics> {
+  console.log(
+    `[Quiz Service] Getting analytics for quiz ${quizId} by owner ${ownerId}`
+  );
+
+  // Verify quiz ownership
+  const { data: quiz, error: quizError } = await supabase
+    .from("quizzes")
+    .select("*")
+    .eq("id", quizId)
+    .eq("user_id", ownerId)
+    .single();
+
+  if (quizError || !quiz) {
+    throw new AppError("Quiz not found or access denied", 404);
+  }
+
+  // Get quiz questions with options
+  const { data: questions, error: questionsError } = await supabase
+    .from("questions")
+    .select(
+      `
+      *,
+      question_options (*)
+    `
+    )
+    .eq("quiz_id", quizId)
+    .order("order_index");
+
+  if (questionsError) {
+    throw new AppError(
+      `Failed to fetch questions: ${questionsError.message}`,
+      500
+    );
+  }
+
+  // Get all attempts for this quiz
+  const { data: attempts, error: attemptsError } = await supabase
+    .from("quiz_attempts")
+    .select("*")
+    .eq("quiz_id", quizId)
+    .order("completed_at", { ascending: false });
+
+  if (attemptsError) {
+    throw new AppError(
+      `Failed to fetch attempts: ${attemptsError.message}`,
+      500
+    );
+  }
+
+  // Get user profiles for all attempt users
+  const userIds = [...new Set((attempts || []).map((a) => a.user_id))];
+  const { data: profiles, error: profilesError } = await supabase
+    .from("profiles")
+    .select("id, name, avatar_url")
+    .in("id", userIds);
+
+  if (profilesError) {
+    throw new AppError(
+      `Failed to fetch user profiles: ${profilesError.message}`,
+      500
+    );
+  }
+
+  // Create a map of user profiles for quick lookup
+  const profilesMap = new Map();
+  (profiles || []).forEach((profile) => {
+    profilesMap.set(profile.id, profile);
+  });
+
+  // Get all attempt answers
+  const attemptIds = (attempts || []).map((a) => a.id);
+  const { data: attemptAnswers, error: answersError } = await supabase
+    .from("quiz_attempt_answers")
+    .select("*")
+    .in("attempt_id", attemptIds);
+
+  if (answersError) {
+    throw new AppError(
+      `Failed to fetch attempt answers: ${answersError.message}`,
+      500
+    );
+  }
+
+  // Calculate overview metrics
+  const totalAttempts = attempts?.length || 0;
+  const uniqueUsers = new Set((attempts || []).map((a) => a.user_id)).size;
+  const averageScore =
+    totalAttempts > 0
+      ? Number(
+          (
+            (attempts || []).reduce((sum, a) => sum + a.percentage, 0) /
+            totalAttempts
+          ).toFixed(1)
+        )
+      : 0;
+
+  const scores = (attempts || []).map((a) => a.percentage);
+  const highestScore = scores.length > 0 ? Math.max(...scores) : 0;
+  const lowestScore = scores.length > 0 ? Math.min(...scores) : 0;
+
+  // Calculate completion rate (assuming started_at and completed_at are the same for now)
+  const completionRate = 100; // Since we only record completed attempts
+
+  // Calculate average time spent (placeholder - would need started_at to be different from completed_at)
+  const averageTimeSpent = 0; // Minutes
+
+  // Score distribution
+  const scoreDistribution = [
+    { range: "0-20%", count: 0, percentage: 0 },
+    { range: "21-40%", count: 0, percentage: 0 },
+    { range: "41-60%", count: 0, percentage: 0 },
+    { range: "61-80%", count: 0, percentage: 0 },
+    { range: "81-100%", count: 0, percentage: 0 },
+  ];
+
+  scores.forEach((score) => {
+    if (score <= 20) scoreDistribution[0].count++;
+    else if (score <= 40) scoreDistribution[1].count++;
+    else if (score <= 60) scoreDistribution[2].count++;
+    else if (score <= 80) scoreDistribution[3].count++;
+    else scoreDistribution[4].count++;
+  });
+
+  scoreDistribution.forEach((dist) => {
+    dist.percentage =
+      totalAttempts > 0
+        ? Number(((dist.count / totalAttempts) * 100).toFixed(1))
+        : 0;
+  });
+
+  // Attempts over time (last 30 days)
+  const now = new Date();
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const attemptsOverTime: { date: string; count: number }[] = [];
+
+  for (let i = 29; i >= 0; i--) {
+    const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+    const dateStr = date.toISOString().split("T")[0];
+    const count = (attempts || []).filter((a) =>
+      a.completed_at.startsWith(dateStr)
+    ).length;
+    attemptsOverTime.push({ date: dateStr, count });
+  }
+
+  // Top performers (top 10)
+  const topPerformers = (attempts || [])
+    .sort((a, b) => b.percentage - a.percentage)
+    .slice(0, 10)
+    .map((attempt) => {
+      const profile = profilesMap.get(attempt.user_id);
+      return {
+        userId: attempt.user_id,
+        userName: profile?.name || null,
+        userAvatarUrl: profile?.avatar_url || null,
+        score: attempt.score,
+        percentage: attempt.percentage,
+        completedAt: attempt.completed_at,
+      };
+    });
+
+  // Recent activity
+  const last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+  const last7Days = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const last30Days = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+  const recentActivity = {
+    last24Hours: (attempts || []).filter(
+      (a) => new Date(a.completed_at) > last24Hours
+    ).length,
+    last7Days: (attempts || []).filter(
+      (a) => new Date(a.completed_at) > last7Days
+    ).length,
+    last30Days: (attempts || []).filter(
+      (a) => new Date(a.completed_at) > last30Days
+    ).length,
+  };
+
+  // Question-level analysis
+  const questionAnalysis = (questions || []).map((question) => {
+    const questionAnswers = (attemptAnswers || []).filter(
+      (a) => a.question_id === question.id
+    );
+    const totalAnswers = questionAnswers.length;
+    const correctAnswers = questionAnswers.filter((a) => a.is_correct).length;
+    const correctRate =
+      totalAnswers > 0
+        ? Number(((correctAnswers / totalAnswers) * 100).toFixed(1))
+        : 0;
+
+    // Determine difficulty based on correct rate
+    let difficulty: "easy" | "medium" | "hard" = "medium";
+    if (correctRate >= 80) difficulty = "easy";
+    else if (correctRate <= 40) difficulty = "hard";
+
+    // Option analysis
+    const optionAnalysis = (question.question_options || []).map(
+      (option: any) => {
+        const selectedCount = questionAnswers.filter(
+          (a) => a.selected_option_id === option.id
+        ).length;
+        const percentage =
+          totalAnswers > 0
+            ? Number(((selectedCount / totalAnswers) * 100).toFixed(1))
+            : 0;
+
+        return {
+          optionId: option.id,
+          optionText: option.option_text,
+          isCorrect: option.is_correct,
+          selectedCount,
+          percentage,
+        };
+      }
+    );
+
+    return {
+      questionId: question.id,
+      questionText: question.question_text,
+      orderIndex: question.order_index,
+      correctRate,
+      totalAnswers,
+      difficulty,
+      optionAnalysis,
+    };
+  });
+
+  // Calculate actual difficulty rating
+  const overallCorrectRate =
+    questionAnalysis.length > 0
+      ? questionAnalysis.reduce((sum, q) => sum + q.correctRate, 0) /
+        questionAnalysis.length
+      : 0;
+
+  let actualDifficulty: number;
+  if (overallCorrectRate >= 80)
+    actualDifficulty = 1; // Easy
+  else if (overallCorrectRate >= 60)
+    actualDifficulty = 2; // Medium
+  else if (overallCorrectRate >= 40)
+    actualDifficulty = 3; // Hard
+  else actualDifficulty = 4; // Very Hard
+
+  const analytics: QuizAnalytics = {
+    overview: {
+      totalAttempts,
+      uniqueUsers,
+      averageScore,
+      averageTimeSpent,
+      completionRate,
+      highestScore,
+      lowestScore,
+    },
+    performance: {
+      scoreDistribution,
+      difficultyRating: {
+        perceived: quiz.difficulty,
+        actualDifficulty,
+      },
+    },
+    engagement: {
+      attemptsOverTime,
+      topPerformers,
+      recentActivity,
+    },
+    questions: questionAnalysis,
+  };
+
+  console.log(
+    `[Quiz Service] Successfully calculated analytics for quiz ${quizId}: ${totalAttempts} attempts, ${uniqueUsers} unique users`
+  );
+
+  return analytics;
 }

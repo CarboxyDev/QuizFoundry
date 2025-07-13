@@ -11,6 +11,7 @@ import onboardingRouter from "./routes/onboarding";
 import authRouter from "./routes/auth";
 import quizzesRouter from "./routes/quizzes";
 import manualQuizzesRouter from "./routes/manual-quizzes";
+import analyticsRouter from "./routes/analytics";
 
 const app = express();
 const port = env.PORT || 8080;
@@ -45,6 +46,7 @@ app.use("/api/onboarding", onboardingRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/quizzes", quizzesRouter);
 app.use("/api/manual-quizzes", manualQuizzesRouter);
+app.use("/api/analytics", analyticsRouter);
 
 app.use(errorHandler);
 
