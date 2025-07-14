@@ -4,12 +4,14 @@ import {
   getQuizAnalyticsSchema,
   getCreatorAnalyticsSchema,
   getParticipantAnalyticsSchema,
+  getOverviewAnalyticsSchema,
 } from "../schemas/quizSchemas";
 import { AppError } from "../errors/AppError";
 import {
   getQuizAnalytics,
   getCreatorAnalytics,
   getParticipantAnalytics,
+  getOverviewAnalytics,
 } from "../services/quizService";
 import {
   authMiddleware,
@@ -148,6 +150,49 @@ analyticsRouter.get(
     } catch (error) {
       console.error(
         `[Analytics] Error fetching participant analytics for user ${userId}:`,
+        error
+      );
+      throw error;
+    }
+  })
+);
+
+/**
+ * GET /analytics/overview - Get overview analytics for dashboard stats
+ * Includes quick stats like quizzes created, quizzes attempted, average score, and total participants
+ */
+analyticsRouter.get(
+  "/overview",
+  generalApiLimiter,
+  authMiddleware,
+  requireCompletedOnboarding,
+  asyncHandler(async (req: AuthenticatedRequest, res) => {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      throw new AppError("User not authenticated", 401);
+    }
+
+    // Validate input (empty object for now)
+    const validationResult = getOverviewAnalyticsSchema.safeParse({});
+    if (!validationResult.success) {
+      const errors = validationResult.error.errors.map((err) => err.message);
+      throw new AppError(errors.join("; "), 400);
+    }
+
+    try {
+      const analytics = await getOverviewAnalytics(userId);
+
+      res.json({
+        success: true,
+        data: {
+          analytics,
+        },
+        message: "Overview analytics retrieved successfully",
+      });
+    } catch (error) {
+      console.error(
+        `[Analytics] Error fetching overview analytics for user ${userId}:`,
         error
       );
       throw error;

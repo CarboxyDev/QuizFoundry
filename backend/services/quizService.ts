@@ -2848,3 +2848,95 @@ export async function getParticipantAnalytics(
   );
   return analytics;
 }
+
+/**
+ * Overview analytics interface for dashboard stats
+ */
+export interface OverviewAnalytics {
+  quizzesCreated: number;
+  quizzesAttempted: number;
+  averageScore: number;
+  totalParticipants: number;
+}
+
+/**
+ * Get overview analytics for a user (dashboard stats)
+ */
+export async function getOverviewAnalytics(
+  userId: string
+): Promise<OverviewAnalytics> {
+  console.log(`[Quiz Service] Getting overview analytics for user ${userId}`);
+
+  // Get count of quizzes created by the user
+  const { data: createdQuizzes, error: createdError } = await supabase
+    .from("quizzes")
+    .select("id")
+    .eq("user_id", userId);
+
+  if (createdError) {
+    throw new AppError(
+      `Failed to fetch created quizzes: ${createdError.message}`,
+      500
+    );
+  }
+
+  const quizzesCreated = createdQuizzes?.length || 0;
+
+  // Get all attempts made by the user (for quizzes they attempted)
+  const { data: userAttempts, error: attemptsError } = await supabase
+    .from("quiz_attempts")
+    .select("percentage")
+    .eq("user_id", userId);
+
+  if (attemptsError) {
+    throw new AppError(
+      `Failed to fetch user attempts: ${attemptsError.message}`,
+      500
+    );
+  }
+
+  const quizzesAttempted = userAttempts?.length || 0;
+  const averageScore =
+    quizzesAttempted > 0
+      ? Number(
+          (
+            (userAttempts || []).reduce((sum, a) => sum + a.percentage, 0) /
+            quizzesAttempted
+          ).toFixed(1)
+        )
+      : 0;
+
+  // Get total unique participants for user's quizzes
+  let totalParticipants = 0;
+  if (quizzesCreated > 0) {
+    const createdQuizIds = (createdQuizzes || []).map((q) => q.id);
+
+    const { data: participantsData, error: participantsError } = await supabase
+      .from("quiz_attempts")
+      .select("user_id")
+      .in("quiz_id", createdQuizIds);
+
+    if (participantsError) {
+      throw new AppError(
+        `Failed to fetch participants: ${participantsError.message}`,
+        500
+      );
+    }
+
+    totalParticipants = new Set((participantsData || []).map((p) => p.user_id))
+      .size;
+  }
+
+  const analytics: OverviewAnalytics = {
+    quizzesCreated,
+    quizzesAttempted,
+    averageScore,
+    totalParticipants,
+  };
+
+  console.log(
+    `[Quiz Service] Overview analytics for user ${userId}: ${quizzesCreated} created, ${quizzesAttempted} attempted, ${averageScore}% avg score, ${totalParticipants} participants`
+  );
+
+  return analytics;
+}

@@ -2,6 +2,8 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useOverviewAnalytics } from "@/hooks/useAnalytics";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import {
@@ -143,12 +145,14 @@ function QuickStatsCard({
   icon: Icon,
   color,
   change,
+  isLoading,
 }: {
   title: string;
   value: string | number;
   icon: any;
   color: string;
   change?: string;
+  isLoading?: boolean;
 }) {
   return (
     <motion.div variants={cardVariants}>
@@ -161,8 +165,12 @@ function QuickStatsCard({
             <div className="flex-1">
               <p className="text-muted-foreground text-sm">{title}</p>
               <div className="flex items-baseline gap-2">
-                <p className="text-2xl font-bold">{value}</p>
-                {change && (
+                {isLoading ? (
+                  <Skeleton className="h-8 w-16 rounded-md" />
+                ) : (
+                  <p className="text-2xl font-bold">{value}</p>
+                )}
+                {change && !isLoading && (
                   <span className="text-xs font-medium text-emerald-500">
                     {change}
                   </span>
@@ -177,6 +185,8 @@ function QuickStatsCard({
 }
 
 export default function AnalyticsPage() {
+  const { data: overviewData, isLoading, error } = useOverviewAnalytics();
+
   return (
     <div className="mt-4 flex flex-1 flex-col gap-4 p-4 pt-0">
       <motion.div
@@ -212,34 +222,50 @@ export default function AnalyticsPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
             >
-              <QuickStatsCard
-                title="Quizzes Created"
-                value="12"
-                icon={Brain}
-                color="bg-blue-500/10 text-blue-500"
-                change="+3 this week"
-              />
-              <QuickStatsCard
-                title="Quizzes Attempted"
-                value="48"
-                icon={BookOpen}
-                color="bg-green-500/10 text-green-500"
-                change="+12 this week"
-              />
-              <QuickStatsCard
-                title="Average Score"
-                value="87.5%"
-                icon={Target}
-                color="bg-purple-500/10 text-purple-500"
-                change="+5.2% this month"
-              />
-              <QuickStatsCard
-                title="Total Participants"
-                value="156"
-                icon={Users}
-                color="bg-emerald-500/10 text-emerald-500"
-                change="+24 this week"
-              />
+              {error ? (
+                <div className="col-span-4 text-center text-red-500">
+                  Error loading analytics data
+                </div>
+              ) : (
+                <>
+                  <QuickStatsCard
+                    title="Quizzes Created"
+                    value={overviewData?.quizzesCreated || 0}
+                    icon={Brain}
+                    color="bg-blue-500/10 text-blue-500"
+                    change="+3 this week"
+                    isLoading={isLoading}
+                  />
+                  <QuickStatsCard
+                    title="Quizzes Attempted"
+                    value={overviewData?.quizzesAttempted || 0}
+                    icon={BookOpen}
+                    color="bg-green-500/10 text-green-500"
+                    change="+12 this week"
+                    isLoading={isLoading}
+                  />
+                  <QuickStatsCard
+                    title="Average Score"
+                    value={
+                      overviewData?.averageScore
+                        ? `${overviewData.averageScore}%`
+                        : "0%"
+                    }
+                    icon={Target}
+                    color="bg-purple-500/10 text-purple-500"
+                    change="+5.2% this month"
+                    isLoading={isLoading}
+                  />
+                  <QuickStatsCard
+                    title="Total Participants"
+                    value={overviewData?.totalParticipants || 0}
+                    icon={Users}
+                    color="bg-emerald-500/10 text-emerald-500"
+                    change="+24 this week"
+                    isLoading={isLoading}
+                  />
+                </>
+              )}
             </motion.div>
 
             <motion.div

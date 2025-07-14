@@ -299,10 +299,16 @@ export const getCreatorAnalyticsSchema = z.object({});
 // Participant Analytics Schema - for all quizzes attempted by a user
 export const getParticipantAnalyticsSchema = z.object({});
 
+// Overview Analytics Schema - for dashboard stats
+export const getOverviewAnalyticsSchema = z.object({});
+
 export type GetQuizAnalyticsInput = z.infer<typeof getQuizAnalyticsSchema>;
 export type GetCreatorAnalyticsInput = z.infer<
   typeof getCreatorAnalyticsSchema
 >;
 export type GetParticipantAnalyticsInput = z.infer<
   typeof getParticipantAnalyticsSchema
+>;
+export type GetOverviewAnalyticsInput = z.infer<
+  typeof getOverviewAnalyticsSchema
 >;

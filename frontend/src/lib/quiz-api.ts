@@ -685,3 +685,15 @@ export const getParticipantAnalytics =
     const response = await axiosInstance.get("/analytics/participant");
     return response.data.data.analytics;
   };
+
+export interface OverviewAnalytics {
+  quizzesCreated: number;
+  quizzesAttempted: number;
+  averageScore: number;
+  totalParticipants: number;
+}
+
+export const getOverviewAnalytics = async (): Promise<OverviewAnalytics> => {
+  const response = await axiosInstance.get("/analytics/overview");
+  return response.data.data.analytics;
+};
