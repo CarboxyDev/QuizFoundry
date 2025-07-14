@@ -1,6 +1,11 @@
 export const formatDate = (dateString: string) => {
   const date = new Date(dateString);
   const now = new Date();
+
+  if (isNaN(date.getTime())) {
+    return "Not available";
+  }
+
   const diffInMinutes = Math.floor(
     (now.getTime() - date.getTime()) / (1000 * 60),
   );

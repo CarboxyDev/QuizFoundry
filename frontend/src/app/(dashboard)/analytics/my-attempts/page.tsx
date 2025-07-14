@@ -169,7 +169,7 @@ function PerformanceByDifficultyCard({
                 />
               </div>
               <div className="text-muted-foreground flex justify-between text-xs">
-                <span>avg score: {data.avgScore.toFixed(1)}%</span>
+                <span>Average score: {data.avgScore.toFixed(1)}%</span>
                 {data.improvement !== 0 && (
                   <span
                     className={cn(
