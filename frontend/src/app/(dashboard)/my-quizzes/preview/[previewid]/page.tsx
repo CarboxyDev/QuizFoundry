@@ -532,7 +532,7 @@ export default function QuizPreviewPage() {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["quiz", quizId],
+    queryKey: ["quiz-preview", quizId],
     queryFn: () => getQuizByIdForPreview(quizId),
     enabled: !!quizId,
   });
