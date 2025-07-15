@@ -1,11 +1,11 @@
 "use client";
 
 import AuthBackgroundPattern from "@/components/auth/AuthBackgroundPattern";
-import AuthSparklesIcon from "@/components/auth/AuthSparklesIcon";
 import FormDivider from "@/components/auth/FormDivider";
 import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
 import PasswordInput from "@/components/auth/PasswordInput";
 import { AuthGuard } from "@/components/AuthGuard";
+import { BrandIcon } from "@/components/BrandIcon";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -155,13 +155,14 @@ export default function LoginPage() {
               variants={itemVariants}
               className="space-y-4 text-center"
             >
-              <AuthSparklesIcon />
+              <BrandIcon size={60} />
               <div className="space-y-2">
                 <h1 className="text-2xl font-bold tracking-tight">
                   Welcome Back
                 </h1>
                 <p className="text-muted-foreground">
-                  Jump back in to your account and continue learning
+                  Jump back in to your account and continue creating and taking
+                  quizzes
                 </p>
               </div>
             </motion.div>
@@ -216,7 +217,7 @@ export default function LoginPage() {
                         required
                         error={errors.password}
                       />
-                      <div className="flex justify-end">
+                      {/* <div className="flex justify-end">
                         <button
                           type="button"
                           onClick={handleForgotPassword}
@@ -224,7 +225,7 @@ export default function LoginPage() {
                         >
                           Forgot password?
                         </button>
-                      </div>
+                      </div> */}
                     </div>
 
                     <Button

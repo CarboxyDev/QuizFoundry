@@ -9,11 +9,11 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import AuthBackgroundPattern from "@/components/auth/AuthBackgroundPattern";
-import AuthSparklesIcon from "@/components/auth/AuthSparklesIcon";
 import FormDivider from "@/components/auth/FormDivider";
 import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
 import PasswordInput from "@/components/auth/PasswordInput";
 import { AuthGuard } from "@/components/AuthGuard";
+import { BrandIcon } from "@/components/BrandIcon";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useGoogleAuth } from "@/hooks/auth/useGoogleAuth";
 import { useSignup } from "@/hooks/auth/useSignup";
@@ -143,13 +143,13 @@ export default function SignUpPage() {
               variants={itemVariants}
               className="space-y-4 text-center"
             >
-              <AuthSparklesIcon />
+              <BrandIcon size={60} />
               <div className="space-y-2">
                 <h1 className="text-2xl font-bold tracking-tight">
                   Create Your QuizFoundry Account
                 </h1>
                 <p className="text-muted-foreground">
-                  Start creating amazing quizzes in seconds
+                  Sign up to start creating amazing quizzes in seconds
                 </p>
               </div>
             </motion.div>
