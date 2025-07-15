@@ -7,11 +7,12 @@ import { motion } from "framer-motion";
 import {
   ArrowRight,
   BarChart3,
+  BookOpen,
+  Bot,
   Brain,
   CheckCircle,
   Edit3,
   Globe,
-  PenTool,
   Play,
   Sparkles,
   Target,
@@ -43,21 +44,84 @@ const scaleIn = {
   transition: { duration: 0.5 },
 };
 
+const gradientAnimation = {
+  animate: {
+    backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
+  },
+  transition: {
+    duration: 8,
+    repeat: Infinity,
+  },
+};
+
 export default function HomePage() {
+  const features = [
+    {
+      icon: Brain,
+      title: "AI-Powered Generation",
+      description:
+        "Create comprehensive quizzes instantly with an AI that understands context and difficulty.",
+      color: "text-primary",
+      bg: "bg-primary/10",
+    },
+    {
+      icon: BookOpen,
+      title: "Public Quizzes",
+      description:
+        "Access a plethora of quizzes on different topics created by other users with the help of AI.",
+      color: "text-green-500",
+      bg: "bg-green-500/10",
+    },
+    {
+      icon: BarChart3,
+      title: "Deep Analytics",
+      description:
+        "Track performance, identify weak spots, and gain insights from detailed quiz analytics.",
+      color: "text-purple-500",
+      bg: "bg-purple-500/10",
+    },
+    {
+      icon: Wand2,
+      title: "Manual Tweaking Support",
+      description:
+        "Create AI prototypes then edit every question, answer, and setting to perfection.",
+      color: "text-amber-500",
+      bg: "bg-amber-500/10",
+    },
+    {
+      icon: Globe,
+      title: "Public & Private",
+      description:
+        "Share your quizzes publicly or keep them private for personal use and testing.",
+      color: "text-cyan-500",
+      bg: "bg-cyan-500/10",
+    },
+    {
+      icon: Bot,
+      title: "Smart AI Validation",
+      description:
+        "Our AI validates public quizzes for quality assurance and spam prevention.",
+      color: "text-rose-500",
+      bg: "bg-rose-500/10",
+    },
+  ];
+
   return (
     <div className="from-background via-muted/20 to-background relative min-h-screen bg-gradient-to-br">
-      {/* Subtle textured background */}
+      {/* Textured background */}
       <div
-        className="absolute inset-0 opacity-[0.02]"
+        className="absolute inset-0 opacity-[0.08]"
         style={{
-          backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.5) 1px, transparent 0)`,
-          backgroundSize: "24px 24px",
+          backgroundImage: `radial-gradient(circle at 1px 1px, rgba(255,255,255,0.3) 1px, transparent 0), 
+                           radial-gradient(circle at 1px 1px, rgba(var(--primary),0.1) 1px, transparent 0)`,
+          backgroundSize: "32px 32px, 48px 48px",
+          backgroundPosition: "0 0, 16px 16px",
         }}
       />
 
-      {/* Hero Section */}
       <section className="relative overflow-hidden px-4 py-20 sm:px-6 lg:px-8">
-        <div className="from-primary/5 to-primary/5 absolute inset-0 bg-gradient-to-r via-transparent" />
+        <div className="from-primary/3 via-primary/1 absolute inset-0 bg-gradient-to-b to-transparent" />
+        <div className="via-primary/2 absolute inset-0 bg-gradient-to-r from-transparent to-transparent" />
         <motion.div
           className="relative mx-auto max-w-7xl text-center"
           initial="initial"
@@ -68,14 +132,21 @@ export default function HomePage() {
             <h1 className="mb-6 text-5xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
               Create Smart Quizzes
               <br />
-              <span className="from-primary to-primary/70 bg-gradient-to-r bg-clip-text text-transparent">
+              <motion.span
+                className="from-primary via-primary/80 to-primary/60 bg-gradient-to-r bg-[length:200%_100%] bg-clip-text text-transparent"
+                animate={gradientAnimation.animate}
+                transition={gradientAnimation.transition}
+                style={{
+                  textShadow: "0 0 30px hsl(var(--primary) / 0.4)",
+                }}
+              >
                 in Seconds
-              </span>
+              </motion.span>
             </h1>
             <p className="text-muted-foreground mx-auto max-w-3xl text-xl sm:text-2xl">
-              Generate quizzes instantly with AI. Analyze performance. Create
-              public or private tests using intelligent modes that adapt to your
-              needs.
+              Generate quizzes instantly with the power of AI. Analyze quiz
+              performance in detail. Create public or private quizzes using
+              several modes that adapt to your needs.
             </p>
           </motion.div>
 
@@ -87,31 +158,45 @@ export default function HomePage() {
               <Button
                 size="lg"
                 className={cn(
-                  "group bg-primary hover:bg-primary/90 h-14 px-8 text-lg font-semibold shadow-lg",
-                  "transition-all duration-300 hover:scale-105 hover:shadow-xl",
+                  "group relative h-14 overflow-hidden px-8 text-lg font-semibold",
+                  "from-primary via-primary/90 to-primary/80 hover:from-primary/95 hover:via-primary/85 hover:to-primary/75 bg-gradient-to-r",
+                  "shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_8px_40px_hsl(var(--primary)/0.4)]",
+                  "border-0 transition-all duration-300 hover:scale-105",
+                  "before:absolute before:inset-0 before:bg-gradient-to-r before:from-white/20 before:via-transparent before:to-white/20",
+                  "before:translate-x-[-100%] before:transition-transform before:duration-700 hover:before:translate-x-[100%]",
                 )}
               >
-                Try It Now
-                <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                <span className="relative z-10 flex items-center">
+                  Try It Now
+                  <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                </span>
               </Button>
             </Link>
             <Button
               variant="outline"
               size="lg"
-              className="h-14 px-8 text-lg font-semibold backdrop-blur-sm"
+              className={cn(
+                "group relative h-14 overflow-hidden px-8 text-lg font-semibold backdrop-blur-sm",
+                "bg-background/80 border-primary/20 hover:border-primary/40 border-2",
+                "shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_8px_40px_hsl(var(--primary)/0.2)]",
+                "transition-all duration-300 hover:scale-105",
+                "before:from-primary/5 before:absolute before:inset-0 before:bg-gradient-to-r before:to-transparent",
+                "before:translate-x-[-100%] before:transition-transform before:duration-500 hover:before:translate-x-[100%]",
+              )}
               onClick={() => {
                 document.getElementById("how-it-works")?.scrollIntoView({
                   behavior: "smooth",
                 });
               }}
             >
-              <Play className="mr-2 h-5 w-5" />
-              See How It Works
+              <span className="relative z-10 flex items-center">
+                <Play className="mr-2 h-5 w-5 transition-transform group-hover:scale-110" />
+                See How It Works
+              </span>
             </Button>
           </motion.div>
 
           <motion.div variants={scaleIn} className="relative mx-auto max-w-4xl">
-            {/* Image Placeholder */}
             <div className="bg-card/60 relative rounded-2xl p-8 shadow-2xl backdrop-blur-sm">
               <div className="border-muted-foreground/20 bg-muted/30 flex aspect-video w-full items-center justify-center rounded-xl border-2 border-dashed">
                 <div className="text-center">
@@ -131,7 +216,6 @@ export default function HomePage() {
         </motion.div>
       </section>
 
-      {/* Features Grid */}
       <section className="px-4 py-16 sm:px-6 lg:px-8">
         <motion.div
           className="mx-auto max-w-7xl"
@@ -145,68 +229,16 @@ export default function HomePage() {
               Everything You Need for Smart Quiz Creation
             </h2>
             <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
-              From AI-powered generation to detailed analytics, we&apos;ve got
-              every aspect of quiz creation and management covered.
+              From AI-powered quiz generation to detailed analytics, we&apos;ve
+              got every aspect of quiz creation, management and analytics
+              covered.
             </p>
           </motion.div>
 
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {[
-              {
-                icon: Brain,
-                title: "AI-Powered Generation",
-                description:
-                  "Create comprehensive quizzes instantly with our advanced AI that understands context and difficulty.",
-                color: "text-blue-500",
-                bg: "bg-blue-500/10",
-              },
-              {
-                icon: PenTool,
-                title: "Manual Creation",
-                description:
-                  "Craft custom questions with full control over content, format, and difficulty levels.",
-                color: "text-green-500",
-                bg: "bg-green-500/10",
-              },
-              {
-                icon: BarChart3,
-                title: "Deep Analytics",
-                description:
-                  "Track performance, identify weak spots, and gain insights from detailed quiz analytics.",
-                color: "text-purple-500",
-                bg: "bg-purple-500/10",
-              },
-              {
-                icon: Wand2,
-                title: "Manual Editing Mode",
-                description:
-                  "Create AI prototypes then edit every question, answer, and setting to perfection.",
-                color: "text-amber-500",
-                bg: "bg-amber-500/10",
-              },
-              {
-                icon: Globe,
-                title: "Public & Private",
-                description:
-                  "Share your quizzes publicly or keep them private for personal use and testing.",
-                color: "text-cyan-500",
-                bg: "bg-cyan-500/10",
-              },
-              {
-                icon: Target,
-                title: "Smart Validation",
-                description:
-                  "AI validates public quizzes for quality assurance and spam prevention.",
-                color: "text-rose-500",
-                bg: "bg-rose-500/10",
-              },
-            ].map((feature, index) => (
-              <motion.div
-                key={feature.title}
-                variants={fadeInUp}
-                className="group"
-              >
-                <Card className="bg-card/60 hover:bg-card/80 h-full backdrop-blur-sm transition-all duration-300 hover:shadow-lg">
+            {features.map((feature, index) => (
+              <motion.div key={index} variants={fadeInUp} className="group">
+                <Card className="bg-card/60 hover:bg-card/80 h-full backdrop-blur-sm transition-all duration-300">
                   <CardContent className="p-6">
                     <div className="mb-4 flex items-center gap-3">
                       <div className={cn("rounded-lg p-2", feature.bg)}>
@@ -227,7 +259,6 @@ export default function HomePage() {
         </motion.div>
       </section>
 
-      {/* Mode Comparison */}
       <section className="px-4 py-16 sm:px-6 lg:px-8">
         <motion.div
           className="mx-auto max-w-7xl"
@@ -329,7 +360,6 @@ export default function HomePage() {
         </motion.div>
       </section>
 
-      {/* Manual Editing Explained */}
       <section className="px-4 py-16 sm:px-6 lg:px-8">
         <motion.div
           className="mx-auto max-w-7xl"
@@ -348,7 +378,7 @@ export default function HomePage() {
                       Advanced Feature
                     </div>
                     <h3 className="mb-4 text-3xl font-bold tracking-tight">
-                      Manual Editing Mode
+                      Manual Tweaking
                     </h3>
                     <p className="text-muted-foreground mb-6 text-lg leading-relaxed">
                       Want the best of both worlds? Enable Manual Mode in
@@ -421,7 +451,6 @@ export default function HomePage() {
         </motion.div>
       </section>
 
-      {/* How It Works */}
       <section id="how-it-works" className="px-4 py-16 sm:px-6 lg:px-8">
         <motion.div
           className="mx-auto max-w-7xl"
