@@ -131,7 +131,7 @@ export default function HomePage() {
         >
           <motion.div variants={fadeInUp} className="mb-8">
             <h1 className="mb-6 text-5xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
-              Create Smart Quizzes
+              Create & Take Smart Quizzes
               <br />
               <motion.span
                 className="from-primary via-primary/80 to-primary/60 bg-gradient-to-r bg-[length:200%_100%] bg-clip-text text-transparent"
@@ -141,13 +141,13 @@ export default function HomePage() {
                   textShadow: "0 0 30px hsl(var(--primary) / 0.4)",
                 }}
               >
-                in Seconds
+                with Deep Analytics
               </motion.span>
             </h1>
             <p className="text-muted-foreground mx-auto max-w-3xl text-xl sm:text-2xl">
-              Generate quizzes instantly with the power of AI. Analyze quiz
-              performance in detail. Create public or private quizzes using
-              several modes that adapt to your needs.
+              Generate quizzes instantly with AI, take quizzes seamlessly, and
+              analyze performance with detailed insights. Create public or
+              private quizzes and track every metric that matters.
             </p>
           </motion.div>
 
@@ -159,15 +159,14 @@ export default function HomePage() {
               <Button
                 size="lg"
                 className={cn(
-                  "group relative h-14 overflow-hidden px-8 text-lg font-semibold",
-                  "from-primary via-primary/90 to-primary/80 hover:from-primary/95 hover:via-primary/85 hover:to-primary/75 bg-gradient-to-r",
-                  "shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_8px_40px_hsl(var(--primary)/0.4)]",
-                  "border-0 transition-all duration-300 hover:scale-105",
-                  "before:absolute before:inset-0 before:bg-gradient-to-r before:from-white/20 before:via-transparent before:to-white/20",
-                  "before:translate-x-[-100%] before:transition-transform before:duration-700 hover:before:translate-x-[100%]",
+                  "group relative h-14 px-8 text-lg font-semibold",
+                  "bg-primary hover:bg-primary/90",
+                  "hover:shadow-primary/25 shadow-lg hover:shadow-xl",
+                  "transform transition-all duration-200 hover:-translate-y-0.5",
+                  "border-0",
                 )}
               >
-                <span className="relative z-10 flex items-center">
+                <span className="flex items-center">
                   Try It Now
                   <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
                 </span>
@@ -177,12 +176,11 @@ export default function HomePage() {
               variant="outline"
               size="lg"
               className={cn(
-                "group relative h-14 overflow-hidden px-8 text-lg font-semibold backdrop-blur-sm",
+                "group relative h-14 px-8 text-lg font-semibold backdrop-blur-sm",
                 "bg-background/80 border-primary/20 hover:border-primary/40 border-2",
-                "shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:shadow-[0_8px_40px_hsl(var(--primary)/0.2)]",
-                "transition-all duration-300 hover:scale-105",
-                "before:from-primary/5 before:absolute before:inset-0 before:bg-gradient-to-r before:to-transparent",
-                "before:translate-x-[-100%] before:transition-transform before:duration-500 hover:before:translate-x-[100%]",
+                "hover:bg-primary/5",
+                "shadow-lg hover:shadow-xl",
+                "transform transition-all duration-200 hover:-translate-y-0.5",
               )}
               onClick={() => {
                 document.getElementById("how-it-works")?.scrollIntoView({
@@ -190,7 +188,7 @@ export default function HomePage() {
                 });
               }}
             >
-              <span className="relative z-10 flex items-center">
+              <span className="flex items-center">
                 <Play className="mr-2 h-5 w-5 transition-transform group-hover:scale-110" />
                 See How It Works
               </span>
@@ -227,11 +225,11 @@ export default function HomePage() {
         >
           <motion.div variants={fadeInUp} className="mb-16 text-center">
             <h2 className="mb-4 text-4xl font-bold tracking-tight">
-              Everything You Need for Smart Quiz Creation
+              Everything You Need for the Complete Quiz Experience
             </h2>
             <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
-              From AI-powered quiz generation to detailed analytics, we&apos;ve
-              got every aspect of quiz creation, management and analytics
+              From AI-powered quiz generation to detailed performance analytics,
+              we&apos;ve got every aspect of quiz creation and participation
               covered.
             </p>
           </motion.div>
@@ -318,7 +316,7 @@ export default function HomePage() {
                   <div className="mt-8 border-t pt-6">
                     <div className="text-center">
                       <div className="text-3xl font-bold text-blue-500">
-                        ~10 seconds
+                        ~15 seconds
                       </div>
                       <div className="text-muted-foreground text-sm">
                         Average creation time
@@ -351,7 +349,7 @@ export default function HomePage() {
                   <div className="flex-1 space-y-3">
                     {[
                       "Set question count and difficulty level",
-                      "Set options per question (2-8)",
+                      "Choose number of options per question",
                       "Optional manual editing mode",
                     ].map((feature) => (
                       <div key={feature} className="flex items-center gap-3">
@@ -419,8 +417,9 @@ export default function HomePage() {
               How It Works
             </h2>
             <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
-              From idea to insight in just a few simple steps. Create, manage,
-              and analyze your quizzes effortlessly.
+              From idea to insight in just a few simple steps. Create, take,
+              share, and analyze your quizzes with comprehensive performance
+              tracking.
             </p>
           </motion.div>
 
@@ -497,39 +496,39 @@ export default function HomePage() {
         >
           <motion.div variants={fadeInUp} className="mb-12 text-center">
             <h2 className="mb-4 text-4xl font-bold tracking-tight lg:text-5xl">
-              Ready to Transform Your Quiz Creation?
+              Ready to Elevate Your Quiz Experience?
             </h2>
             <p className="text-muted-foreground mx-auto max-w-3xl text-xl">
-              Join thousands of educators, trainers, and quiz enthusiasts who
-              are creating smarter assessments with AI.
+              Join educators, trainers, and quiz enthusiasts who are creating,
+              taking, and analyzing smarter quizzes with the power of AI and
+              comprehensive analytics.
             </p>
           </motion.div>
 
-          {/* Stats Grid */}
           <motion.div variants={fadeInUp} className="mb-12">
             <div className="grid gap-8 md:grid-cols-3">
               {[
                 {
-                  number: "10K+",
+                  number: "100+",
                   label: "Quizzes Created",
-                  description: "AI-powered assessments generated",
+                  description: "AI-powered quizzes generated",
                   icon: Brain,
-                  color: "text-blue-500",
-                  bg: "bg-blue-500/10",
+                  color: "text-primary",
+                  bg: "bg-primary/10",
                 },
                 {
-                  number: "95%",
-                  label: "Time Saved",
-                  description: "Compared to manual creation",
-                  icon: Zap,
-                  color: "text-yellow-500",
-                  bg: "bg-yellow-500/10",
+                  number: "500+",
+                  label: "Quiz Attempts",
+                  description: "Quizzes completed by users",
+                  icon: Target,
+                  color: "text-green-500",
+                  bg: "bg-green-500/10",
                 },
                 {
-                  number: "4.9/5",
-                  label: "User Rating",
-                  description: "Based on creator feedback",
-                  icon: Sparkles,
+                  number: "10+",
+                  label: "Analytics Access",
+                  description: "Real-time performance insights",
+                  icon: BarChart3,
                   color: "text-purple-500",
                   bg: "bg-purple-500/10",
                 },
@@ -570,15 +569,15 @@ export default function HomePage() {
                   <div className="text-center lg:text-left">
                     <div className="bg-primary/10 text-primary mb-4 inline-flex items-center rounded-full px-4 py-2 text-sm font-medium">
                       <Sparkles className="mr-2 h-4 w-4" />
-                      Free & Fast
+                      Absolutely Free
                     </div>
                     <h3 className="mb-4 text-3xl font-bold tracking-tight">
-                      Start Creating Smarter Quizzes Today
+                      Start Your Complete Quiz Journey Today
                     </h3>
                     <p className="text-muted-foreground mb-6 text-lg">
-                      No credit card required. Get instant access to AI-powered
-                      quiz generation and start creating engaging assessments in
-                      seconds.
+                      Get instant access to AI-powered quiz generation, seamless
+                      quiz experiences, and comprehensive analytics to track
+                      every aspect of performance.
                     </p>
                     <div className="flex flex-col gap-4 sm:flex-row sm:justify-center lg:justify-start">
                       <Link href="/signup">
@@ -586,7 +585,7 @@ export default function HomePage() {
                           size="lg"
                           className="group bg-primary hover:bg-primary/90 h-14 px-8 text-lg font-semibold shadow-lg transition-all duration-300 hover:scale-105"
                         >
-                          Get Started Free
+                          Get Started
                           <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
                         </Button>
                       </Link>
@@ -612,7 +611,7 @@ export default function HomePage() {
                               <CheckCircle className="h-6 w-6 text-green-500" />
                             </div>
                             <span className="font-medium">
-                              AI Generation in 30 seconds
+                              AI Generation in 15 seconds
                             </span>
                           </div>
                           <div className="flex items-center gap-3">
