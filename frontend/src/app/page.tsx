@@ -15,6 +15,7 @@ import {
   Edit3,
   Globe,
   Play,
+  Settings2,
   Sparkles,
   Target,
   TrendingUp,
@@ -417,8 +418,8 @@ export default function HomePage() {
               How It Works
             </h2>
             <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
-              From idea to insight in just a few simple steps. Create, take,
-              share, and analyze your quizzes with comprehensive performance
+              From idea to insight in just a few simple steps. Create, take, and
+              analyze your quizzes and attempts with comprehensive performance
               tracking.
             </p>
           </motion.div>
@@ -430,20 +431,20 @@ export default function HomePage() {
                 title: "Choose Mode",
                 description:
                   "Pick Express for speed or Advanced for customization",
-                icon: Target,
+                icon: Zap,
               },
               {
                 step: "2",
                 title: "Configure Settings",
                 description:
                   "Set topic, visibility, and advanced options if needed",
-                icon: Zap,
+                icon: Settings2,
               },
               {
                 step: "3",
                 title: "Generate Quiz",
                 description:
-                  "AI creates instantly or builds prototype for manual editing",
+                  "AI instantly creates a quiz for you with your settings",
                 icon: Brain,
               },
               {
