@@ -144,14 +144,12 @@ function QuickStatsCard({
   value,
   icon: Icon,
   color,
-  change,
   isLoading,
 }: {
   title: string;
   value: string | number;
   icon: any;
   color: string;
-  change?: string;
   isLoading?: boolean;
 }) {
   return (
@@ -169,11 +167,6 @@ function QuickStatsCard({
                   <Skeleton className="h-8 w-16 rounded-md" />
                 ) : (
                   <p className="text-2xl font-bold">{value}</p>
-                )}
-                {change && !isLoading && (
-                  <span className="text-xs font-medium text-emerald-500">
-                    {change}
-                  </span>
                 )}
               </div>
             </div>
@@ -233,7 +226,6 @@ export default function AnalyticsPage() {
                     value={overviewData?.quizzesCreated || 0}
                     icon={Brain}
                     color="bg-blue-500/10 text-blue-500"
-                    change="+3 this week"
                     isLoading={isLoading}
                   />
                   <QuickStatsCard
@@ -241,7 +233,6 @@ export default function AnalyticsPage() {
                     value={overviewData?.quizzesAttempted || 0}
                     icon={BookOpen}
                     color="bg-green-500/10 text-green-500"
-                    change="+12 this week"
                     isLoading={isLoading}
                   />
                   <QuickStatsCard
@@ -253,7 +244,6 @@ export default function AnalyticsPage() {
                     }
                     icon={Target}
                     color="bg-purple-500/10 text-purple-500"
-                    change="+5.2% this month"
                     isLoading={isLoading}
                   />
                   <QuickStatsCard
@@ -261,7 +251,6 @@ export default function AnalyticsPage() {
                     value={overviewData?.totalParticipants || 0}
                     icon={Users}
                     color="bg-emerald-500/10 text-emerald-500"
-                    change="+24 this week"
                     isLoading={isLoading}
                   />
                 </>
