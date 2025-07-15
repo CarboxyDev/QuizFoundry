@@ -10,6 +10,7 @@ import {
   BookOpen,
   Bot,
   Brain,
+  Check,
   CheckCircle,
   Edit3,
   Globe,
@@ -277,177 +278,131 @@ export default function HomePage() {
             </p>
           </motion.div>
 
-          <div className="grid gap-8 md:grid-cols-2 lg:gap-12">
-            {[
-              {
-                name: "Express",
-                description: "Lightning fast AI generation",
-                features: [
-                  "AI generates 5 questions instantly",
-                  "Medium difficulty by default",
-                  "4 options per question",
-                  "One-click creation",
-                  "Perfect for quick assessments",
-                ],
-                highlight: false,
-                icon: Zap,
-                color: "blue",
-              },
-              {
-                name: "Advanced",
-                description: "Full control with AI power",
-                features: [
-                  "Customize question count (3-20)",
-                  "Choose difficulty level",
-                  "Set options per question (2-8)",
-                  "Optional manual editing mode",
-                  "Perfect for detailed quizzes",
-                ],
-                highlight: false,
-                icon: Wand2,
-                color: "purple",
-              },
-            ].map((mode, index) => (
-              <motion.div key={mode.name} variants={fadeInUp} className="group">
-                <Card
-                  className={cn(
-                    "bg-card/60 h-full backdrop-blur-sm transition-all duration-300 hover:shadow-lg",
-                    mode.highlight &&
-                      "ring-primary/20 bg-primary/5 hover:ring-primary/40 ring-2",
-                  )}
-                >
-                  <CardContent className="p-8">
-                    <div className="mb-6 text-center">
-                      {mode.highlight && (
-                        <div className="bg-primary/10 text-primary mb-4 inline-flex items-center rounded-full px-4 py-2 text-sm font-medium">
-                          <Sparkles className="mr-2 h-4 w-4" />
-                          Recommended
-                        </div>
-                      )}
-                      <div className="mb-4 flex justify-center">
-                        <div
-                          className={cn(
-                            "rounded-xl p-4",
-                            mode.color === "blue" &&
-                              "bg-blue-500/10 text-blue-500",
-                            mode.color === "purple" &&
-                              "bg-purple-500/10 text-purple-500",
-                          )}
-                        >
-                          <mode.icon className="h-8 w-8" />
-                        </div>
+          {/* Bento Grid Layout */}
+          <div className="grid h-[600px] gap-6 lg:grid-cols-12 lg:grid-rows-8">
+            {/* Express Mode - Large card */}
+            <motion.div
+              variants={fadeInUp}
+              className="group lg:col-span-7 lg:row-span-8"
+            >
+              <Card className="bg-card/60 hover:bg-card/80 h-full backdrop-blur-sm transition-all duration-300 hover:shadow-lg">
+                <CardContent className="flex h-full flex-col p-8">
+                  <div className="mb-6">
+                    <div className="mb-4 flex items-center gap-3">
+                      <div className="rounded-xl bg-blue-500/10 p-3">
+                        <Zap className="h-8 w-8 text-blue-500" />
                       </div>
-                      <h3 className="mb-3 text-3xl font-bold">{mode.name}</h3>
-                      <p className="text-muted-foreground text-base">
-                        {mode.description}
-                      </p>
+                      <h3 className="mb-3 text-3xl font-bold">Express Mode</h3>
                     </div>
-                    <ul className="space-y-3">
-                      {mode.features.map((feature) => (
-                        <li key={feature} className="flex items-center gap-3">
-                          <CheckCircle className="h-5 w-5 flex-shrink-0 text-green-500" />
-                          <span className="text-sm leading-relaxed">
-                            {feature}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-      </section>
 
-      <section className="px-4 py-16 sm:px-6 lg:px-8">
-        <motion.div
-          className="mx-auto max-w-7xl"
-          initial="initial"
-          whileInView="animate"
-          viewport={{ once: true }}
-          variants={staggerContainer}
-        >
-          <motion.div variants={fadeInUp} className="mb-12">
-            <Card className="from-primary/5 via-primary/10 to-primary/5 overflow-hidden bg-gradient-to-r backdrop-blur-sm">
-              <CardContent className="p-8 lg:p-12">
-                <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-12">
-                  <div>
-                    <div className="bg-primary/10 text-primary mb-4 inline-flex items-center rounded-full px-4 py-2 text-sm font-medium">
-                      <Edit3 className="mr-2 h-4 w-4" />
-                      Advanced Feature
-                    </div>
-                    <h3 className="mb-4 text-3xl font-bold tracking-tight">
-                      Manual Tweaking
-                    </h3>
-                    <p className="text-muted-foreground mb-6 text-lg leading-relaxed">
-                      Want the best of both worlds? Enable Manual Mode in
-                      Advanced settings to get an AI-generated prototype that
-                      you can fully customize before publishing.
+                    <p className="text-muted-foreground text-lg">
+                      Lightning fast AI generation for instant quiz creation
                     </p>
-                    <div className="space-y-3">
-                      {[
-                        "AI creates a complete quiz prototype based on your prompt",
-                        "Full editing interface for questions, answers, and settings",
-                        "Add, remove, or reorder questions as needed",
-                        "Customize each answer option and mark correct answers",
-                        "Perfect for educators who want AI assistance with human oversight",
-                      ].map((feature, index) => (
-                        <motion.div
-                          key={index}
-                          className="flex items-start gap-3"
-                          initial={{ opacity: 0, x: -20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: index * 0.1 }}
-                        >
-                          <CheckCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-green-500" />
-                          <span className="text-sm leading-relaxed">
-                            {feature}
-                          </span>
-                        </motion.div>
-                      ))}
+                  </div>
+
+                  <div className="flex-1 space-y-4">
+                    {[
+                      "AI generates 5 questions instantly",
+                      "Medium difficulty questions by default",
+                      "One-click creation",
+                      "Perfect for quick quizzes",
+                      "Ability to edit later",
+                    ].map((feature, index) => (
+                      <div key={feature} className="flex items-center gap-3">
+                        <Check className="h-5 w-5 flex-shrink-0 text-green-500" />
+                        <span className="leading-relaxed">{feature}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-8 border-t pt-6">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-blue-500">
+                        ~10 seconds
+                      </div>
+                      <div className="text-muted-foreground text-sm">
+                        Average creation time
+                      </div>
                     </div>
                   </div>
-                  <div className="relative">
-                    <div className="relative rounded-xl bg-white/10 p-6 backdrop-blur-sm">
-                      <div className="mb-4 flex items-center gap-2">
-                        <div className="h-3 w-3 rounded-full bg-red-400"></div>
-                        <div className="h-3 w-3 rounded-full bg-yellow-400"></div>
-                        <div className="h-3 w-3 rounded-full bg-green-400"></div>
-                        <span className="text-muted-foreground ml-2 text-xs">
-                          Manual Editor
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Advanced Mode Card */}
+            <motion.div
+              variants={fadeInUp}
+              className="group lg:col-span-5 lg:row-span-4"
+            >
+              <Card className="bg-card/60 hover:bg-card/80 h-full backdrop-blur-sm transition-all duration-300">
+                <CardContent className="flex h-full flex-col p-6">
+                  <div className="mb-4">
+                    <div className="mb-4 flex items-center gap-3">
+                      <div className="rounded-lg bg-purple-500/10 p-3">
+                        <Wand2 className="h-6 w-6 text-purple-500" />
+                      </div>
+                      <h3 className="text-2xl font-bold">Advanced Mode</h3>
+                    </div>
+                    <p className="text-muted-foreground">
+                      Full control with AI power and customization
+                    </p>
+                  </div>
+
+                  <div className="flex-1 space-y-3">
+                    {[
+                      "Set question count and difficulty level",
+                      "Set options per question (2-8)",
+                      "Optional manual editing mode",
+                    ].map((feature) => (
+                      <div key={feature} className="flex items-center gap-3">
+                        <Check className="h-4 w-4 flex-shrink-0 text-green-500" />
+                        <span className="text-sm leading-relaxed">
+                          {feature}
                         </span>
                       </div>
-                      <div className="space-y-3">
-                        <div className="rounded bg-white/20 p-3">
-                          <div className="mb-1 text-xs text-white/80">
-                            Question 1
-                          </div>
-                          <div className="text-sm font-medium text-white">
-                            What is the capital of France?
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2 rounded border border-green-500/30 bg-green-500/20 px-3 py-2 text-xs text-green-100">
-                            <div className="h-2 w-2 rounded-full bg-green-400"></div>
-                            Paris ✓
-                          </div>
-                          <div className="flex items-center gap-2 rounded bg-white/10 px-3 py-2 text-xs">
-                            <div className="h-2 w-2 rounded-full border border-white/40"></div>
-                            London
-                          </div>
-                          <div className="flex items-center gap-2 rounded bg-white/10 px-3 py-2 text-xs">
-                            <div className="h-2 w-2 rounded-full border border-white/40"></div>
-                            Berlin
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                    ))}
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
+                </CardContent>
+              </Card>
+            </motion.div>
+
+            {/* Manual Mode Card */}
+            <motion.div
+              variants={fadeInUp}
+              className="group lg:col-span-5 lg:row-span-4"
+            >
+              <Card className="bg-card/60 hover:bg-card/80 h-full backdrop-blur-sm transition-all duration-300">
+                <CardContent className="flex h-full flex-col p-6">
+                  <div className="mb-4">
+                    <div className="mb-4 flex items-center gap-3">
+                      <div className="rounded-lg bg-amber-500/10 p-3">
+                        <Edit3 className="h-6 w-6 text-amber-500" />
+                      </div>
+                      <h3 className="text-2xl font-bold">Manual Mode</h3>
+                    </div>
+                    <p className="text-muted-foreground">
+                      Get AI prototype then customize before publishing
+                    </p>
+                  </div>
+
+                  <div className="flex-1 space-y-3">
+                    {[
+                      "AI creates a quiz prototype for you to edit",
+                      "Full quiz editing interface",
+                      "Perfect for manually curated quizzes",
+                    ].map((feature) => (
+                      <div key={feature} className="flex items-center gap-3">
+                        <Check className="h-4 w-4 flex-shrink-0 text-green-500" />
+                        <span className="text-sm leading-relaxed">
+                          {feature}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </div>
         </motion.div>
       </section>
 
