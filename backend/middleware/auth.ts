@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { AppError } from "../errors/AppError";
 import { getUserById } from "../services/userService";
 import { getOnboardingProgress } from "../services/onboardingService";
-import { supabaseAuth } from "../lib/supabase";
+import { validateSession } from "../services/sessionService";
 
 // Type for authenticated user data
 export interface AuthenticatedUser {
@@ -17,7 +17,7 @@ export interface AuthenticatedRequest extends Request {
 }
 
 /**
- * Authentication middleware - verifies JWT token and sets req.user
+ * Authentication middleware - verifies session token and sets req.user
  */
 export const authMiddleware = async (
   req: AuthenticatedRequest,
@@ -28,26 +28,22 @@ export const authMiddleware = async (
     const authHeader = req.headers.authorization;
 
     if (!authHeader?.startsWith("Bearer ")) {
-      throw new AppError("Access token required", 401);
+      throw new AppError("Session token required", 401);
     }
 
-    const token = authHeader.split(" ")[1];
+    const sessionToken = authHeader.split(" ")[1];
 
-    // Verify the Supabase JWT token
-    const {
-      data: { user },
-      error,
-    } = await supabaseAuth.auth.getUser(token);
+    // Validate the session token
+    const validation = await validateSession(sessionToken);
 
-    if (error || !user) {
-      throw new AppError("Invalid access token", 401);
+    if (!validation.isValid || !validation.user) {
+      throw new AppError("Invalid or expired session", 401);
     }
 
     req.user = {
-      id: user.id,
-      email: user.email || "",
-      avatar_url:
-        user.user_metadata?.avatar_url || user.user_metadata?.picture || null,
+      id: validation.user.id,
+      email: validation.user.email,
+      avatar_url: validation.user.avatar_url,
     };
 
     next();
@@ -55,7 +51,7 @@ export const authMiddleware = async (
     if (error instanceof AppError) {
       throw error;
     }
-    throw new AppError("Invalid access token", 401);
+    throw new AppError("Invalid session token", 401);
   }
 };
 

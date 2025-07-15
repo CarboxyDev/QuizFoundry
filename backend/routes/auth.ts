@@ -10,15 +10,18 @@ import {
   loginUser,
 } from "../services/userService";
 import { getOnboardingProgress } from "../services/onboardingService";
+import {
+  invalidateSession,
+  invalidateAllUserSessions,
+  refreshSession,
+  getUserSessions,
+} from "../services/sessionService";
 import { signupSchema, loginSchema } from "../schemas/userSchema";
 import type { UserProfile } from "../types/api";
 
 const authRouter: Router = express.Router();
 
-// Email/password registration
-/**
- * POST /auth/register - Sign up new user and automatically log them in
- */
+// ! Email/password registration
 authRouter.post(
   "/register",
   authOperationsLimiter,
@@ -28,7 +31,13 @@ authRouter.post(
       const errors = validationResult.error.errors.map((err) => err.message);
       throw new AppError(errors.join("; "), 400);
     }
-    const loginResponse = await signupUser(validationResult.data);
+
+    const sessionData = {
+      userAgent: req.headers["user-agent"],
+      ipAddress: req.ip || req.connection.remoteAddress,
+    };
+
+    const loginResponse = await signupUser(validationResult.data, sessionData);
     res.status(201).json({
       success: true,
       data: loginResponse,
@@ -37,9 +46,6 @@ authRouter.post(
   })
 );
 
-/**
- * POST /auth/login - Login user
- */
 authRouter.post(
   "/login",
   authOperationsLimiter,
@@ -48,7 +54,13 @@ authRouter.post(
     if (!validationResult.success) {
       throw new AppError("Invalid input data", 400);
     }
-    const loginResponse = await loginUser(validationResult.data);
+
+    const sessionData = {
+      userAgent: req.headers["user-agent"],
+      ipAddress: req.ip || req.connection.remoteAddress,
+    };
+
+    const loginResponse = await loginUser(validationResult.data, sessionData);
     res.json({
       success: true,
       data: loginResponse,
@@ -82,6 +94,7 @@ authRouter.post(
         avatar_url: userAvatarUrl,
       });
     }
+
     // Check onboarding status
     const onboardingProgress = await getOnboardingProgress(userId);
     const isOnboardingComplete = onboardingProgress?.is_complete || false;
@@ -100,6 +113,105 @@ authRouter.post(
         user: profileWithOnboarding,
       },
       message: "User profile ready",
+    });
+  })
+);
+
+authRouter.post(
+  "/logout",
+  authMiddleware,
+  asyncHandler(async (req: AuthenticatedRequest, res) => {
+    const authHeader = req.headers.authorization;
+    const sessionToken = authHeader?.split(" ")[1];
+
+    if (sessionToken) {
+      await invalidateSession(sessionToken);
+    }
+
+    res.json({
+      success: true,
+      message: "Logged out successfully",
+    });
+  })
+);
+
+authRouter.post(
+  "/logout-all",
+  authMiddleware,
+  asyncHandler(async (req: AuthenticatedRequest, res) => {
+    const userId = req.user?.id;
+    if (!userId) {
+      throw new AppError("User not authenticated", 401);
+    }
+
+    await invalidateAllUserSessions(userId);
+
+    res.json({
+      success: true,
+      message: "All sessions logged out successfully",
+    });
+  })
+);
+
+authRouter.post(
+  "/refresh",
+  authMiddleware,
+  asyncHandler(async (req: AuthenticatedRequest, res) => {
+    const authHeader = req.headers.authorization;
+    const sessionToken = authHeader?.split(" ")[1];
+
+    if (!sessionToken) {
+      throw new AppError("Session token required", 401);
+    }
+
+    const refreshedSession = await refreshSession(sessionToken);
+
+    if (!refreshedSession) {
+      throw new AppError("Failed to refresh session", 401);
+    }
+
+    res.json({
+      success: true,
+      data: {
+        session: {
+          access_token: refreshedSession.session_token,
+          refresh_token: refreshedSession.refresh_token || "",
+          expires_at: Math.floor(
+            new Date(refreshedSession.expires_at).getTime() / 1000
+          ),
+        },
+      },
+      message: "Session refreshed successfully",
+    });
+  })
+);
+
+authRouter.get(
+  "/sessions",
+  authMiddleware,
+  asyncHandler(async (req: AuthenticatedRequest, res) => {
+    const userId = req.user?.id;
+    if (!userId) {
+      throw new AppError("User not authenticated", 401);
+    }
+
+    const sessions = await getUserSessions(userId);
+
+    // ! Make sure to remove sensitive data from response
+    const safeSessions = sessions.map((session) => ({
+      id: session.id,
+      created_at: session.created_at,
+      updated_at: session.updated_at,
+      expires_at: session.expires_at,
+      user_agent: session.user_agent,
+      ip_address: session.ip_address,
+      is_active: session.is_active,
+    }));
+
+    res.json({
+      success: true,
+      data: { sessions: safeSessions },
+      message: "Sessions retrieved successfully",
     });
   })
 );

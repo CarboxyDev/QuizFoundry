@@ -5,6 +5,7 @@ import { env } from "./env";
 import { errorHandler } from "./middleware/error-handler";
 import { sanitizeInput } from "./middleware/sanitization";
 import { generalApiLimiter } from "./lib/ratelimits";
+import { cleanupAllExpiredSessions } from "./services/sessionService";
 import metaRouter from "./routes/meta";
 import usersRouter from "./routes/users";
 import onboardingRouter from "./routes/onboarding";
@@ -25,7 +26,6 @@ app.use(
   })
 );
 
-// Global rate limiting (applied to all routes as baseline protection)
 app.use(generalApiLimiter);
 
 app.use(express.json());
@@ -54,8 +54,24 @@ const server = app.listen(port, () =>
   console.log(`Backend started on port ${port}`)
 );
 
+// ! Clean up expired sessions every hour to keep the database clean
+const sessionCleanupInterval = setInterval(
+  async () => {
+    try {
+      await cleanupAllExpiredSessions();
+      console.log("Expired sessions cleaned up");
+    } catch (error) {
+      console.error("Failed to cleanup expired sessions:", error);
+    }
+  },
+  60 * 60 * 1000
+);
+
 const gracefulShutdown = (signal: string) => {
-  console.log(`Received ${signal}. Starting graceful shutdown...`);
+  console.log(`Shutting down the server...`);
+
+  // Clear the session cleanup interval
+  clearInterval(sessionCleanupInterval);
 
   server.close((err) => {
     if (err) {

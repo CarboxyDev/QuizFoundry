@@ -8,6 +8,7 @@ import type {
 } from "../schemas/userSchema";
 import type { UserProfile, LoginResponse, ApiResponse } from "../types/api";
 import { getOnboardingProgress } from "./onboardingService";
+import { createSession, type CreateSessionData } from "./sessionService";
 
 export async function getUsers(): Promise<UserProfile[]> {
   const { data, error } = await supabase
@@ -122,7 +123,10 @@ export async function updateUserProfile(
 /**
  * Login user with email/password
  */
-export async function loginUser(loginData: LoginInput): Promise<LoginResponse> {
+export async function loginUser(
+  loginData: LoginInput,
+  sessionData?: { userAgent?: string; ipAddress?: string }
+): Promise<LoginResponse> {
   const { email, password } = loginData;
 
   const { data: authData, error: authError } =
@@ -131,7 +135,7 @@ export async function loginUser(loginData: LoginInput): Promise<LoginResponse> {
       password,
     });
 
-  if (authError || !authData.user || !authData.session) {
+  if (authError || !authData.user) {
     throw new AppError("Invalid email or password", 401);
   }
 
@@ -145,6 +149,13 @@ export async function loginUser(loginData: LoginInput): Promise<LoginResponse> {
     throw new AppError("User profile not found", 404);
   }
 
+  // Create database session
+  const session = await createSession({
+    userId: authData.user.id,
+    userAgent: sessionData?.userAgent,
+    ipAddress: sessionData?.ipAddress,
+  });
+
   const onboardingProgress = await getOnboardingProgress(authData.user.id);
   const isOnboardingComplete = onboardingProgress?.is_complete || false;
 
@@ -154,10 +165,9 @@ export async function loginUser(loginData: LoginInput): Promise<LoginResponse> {
       is_onboarding_complete: isOnboardingComplete,
     },
     session: {
-      access_token: authData.session.access_token,
-      refresh_token: authData.session.refresh_token,
-      expires_at:
-        authData.session.expires_at || Math.floor(Date.now() / 1000) + 3600, // Default to 1 hour from now
+      access_token: session.session_token,
+      refresh_token: session.refresh_token || "",
+      expires_at: Math.floor(new Date(session.expires_at).getTime() / 1000),
     },
   };
 }
@@ -167,7 +177,8 @@ export async function loginUser(loginData: LoginInput): Promise<LoginResponse> {
  * Also logs them in automatically
  */
 export async function signupUser(
-  signupData: SignupInput
+  signupData: SignupInput,
+  sessionData?: { userAgent?: string; ipAddress?: string }
 ): Promise<LoginResponse> {
   const { email, password, name } = signupData;
 
@@ -204,22 +215,12 @@ export async function signupUser(
     );
   }
 
-  // ! Now sign in the user to create a session
-  const { data: signInData, error: signInError } =
-    await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-  if (signInError || !signInData.user || !signInData.session) {
-    // In case thje sign-in fails, we should still clean shit up
-    await supabaseAdmin.auth.admin.deleteUser(authData.user.id);
-    await supabaseAdmin.from("profiles").delete().eq("id", authData.user.id);
-    throw new AppError(
-      `Failed to sign in after signup: ${signInError?.message || "Unknown error"}`,
-      500
-    );
-  }
+  // Create database session
+  const session = await createSession({
+    userId: authData.user.id,
+    userAgent: sessionData?.userAgent,
+    ipAddress: sessionData?.ipAddress,
+  });
 
   return {
     user: {
@@ -227,10 +228,9 @@ export async function signupUser(
       is_onboarding_complete: false,
     },
     session: {
-      access_token: signInData.session.access_token,
-      refresh_token: signInData.session.refresh_token,
-      expires_at:
-        signInData.session.expires_at || Math.floor(Date.now() / 1000) + 3600, //  1 hour from now ( potential FIXME )
+      access_token: session.session_token,
+      refresh_token: session.refresh_token || "",
+      expires_at: Math.floor(new Date(session.expires_at).getTime() / 1000),
     },
   };
 }
