@@ -58,6 +58,9 @@ export interface CreateQuizResponse {
 
 export interface CreateQuizExpressInput {
   prompt: string;
+  difficulty: "easy" | "medium" | "hard";
+  questionCount: number;
+  optionsCount: number;
   is_public: boolean;
 }
 
@@ -66,7 +69,6 @@ export interface CreateQuizAdvancedInput {
   difficulty: "easy" | "medium" | "hard";
   questionCount: number;
   optionsCount: number;
-  isManualMode: boolean;
   is_public: boolean;
 }
 
@@ -255,7 +257,7 @@ export interface QuizAnalytics {
 }
 
 /**
- * Create a quiz using Express Mode (defaults: 5 questions, 4 options, medium difficulty)
+ * Create a quiz using Express Mode (custom settings, immediate publishing)
  */
 export async function createQuizExpress(
   input: CreateQuizExpressInput,
@@ -277,13 +279,13 @@ export async function createQuizExpress(
 }
 
 /**
- * Create a quiz using Advanced Mode (custom settings)
+ * Create a quiz using Advanced Mode (always creates prototype for manual editing)
  */
 export async function createQuizAdvanced(
   input: CreateQuizAdvancedInput,
 ): Promise<{
   quiz: Quiz;
-  isManualMode: boolean;
+  originalPrompt: string;
 }> {
   const response = await axiosInstance.post<CreateQuizResponse>(
     "/quizzes/create/advanced",
@@ -296,7 +298,7 @@ export async function createQuizAdvanced(
 
   return {
     quiz: response.data.data.quiz,
-    isManualMode: response.data.data.is_manual_mode || false,
+    originalPrompt: (response.data.data as any).original_prompt || input.prompt,
   };
 }
 

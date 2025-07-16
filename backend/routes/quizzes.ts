@@ -83,7 +83,7 @@ function stripAnswersFromQuiz(quiz: any) {
 
 /**
  * POST /quizzes/create/express - Create quiz using Express Mode
- * Uses defaults: 5 questions, 4 options, medium difficulty
+ * Uses custom settings and creates final quiz immediately
  */
 quizzesRouter.post(
   "/create/express",
@@ -104,7 +104,10 @@ quizzesRouter.post(
       throw new AppError(errors.join("; "), 400);
     }
 
-    const quiz = await createQuizExpressMode(userId, validationResult.data);
+    // Express mode creates final quiz immediately with custom settings
+    const quiz = await createQuizExpressMode(userId, {
+      ...validationResult.data,
+    });
 
     // Strip answers from response
     const sanitizedQuiz = stripAnswersFromQuiz(quiz);
@@ -122,8 +125,7 @@ quizzesRouter.post(
 
 /**
  * POST /quizzes/create/advanced - Create quiz using Advanced Mode
- * Uses custom settings with optional Manual Mode
- * Behavior depends on isManualMode flag
+ * Always creates a prototype quiz for manual editing before publishing
  */
 quizzesRouter.post(
   "/create/advanced",
@@ -144,23 +146,23 @@ quizzesRouter.post(
       throw new AppError(errors.join("; "), 400);
     }
 
-    const quiz = await createQuizAdvancedMode(userId, validationResult.data);
-    const isManualMode = validationResult.data.isManualMode;
+    // Advanced mode always creates prototype quiz for manual editing
+    const quiz = await createQuizAdvancedMode(userId, {
+      ...validationResult.data,
+    });
 
-    // For manual mode, return the prototype with answers intact for editing
-    // For regular mode, strip answers as usual
-    const responseQuiz = isManualMode ? quiz : stripAnswersFromQuiz(quiz);
-
+    // Return the prototype with answers intact for editing
     res.status(201).json({
       success: true,
       data: {
-        quiz: responseQuiz,
+        quiz,
         mode: "advanced",
-        is_manual_mode: isManualMode,
-        is_prototype: isManualMode, // Indicate this is a prototype for frontend reference
+        is_manual_mode: true,
+        is_prototype: true,
         original_prompt: validationResult.data.prompt,
       },
-      message: `Quiz created successfully in Advanced Mode${isManualMode ? " (Manual editing enabled)" : ""}`,
+      message:
+        "Prototype quiz created successfully in Advanced Mode (Manual editing enabled)",
     });
   })
 );

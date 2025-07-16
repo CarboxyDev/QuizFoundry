@@ -92,12 +92,11 @@ export async function createQuizExpressMode(
       difficulty: defaults.difficulty,
     });
 
-    // Save to database with is_manual = false (auto-generated)
     const quiz = await saveGeneratedQuiz(
       userId,
       input.prompt,
       generatedQuiz,
-      false, // is_manual = false for Express Mode
+      false,
       input.is_public
     );
 
@@ -122,7 +121,7 @@ export async function createQuizAdvancedMode(
 ): Promise<QuizWithQuestions> {
   try {
     console.log(
-      `[Quiz Service] Creating Advanced Mode quiz for user ${userId} (Manual: ${input.isManualMode})`
+      `[Quiz Service] Creating Advanced Mode quiz for user ${userId})`
     );
 
     // Generate quiz with AI using custom settings
@@ -133,61 +132,39 @@ export async function createQuizAdvancedMode(
       difficulty: input.difficulty,
     });
 
-    // If manual mode is enabled, return the prototype without saving to DB
-    if (input.isManualMode) {
-      console.log(
-        `[Quiz Service] Manual mode enabled - returning prototype quiz: "${generatedQuiz.title}"`
-      );
-
-      // Convert GeneratedQuiz to QuizWithQuestions format for consistent response
-      const prototypeQuiz: QuizWithQuestions = {
-        // Temporary fields for prototype (no real DB values)
-        id: "prototype",
-        user_id: userId,
-        title: generatedQuiz.title,
-        description: generatedQuiz.description,
-        difficulty: generatedQuiz.difficulty,
-        is_public: input.is_public,
-        is_ai_generated: true, // Initially AI generated
-        is_manual: true, // Will be manual after editing
-        original_prompt: input.prompt,
+    // Convert GeneratedQuiz to QuizWithQuestions format for consistent response
+    const prototypeQuiz: QuizWithQuestions = {
+      id: "prototype",
+      user_id: userId,
+      title: generatedQuiz.title,
+      description: generatedQuiz.description,
+      difficulty: generatedQuiz.difficulty,
+      is_public: input.is_public,
+      is_ai_generated: true,
+      is_manual: true,
+      original_prompt: input.prompt,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      questions: generatedQuiz.questions.map((q) => ({
+        id: `prototype-question-${q.order_index}`,
+        quiz_id: "prototype",
+        question_text: q.question_text,
+        question_type: q.question_type,
+        order_index: q.order_index,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        questions: generatedQuiz.questions.map((q) => ({
-          id: `prototype-question-${q.order_index}`,
-          quiz_id: "prototype",
-          question_text: q.question_text,
-          question_type: q.question_type,
-          order_index: q.order_index,
+        options: q.options.map((opt) => ({
+          id: `prototype-option-${opt.order_index}`,
+          question_id: `prototype-question-${q.order_index}`,
+          option_text: opt.option_text,
+          is_correct: opt.is_correct,
+          order_index: opt.order_index,
           created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          options: q.options.map((opt) => ({
-            id: `prototype-option-${opt.order_index}`,
-            question_id: `prototype-question-${q.order_index}`,
-            option_text: opt.option_text,
-            is_correct: opt.is_correct,
-            order_index: opt.order_index,
-            created_at: new Date().toISOString(),
-          })),
         })),
-      };
+      })),
+    };
 
-      return prototypeQuiz;
-    }
-
-    // Regular advanced mode - save to database
-    const quiz = await saveGeneratedQuiz(
-      userId,
-      input.prompt,
-      generatedQuiz,
-      false,
-      input.is_public
-    );
-
-    console.log(
-      `[Quiz Service] Successfully created Advanced Mode quiz: ${quiz.id}`
-    );
-    return quiz;
+    return prototypeQuiz;
   } catch (error) {
     console.error(
       "[Quiz Service] Error creating quiz in Advanced Mode:",

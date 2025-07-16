@@ -232,7 +232,7 @@ export default function MyQuizzesPage() {
                   My Quizzes
                 </h1>
                 <p className="text-muted-foreground mt-2">
-                  Manage and track your quiz creations
+                  Manage and track the quizzes you have created
                 </p>
               </div>
 
@@ -512,10 +512,6 @@ export default function MyQuizzesPage() {
                         <div className="text-center">
                           <motion.div
                             className="bg-muted mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full"
-                            animate={{
-                              scale: [1, 1.1, 1],
-                              rotate: [0, 10, -10, 0],
-                            }}
                             transition={{
                               duration: 2,
                               repeat: Infinity,
@@ -529,7 +525,7 @@ export default function MyQuizzesPage() {
                             difficultyFilter !== "all" ||
                             typeFilter !== "all" ||
                             visibilityFilter !== "all"
-                              ? "No quizzes match your criteria"
+                              ? "No quizzes found matching your criteria"
                               : "No quizzes created yet"}
                           </h3>
                           <p className="text-muted-foreground mx-auto mb-6 max-w-sm">

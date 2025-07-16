@@ -4,7 +4,6 @@ import { ProtectedRouteGuard } from "@/components/AuthGuard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -17,7 +16,6 @@ import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  createPrototypeQuiz,
   createQuizAdvanced,
   createQuizExpress,
   surpriseMe,
@@ -25,14 +23,11 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import {
   CheckCircle2,
-  Edit3,
   Globe,
   Loader2,
   Lock,
   Sparkles,
   Wand2,
-  Wrench,
-  Zap,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -43,40 +38,23 @@ interface QuizFormData {
   difficulty: "easy" | "medium" | "hard";
   optionsCount: number;
   questionCount: number;
-  isManual: boolean;
   isPublic: boolean;
+  mode: "express" | "advanced";
 }
 
 export default function CreateQuizPage() {
-  const [isAdvancedMode, setIsAdvancedMode] = useState(false);
   const [formData, setFormData] = useState<QuizFormData>({
     prompt: "",
     difficulty: "medium",
     optionsCount: 4,
     questionCount: 5,
-    isManual: false,
     isPublic: true,
+    mode: "express",
   });
   const [isGenerating, setIsGenerating] = useState(false);
   const [isSurpriseLoading, setIsSurpriseLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const router = useRouter();
-
-  const handleModeChange = (checked: boolean) => {
-    setIsAdvancedMode(checked);
-
-    if (!checked) {
-      // Reset to Express mode defaults
-      setFormData((prev) => ({
-        ...prev,
-        difficulty: "medium",
-        optionsCount: 4,
-        questionCount: 5,
-        isManual: false,
-        // Keep isPublic as is when switching back to Express mode
-      }));
-    }
-  };
 
   const handleFormDataChange = (updates: Partial<QuizFormData>) => {
     setFormData((prev) => ({ ...prev, ...updates }));
@@ -95,63 +73,19 @@ export default function CreateQuizPage() {
     setIsGenerating(true);
 
     try {
-      console.log("Generating quiz with:", {
-        mode: isAdvancedMode ? "advanced" : "express",
-        formData,
-      });
+      if (formData.mode === "express") {
+        console.log("Generating quiz with Express Mode:", formData);
 
-      let result;
-      if (isAdvancedMode) {
-        // Check if manual mode is enabled
-        if (formData.isManual) {
-          // Create prototype quiz for manual editing
-          const prototypeResult = await createPrototypeQuiz({
-            prompt: formData.prompt,
-            questionCount: formData.questionCount,
-            optionsCount: formData.optionsCount,
-            difficulty: formData.difficulty,
-          });
-
-          toast.success("Prototype quiz created! Redirecting to editor...");
-
-          // Store prototype data and redirect to manual editing page
-          const prototypeData = {
-            prototype: prototypeResult.prototype,
-            originalPrompt: prototypeResult.originalPrompt,
-            isPublic: formData.isPublic,
-          };
-
-          // Use URL searchParams to pass the data
-          const searchParams = new URLSearchParams({
-            data: JSON.stringify(prototypeData),
-          });
-
-          router.push(`/create-quiz/manual?${searchParams.toString()}`);
-          return;
-        } else {
-          // Regular advanced mode
-          const advancedInput = {
-            prompt: formData.prompt,
-            difficulty: formData.difficulty,
-            questionCount: formData.questionCount,
-            optionsCount: formData.optionsCount,
-            isManualMode: false,
-            is_public: formData.isPublic,
-          };
-          result = await createQuizAdvanced(advancedInput);
-        }
-      } else {
-        // Map form data to express API input
         const expressInput = {
           prompt: formData.prompt,
+          difficulty: formData.difficulty,
+          questionCount: formData.questionCount,
+          optionsCount: formData.optionsCount,
           is_public: formData.isPublic,
         };
-        result = await createQuizExpress(expressInput);
-      }
+        const result = await createQuizExpress(expressInput);
 
-      toast.success("Quiz generated successfully!");
-
-      if (!isAdvancedMode) {
+        toast.success("Quiz generated successfully!");
         setShowSuccess(true);
         setIsGenerating(false);
 
@@ -159,7 +93,30 @@ export default function CreateQuizPage() {
           router.push("/my-quizzes");
         }, 3000);
       } else {
-        router.push("/my-quizzes");
+        console.log("Generating quiz with Advanced Mode:", formData);
+
+        const advancedInput = {
+          prompt: formData.prompt,
+          difficulty: formData.difficulty,
+          questionCount: formData.questionCount,
+          optionsCount: formData.optionsCount,
+          is_public: formData.isPublic,
+        };
+        const result = await createQuizAdvanced(advancedInput);
+
+        toast.success("Prototype quiz created! Redirecting to quiz editor...");
+
+        const prototypeData = {
+          prototype: result.quiz,
+          originalPrompt: result.originalPrompt,
+          isPublic: formData.isPublic,
+        };
+
+        const searchParams = new URLSearchParams({
+          data: JSON.stringify(prototypeData),
+        });
+
+        router.push(`/create-quiz/advanced?${searchParams.toString()}`);
       }
     } catch (error) {
       console.error("Error generating quiz:", error);
@@ -201,13 +158,9 @@ export default function CreateQuizPage() {
             >
               <div className="bg-primary/10 text-primary mb-4 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium">
                 <Sparkles className="h-4 w-4" />
-                {isAdvancedMode ? "Advanced Mode" : "Express Mode"}
+                AI Quiz Generator
               </div>
               <h1 className="mb-4 text-4xl font-bold">Create Your Quiz</h1>
-              <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
-                Describe what you want your quiz to be about, and our AI will
-                generate engaging questions for you.
-              </p>
             </motion.div>
 
             <motion.div
@@ -260,7 +213,7 @@ export default function CreateQuizPage() {
                           htmlFor="prompt"
                           className="text-base font-medium"
                         >
-                          Quiz Topic & Description
+                          Quiz Topic
                         </Label>
                         <p className="text-muted-foreground mt-1 text-sm">
                           Describe what you want your quiz to be about
@@ -312,7 +265,7 @@ export default function CreateQuizPage() {
 
                     <Textarea
                       id="prompt"
-                      placeholder="Example: Create a quiz on the history of the internet"
+                      placeholder="Example: History of the internet"
                       value={formData.prompt}
                       onChange={(e) => handlePromptChange(e.target.value)}
                       className="min-h-[120px] resize-none text-base"
@@ -333,6 +286,111 @@ export default function CreateQuizPage() {
                       </div>
                       <div className="text-muted-foreground">
                         {formData.prompt.length} characters
+                      </div>
+                    </div>
+                  </div>
+                  <Separator />
+
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+                      <div className="space-y-3">
+                        <Label
+                          htmlFor="difficulty"
+                          className="text-sm font-medium"
+                        >
+                          Difficulty Level
+                        </Label>
+                        <Select
+                          value={formData.difficulty}
+                          onValueChange={(value) =>
+                            handleFormDataChange({
+                              difficulty: value as "easy" | "medium" | "hard",
+                            })
+                          }
+                          disabled={isGenerating}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="easy">
+                              <div className="flex items-center gap-2">
+                                <div className="h-2 w-2 rounded-full bg-green-500" />
+                                Easy
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="medium">
+                              <div className="flex items-center gap-2">
+                                <div className="h-2 w-2 rounded-full bg-yellow-500" />
+                                Medium
+                              </div>
+                            </SelectItem>
+                            <SelectItem value="hard">
+                              <div className="flex items-center gap-2">
+                                <div className="h-2 w-2 rounded-full bg-red-500" />
+                                Hard
+                              </div>
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-3">
+                        <Label
+                          htmlFor="questionCount"
+                          className="text-sm font-medium"
+                        >
+                          Number of Questions
+                        </Label>
+                        <Select
+                          value={formData.questionCount.toString()}
+                          onValueChange={(value) =>
+                            handleFormDataChange({
+                              questionCount: parseInt(value),
+                            })
+                          }
+                          disabled={isGenerating}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {[3, 5, 7, 10, 15, 20].map((num) => (
+                              <SelectItem key={num} value={num.toString()}>
+                                {num} {num === 1 ? "Question" : "Questions"}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-3">
+                        <Label
+                          htmlFor="optionsCount"
+                          className="text-sm font-medium"
+                        >
+                          Options per Question
+                        </Label>
+                        <Select
+                          value={formData.optionsCount.toString()}
+                          onValueChange={(value) =>
+                            handleFormDataChange({
+                              optionsCount: parseInt(value),
+                            })
+                          }
+                          disabled={isGenerating}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {[2, 4, 6, 8].map((num) => (
+                              <SelectItem key={num} value={num.toString()}>
+                                {num} Options
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
                   </div>
@@ -409,200 +467,125 @@ export default function CreateQuizPage() {
 
                   <Separator />
 
-                  {/* Mode Toggle */}
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-1">
-                      <Label
-                        htmlFor="mode-switch"
-                        className="text-base font-medium"
-                      >
-                        {isAdvancedMode ? "Advanced Mode" : "Express Mode"}
-                        {isAdvancedMode ? (
-                          <Wrench className="text-primary h-4 w-4" />
-                        ) : (
-                          <Zap className="text-primary h-4 w-4" />
-                        )}
+                  <div className="space-y-4">
+                    {/* <div>
+                      <Label className="text-base font-medium">
+                        Generation Mode
                       </Label>
-                      <p className="text-muted-foreground text-sm">
-                        {isAdvancedMode
-                          ? "Customize question count, difficulty, and options"
-                          : "Quick generation with default settings (5 questions, medium difficulty)"}
-                      </p>
+                    </div> */}
+
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                      <motion.div
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <Button
+                          type="button"
+                          variant={
+                            formData.mode === "express" ? "default" : "outline"
+                          }
+                          className={`h-20 w-full flex-col gap-2 text-left ${
+                            formData.mode === "express"
+                              ? "bg-primary text-primary-foreground shadow-md"
+                              : "hover:bg-muted/50"
+                          }`}
+                          onClick={() =>
+                            handleFormDataChange({ mode: "express" })
+                          }
+                          disabled={isGenerating}
+                        >
+                          <div className="flex items-center gap-2">
+                            <Sparkles className="h-5 w-5" />
+                            <span className="font-semibold">Express Mode</span>
+                          </div>
+                          <span className="text-xs opacity-80">
+                            Creates final quiz instantly
+                          </span>
+                        </Button>
+                      </motion.div>
+
+                      <motion.div
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <Button
+                          type="button"
+                          variant={
+                            formData.mode === "advanced" ? "default" : "outline"
+                          }
+                          className={`h-20 w-full flex-col gap-2 text-left ${
+                            formData.mode === "advanced"
+                              ? "bg-primary text-primary-foreground shadow-md"
+                              : "hover:bg-muted/50"
+                          }`}
+                          onClick={() =>
+                            handleFormDataChange({ mode: "advanced" })
+                          }
+                          disabled={isGenerating}
+                        >
+                          <div className="flex items-center gap-2">
+                            <Wand2 className="h-5 w-5" />
+                            <span className="font-semibold">Advanced Mode</span>
+                          </div>
+                          <span className="text-xs opacity-80">
+                            Creates AI prototype for editing
+                          </span>
+                        </Button>
+                      </motion.div>
                     </div>
-                    <Switch
-                      id="mode-switch"
-                      checked={isAdvancedMode}
-                      onCheckedChange={handleModeChange}
-                      disabled={isGenerating}
-                    />
                   </div>
 
-                  <AnimatePresence>
-                    {isAdvancedMode && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="space-y-6"
+                  {/* Generate Buttons */}
+                  <div className="space-y-3 pt-4">
+                    <div className="flex justify-center">
+                      <Button
+                        onClick={handleGenerateQuiz}
+                        disabled={!canSubmit || isGenerating}
+                        className="h-14 w-full max-w-md gap-2 text-lg font-medium"
+                        size="lg"
                       >
-                        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                          <div className="space-y-3">
-                            <Label
-                              htmlFor="difficulty"
-                              className="text-sm font-medium"
-                            >
-                              Difficulty Level
-                            </Label>
-                            <Select
-                              value={formData.difficulty}
-                              onValueChange={(value) =>
-                                handleFormDataChange({
-                                  difficulty: value as
-                                    | "easy"
-                                    | "medium"
-                                    | "hard",
-                                })
-                              }
-                              disabled={isGenerating}
-                            >
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="easy">
-                                  <div className="flex items-center gap-2">
-                                    <div className="h-2 w-2 rounded-full bg-green-500" />
-                                    Easy
-                                  </div>
-                                </SelectItem>
-                                <SelectItem value="medium">
-                                  <div className="flex items-center gap-2">
-                                    <div className="h-2 w-2 rounded-full bg-yellow-500" />
-                                    Medium
-                                  </div>
-                                </SelectItem>
-                                <SelectItem value="hard">
-                                  <div className="flex items-center gap-2">
-                                    <div className="h-2 w-2 rounded-full bg-red-500" />
-                                    Hard
-                                  </div>
-                                </SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
+                        {isGenerating ? (
+                          <>
+                            <Loader2 className="h-6 w-6 animate-spin" />
+                            {formData.mode === "express"
+                              ? "Generating..."
+                              : "Creating..."}
+                          </>
+                        ) : (
+                          <>
+                            {formData.mode === "express" ? (
+                              <>
+                                <Sparkles className="h-6 w-6" />
+                                Generate Quiz
+                              </>
+                            ) : (
+                              <>
+                                <Wand2 className="h-6 w-6" />
+                                Create Prototype
+                              </>
+                            )}
+                          </>
+                        )}
+                      </Button>
+                    </div>
 
-                          <div className="space-y-3">
-                            <Label
-                              htmlFor="questionCount"
-                              className="text-sm font-medium"
-                            >
-                              Number of Questions
-                            </Label>
-                            <Select
-                              value={formData.questionCount.toString()}
-                              onValueChange={(value) =>
-                                handleFormDataChange({
-                                  questionCount: parseInt(value),
-                                })
-                              }
-                              disabled={isGenerating}
-                            >
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {[3, 5, 7, 10, 15, 20].map((num) => (
-                                  <SelectItem key={num} value={num.toString()}>
-                                    {num} {num === 1 ? "Question" : "Questions"}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          <div className="space-y-3">
-                            <Label
-                              htmlFor="optionsCount"
-                              className="text-sm font-medium"
-                            >
-                              Options per Question
-                            </Label>
-                            <Select
-                              value={formData.optionsCount.toString()}
-                              onValueChange={(value) =>
-                                handleFormDataChange({
-                                  optionsCount: parseInt(value),
-                                })
-                              }
-                              disabled={isGenerating}
-                            >
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {[2, 4, 6, 8].map((num) => (
-                                  <SelectItem key={num} value={num.toString()}>
-                                    {num} Options
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-
-                        <Separator />
-
-                        <div className="space-y-4">
-                          <div className="flex items-center space-x-3">
-                            <Checkbox
-                              id="manual"
-                              checked={formData.isManual}
-                              onCheckedChange={(checked) =>
-                                handleFormDataChange({ isManual: !!checked })
-                              }
-                              disabled={isGenerating}
-                            />
-                            <div className="space-y-1">
-                              <Label
-                                htmlFor="manual"
-                                className="flex cursor-pointer items-center gap-2 text-sm font-medium"
-                              >
-                                <Edit3 className="h-4 w-4" />
-                                Manual Mode
-                              </Label>
-                              <p className="text-muted-foreground text-xs">
-                                Generate a prototype quiz that you can edit
-                                before saving
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-
-                  {/* Generate Button */}
-                  <div className="pt-4">
-                    <Button
-                      onClick={handleGenerateQuiz}
-                      disabled={!canSubmit || isGenerating}
-                      className="h-12 w-full gap-2 text-base font-medium"
-                      size="lg"
-                    >
-                      {isGenerating ? (
-                        <>
-                          <Loader2 className="h-5 w-5 animate-spin" />
-                          Generating Quiz...
-                        </>
-                      ) : (
-                        <>
-                          <Sparkles className="h-5 w-5" />
-                          {isAdvancedMode && formData.isManual
-                            ? "Create Prototype Quiz"
-                            : "Generate Quiz"}
-                        </>
-                      )}
-                    </Button>
+                    <div className="text-center">
+                      <div className="text-muted-foreground text-sm">
+                        <AnimatePresence mode="wait">
+                          <motion.span
+                            key={formData.mode}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            transition={{ duration: 0.2, ease: "easeInOut" }}
+                          >
+                            {formData.mode === "express"
+                              ? "Will create a final quiz ready to take immediately"
+                              : "Will create a prototype quiz that you can edit and customize"}
+                          </motion.span>
+                        </AnimatePresence>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
 

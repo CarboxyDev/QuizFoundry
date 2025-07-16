@@ -72,7 +72,7 @@ const cardVariants = {
   hover: { y: -2 },
 };
 
-const StickyManualQuizHeader = ({
+const StickyAdvancedQuizHeader = ({
   show,
   quiz,
   isPublishing,
@@ -142,7 +142,7 @@ const StickyManualQuizHeader = ({
   );
 };
 
-export default function ManualQuizEditPage() {
+export default function AdvancedQuizEditPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [quiz, setQuiz] = useState<EditableQuiz | null>(null);
@@ -485,7 +485,7 @@ export default function ManualQuizEditPage() {
 
   return (
     <ProtectedRouteGuard>
-      <StickyManualQuizHeader
+      <StickyAdvancedQuizHeader
         show={showStickyHeader}
         quiz={quiz}
         isPublishing={isPublishing}
@@ -518,7 +518,7 @@ export default function ManualQuizEditPage() {
               <div className="flex items-center gap-4">
                 <Badge variant="outline" className="bg-primary/10 text-primary">
                   <Edit3 className="mr-1 h-3 w-3" />
-                  Manual Mode
+                  Advanced Mode
                 </Badge>
                 <Button
                   onClick={handlePublish}
