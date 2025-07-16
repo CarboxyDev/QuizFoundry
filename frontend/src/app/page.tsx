@@ -12,7 +12,6 @@ import {
   Brain,
   Check,
   CheckCircle,
-  Edit3,
   Globe,
   Play,
   Settings2,
@@ -301,11 +300,11 @@ export default function HomePage() {
 
                   <div className="flex-1 space-y-4">
                     {[
-                      "AI generates 5 questions instantly",
-                      "Medium difficulty questions by default",
+                      "AI generates a complete quiz instantly",
+                      "Start with recommended defaults you can adjust",
+                      "Customize question count and difficulty level",
                       "One-click creation",
-                      "Perfect for quick quizzes",
-                      "Ability to edit later",
+                      "Edit quiz anytime after creation",
                     ].map((feature, index) => (
                       <div key={feature} className="flex items-center gap-3">
                         <Check className="h-5 w-5 flex-shrink-0 text-green-500" />
@@ -331,70 +330,33 @@ export default function HomePage() {
             {/* Advanced Mode Card */}
             <motion.div
               variants={fadeInUp}
-              className="group lg:col-span-5 lg:row-span-4"
+              className="group lg:col-span-5 lg:row-span-8"
             >
               <Card className="bg-card/60 hover:bg-card/80 h-full backdrop-blur-sm transition-all duration-300">
                 <CardContent className="flex h-full flex-col p-6">
-                  <div className="mb-4">
+                  <div className="mb-6">
                     <div className="mb-4 flex items-center gap-3">
                       <div className="rounded-lg bg-purple-500/10 p-3">
-                        <Wand2 className="h-6 w-6 text-purple-500" />
+                        <Wand2 className="h-8 w-8 text-purple-500" />
                       </div>
-                      <h3 className="text-2xl font-bold">Advanced Mode</h3>
+                      <h3 className="text-3xl font-bold">Advanced Mode</h3>
                     </div>
-                    <p className="text-muted-foreground">
+                    <p className="text-muted-foreground text-lg">
                       Full control with AI power and customization
                     </p>
                   </div>
 
-                  <div className="flex-1 space-y-3">
+                  <div className="flex-1 space-y-4">
                     {[
-                      "Set question count and difficulty level",
-                      "Choose number of options per question",
-                      "Optional manual editing mode",
+                      "Customize question count, difficulty & options",
+                      "Optional manual editing before publishing",
+                      "AI-generated prototype for fine-tuning",
+                      "Full editing interface with draft support",
+                      "Perfect for detailed, curated quizzes",
                     ].map((feature) => (
                       <div key={feature} className="flex items-center gap-3">
-                        <Check className="h-4 w-4 flex-shrink-0 text-green-500" />
-                        <span className="text-sm leading-relaxed">
-                          {feature}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-
-            {/* Manual Mode Card */}
-            <motion.div
-              variants={fadeInUp}
-              className="group lg:col-span-5 lg:row-span-4"
-            >
-              <Card className="bg-card/60 hover:bg-card/80 h-full backdrop-blur-sm transition-all duration-300">
-                <CardContent className="flex h-full flex-col p-6">
-                  <div className="mb-4">
-                    <div className="mb-4 flex items-center gap-3">
-                      <div className="rounded-lg bg-amber-500/10 p-3">
-                        <Edit3 className="h-6 w-6 text-amber-500" />
-                      </div>
-                      <h3 className="text-2xl font-bold">Manual Mode</h3>
-                    </div>
-                    <p className="text-muted-foreground">
-                      Get AI prototype then customize before publishing
-                    </p>
-                  </div>
-
-                  <div className="flex-1 space-y-3">
-                    {[
-                      "AI creates a quiz prototype for you to edit",
-                      "Full quiz editing interface",
-                      "Perfect for manually curated quizzes",
-                    ].map((feature) => (
-                      <div key={feature} className="flex items-center gap-3">
-                        <Check className="h-4 w-4 flex-shrink-0 text-green-500" />
-                        <span className="text-sm leading-relaxed">
-                          {feature}
-                        </span>
+                        <Check className="h-5 w-5 flex-shrink-0 text-green-500" />
+                        <span className="leading-relaxed">{feature}</span>
                       </div>
                     ))}
                   </div>
