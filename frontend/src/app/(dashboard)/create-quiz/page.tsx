@@ -97,7 +97,9 @@ export default function CreateQuizPage() {
         };
         const result = await createQuizAdvanced(advancedInput);
 
-        toast.success("Prototype quiz created! Redirecting to quiz editor...");
+        toast.success("Prototype quiz created successfully!");
+        setShowSuccess(true);
+        setIsGenerating(false);
 
         const prototypeData = {
           prototype: result.quiz,
@@ -109,7 +111,9 @@ export default function CreateQuizPage() {
           data: JSON.stringify(prototypeData),
         });
 
-        router.push(`/create-quiz/advanced?${searchParams.toString()}`);
+        setTimeout(() => {
+          router.push(`/create-quiz/advanced?${searchParams.toString()}`);
+        }, 3000);
       }
     } catch (error) {
       console.error("Error generating quiz:", error);
