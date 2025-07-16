@@ -175,20 +175,29 @@ export default function CreateQuizPage() {
                       exit={{ opacity: 0 }}
                       className="absolute inset-0 z-10 rounded-lg"
                     >
+                      {/* Single rotating beam */}
                       <motion.div
-                        className="h-full w-full rounded-lg"
+                        className="absolute inset-0 rounded-lg"
                         style={{
-                          background: `conic-gradient(from 0deg, transparent 60%, rgb(255, 125, 40) 70%, rgb(255, 140, 70) 75%, rgb(255, 125, 40) 80%, transparent 90%)`,
+                          background: `conic-gradient(from 0deg, 
+                            transparent 0%, 
+                            transparent 85%, 
+                            rgba(255, 125, 40, 0.3) 88%, 
+                            rgba(255, 140, 70, 0.8) 92%, 
+                            rgb(255, 125, 40) 95%, 
+                            rgba(255, 140, 70, 0.8) 98%, 
+                            rgba(255, 125, 40, 0.3) 100%)`,
                         }}
                         animate={{
-                          rotate: [0, 90, 180, 270, 360],
+                          rotate: 360,
                         }}
                         transition={{
-                          duration: 3,
+                          duration: 2,
                           repeat: Infinity,
                           ease: "linear",
                         }}
                       />
+
                       {/* Inner content mask - preserves card background */}
                       <div className="bg-card absolute inset-[2px] rounded-lg" />
                     </motion.div>
