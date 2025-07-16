@@ -65,8 +65,7 @@ export function GettingStarted() {
             <div>
               <h4 className="font-medium">Choose Creation Mode</h4>
               <p className="text-muted-foreground text-sm">
-                Pick Express for speed, Advanced for customization, or Manual
-                for full control.
+                Pick Express for speed or Advanced for customization.
               </p>
             </div>
           </motion.div>

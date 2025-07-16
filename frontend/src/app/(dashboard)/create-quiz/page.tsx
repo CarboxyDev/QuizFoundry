@@ -21,14 +21,7 @@ import {
   surpriseMe,
 } from "@/lib/quiz-api";
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  CheckCircle2,
-  Globe,
-  Loader2,
-  Lock,
-  Sparkles,
-  Wand2,
-} from "lucide-react";
+import { Globe, Loader2, Lock, Sparkles, Wand2, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -594,85 +587,116 @@ export default function CreateQuizPage() {
                   {showSuccess && (
                     <motion.div
                       key="successOverlay"
-                      initial={{ opacity: 0, scale: 0.85 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 120,
-                        damping: 20,
-                      }}
-                      className="absolute inset-0 z-50 flex items-center justify-center overflow-hidden rounded-lg shadow-inner"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.3 }}
+                      className="absolute inset-0 z-50 flex items-center justify-center overflow-hidden rounded-lg"
                     >
-                      {/* Animated gradient background */}
+                      {/* Background Mask */}
                       <motion.div
-                        aria-hidden
-                        className="absolute inset-0 bg-gradient-to-br from-emerald-400 via-emerald-500 to-teal-400"
-                        initial={{ scale: 1 }}
-                        animate={{ scale: [1, 1.04, 1] }}
-                        transition={{
-                          duration: 6,
-                          repeat: Infinity,
-                          ease: "easeInOut",
-                        }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.4 }}
+                        className="bg-background/95 absolute inset-0 backdrop-blur-md"
                       />
 
-                      {/* Confetti / sparkles */}
-                      {Array.from({ length: 20 }).map((_, i) => {
-                        const size = Math.random() * 8 + 4; // 4-12px
-                        const left = Math.random() * 100;
-                        const delay = Math.random() * 0.5;
-                        return (
-                          <motion.span
-                            key={i}
-                            style={{
-                              left: `${left}%`,
-                              width: size,
-                              height: size,
-                            }}
-                            className="absolute bottom-0 rounded-full bg-white/80"
-                            initial={{ y: 0, opacity: 1 }}
-                            animate={{ y: -350, opacity: 0 }}
-                            transition={{
-                              duration: 2.2,
-                              delay,
-                              repeat: Infinity,
-                              ease: "easeOut",
-                            }}
-                          />
-                        );
-                      })}
+                      {/* Subtle Gradient Effect */}
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{
+                          delay: 0.2,
+                          type: "spring",
+                          stiffness: 100,
+                          damping: 20,
+                        }}
+                        className="from-primary/10 via-primary/5 absolute inset-0 bg-gradient-to-br to-transparent"
+                      />
 
-                      {/* Content */}
-                      <div className="relative z-10 flex flex-col items-center text-center text-white drop-shadow-lg">
+                      {/* Main Content */}
+                      <div className="relative z-10 flex flex-col items-center text-center">
+                        {/* Success Icon */}
                         <motion.div
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
+                          initial={{ scale: 0, rotate: -90 }}
+                          animate={{ scale: 1, rotate: 0 }}
                           transition={{
                             type: "spring",
-                            stiffness: 260,
-                            damping: 20,
+                            stiffness: 150,
+                            damping: 15,
+                            delay: 0.3,
                           }}
-                          className="flex items-center justify-center rounded-full bg-white/10 p-4 backdrop-blur"
+                          className="relative mb-6"
                         >
-                          <CheckCircle2 className="h-20 w-20 text-white" />
+                          <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.4 }}
+                            className="bg-primary/10 ring-primary/20 flex items-center justify-center rounded-full p-6 ring-1"
+                          >
+                            <motion.div
+                              animate={{
+                                scale: [1, 1.05, 1],
+                              }}
+                              transition={{
+                                duration: 2,
+                                repeat: Infinity,
+                                ease: "easeInOut",
+                              }}
+                            >
+                              {formData.mode === "express" ? (
+                                <Zap className="text-primary h-16 w-16" />
+                              ) : (
+                                <Wand2 className="text-primary h-16 w-16" />
+                              )}
+                            </motion.div>
+                          </motion.div>
                         </motion.div>
-                        <motion.h2
-                          initial={{ opacity: 0, y: 10 }}
+
+                        {/* Success Text */}
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.1 }}
-                          className="mt-6 text-3xl font-bold"
+                          transition={{ delay: 0.5 }}
+                          className="space-y-2"
                         >
-                          Quiz Ready!
-                        </motion.h2>
-                        <motion.p
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.2 }}
-                          className="mt-2 text-lg font-medium"
-                        >
-                          Taking you to all your quizzes...
-                        </motion.p>
+                          <h2 className="text-foreground text-4xl font-bold">
+                            {formData.mode === "express"
+                              ? "Quiz Created Successfully!"
+                              : "Prototype Quiz Created Successfully!"}
+                          </h2>
+                          <motion.p
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.7 }}
+                            className="text-muted-foreground text-lg font-medium"
+                          >
+                            {formData.mode === "express"
+                              ? "Your quiz is ready to share and take"
+                              : "Your quiz is ready to edit and customize"}
+                          </motion.p>
+
+                          <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 1 }}
+                            className="text-muted-foreground mt-4 flex items-center justify-center gap-2 text-sm"
+                          >
+                            <motion.div
+                              animate={{ rotate: 360 }}
+                              transition={{
+                                duration: 1,
+                                repeat: Infinity,
+                                ease: "linear",
+                              }}
+                            >
+                              <Loader2 className="h-4 w-4" />
+                            </motion.div>
+                            {formData.mode === "express"
+                              ? "Redirecting to your quizzes..."
+                              : "Redirecting to the quiz editor..."}
+                          </motion.div>
+                        </motion.div>
                       </div>
                     </motion.div>
                   )}
