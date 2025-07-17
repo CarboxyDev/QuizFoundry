@@ -11,7 +11,7 @@ export default function DashboardPage() {
   return (
     <div className="mt-4 flex flex-1 flex-col gap-4 p-4 pt-0">
       <div className="min-h-[100vh] flex-1 md:min-h-min">
-        <div className="mx-auto max-w-4xl p-6">
+        <div className="container mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

@@ -190,7 +190,7 @@ export default function AnalyticsPage() {
         variants={pageVariants}
         transition={{ duration: 0.6, ease: "easeOut" }}
       >
-        <div className="container mx-auto max-w-7xl px-4 py-8">
+        <div className="container mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <motion.div
             className="mb-8"
             variants={headerVariants}

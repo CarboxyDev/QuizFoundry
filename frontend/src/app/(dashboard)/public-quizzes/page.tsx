@@ -226,7 +226,8 @@ export default function PublicQuizzesPage() {
         variants={pageVariants}
         transition={{ duration: 0.6, ease: "easeOut" }}
       >
-        <div className="container mx-auto max-w-7xl px-4 py-8">
+        <div className="mt-4 flex flex-1 flex-col gap-4 p-4 pt-0">
+          <div className="container mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           {/* Header */}
           <motion.div
             className="mb-8"
@@ -823,6 +824,7 @@ export default function PublicQuizzesPage() {
               </>
             )}
           </AnimatePresence>
+          </div>
         </div>
       </motion.div>
     </ProtectedRouteGuard>

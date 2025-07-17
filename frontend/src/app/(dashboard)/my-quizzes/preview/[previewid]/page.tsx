@@ -56,7 +56,7 @@ const optionVariants = {
 
 const QuizLoadingSkeleton = () => (
   <div className="from-background via-muted/30 to-muted/50 min-h-screen bg-gradient-to-br">
-    <div className="container mx-auto max-w-5xl px-4 py-8">
+    <div className="container mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="space-y-8">
         {/* Navigation skeleton */}
         <div className="mb-8 flex items-center justify-between">
@@ -569,7 +569,7 @@ export default function QuizPreviewPage() {
           variants={pageVariants}
           transition={{ duration: 0.6, ease: "easeOut" }}
         >
-          <div className="container mx-auto max-w-5xl px-4 py-8">
+          <div className="container mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
             <div ref={headerRef}>
               <QuizHeader
                 quiz={quiz}
