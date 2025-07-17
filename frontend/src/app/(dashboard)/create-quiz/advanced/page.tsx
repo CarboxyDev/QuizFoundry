@@ -1,5 +1,11 @@
 "use client";
 
+import {
+  EnhanceQuestionDialog,
+  GenerateOptionsDialog,
+  GenerateQuestionsDialog,
+  QuestionTypeSuggestionsDialog,
+} from "@/components/ai-assistance";
 import { ProtectedRouteGuard } from "@/components/AuthGuard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,21 +22,14 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { useAIAssistance } from "@/hooks/use-ai-assistance";
 import { publishManualQuiz } from "@/lib/quiz-api";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
-import { useAIAssistance } from "@/hooks/use-ai-assistance";
-import {
-  GenerateQuestionsDialog,
-  EnhanceQuestionDialog,
-  GenerateOptionsDialog,
-  QuestionTypeSuggestionsDialog,
-} from "@/components/ai-assistance";
 import {
   ArrowDown,
   ArrowLeft,
   ArrowUp,
-  CheckCircle,
   Edit3,
   Globe,
   Loader2,
@@ -159,7 +158,6 @@ export default function AdvancedQuizEditPage() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [showStickyHeader, setShowStickyHeader] = useState(false);
 
-  // AI assistance hook
   const aiAssistance = useAIAssistance();
 
   const headerRef = useRef<HTMLDivElement | null>(null);
@@ -363,21 +361,21 @@ export default function AdvancedQuizEditPage() {
   // AI Assistance Functions
   const handleGenerateQuestions = async (count: number) => {
     if (!quiz) throw new Error("Quiz not found");
-    
+
     const context = {
       title: quiz.title,
       description: quiz.description,
       difficulty: quiz.difficulty,
       originalPrompt: quiz.title,
-      existingQuestions: quiz.questions.map(q => ({
+      existingQuestions: quiz.questions.map((q) => ({
         question_text: q.question_text,
-        options: q.options.map(opt => ({
+        options: q.options.map((opt) => ({
           option_text: opt.option_text,
           is_correct: opt.is_correct,
         })),
       })),
     };
-    
+
     return await aiAssistance.generateQuestions(context, count);
   };
 
@@ -387,7 +385,9 @@ export default function AdvancedQuizEditPage() {
     // Check if adding these questions would exceed the limit
     const totalQuestionsAfterAdd = quiz.questions.length + questions.length;
     if (totalQuestionsAfterAdd > 20) {
-      toast.error(`Cannot add ${questions.length} questions. Quiz limit is 20 questions. You can add ${20 - quiz.questions.length} more questions.`);
+      toast.error(
+        `Cannot add ${questions.length} questions. Quiz limit is 20 questions. You can add ${20 - quiz.questions.length} more questions.`,
+      );
       return;
     }
 
@@ -405,24 +405,29 @@ export default function AdvancedQuizEditPage() {
     }));
 
     setQuiz((prev) =>
-      prev ? { ...prev, questions: [...prev.questions, ...newQuestions] } : null
+      prev
+        ? { ...prev, questions: [...prev.questions, ...newQuestions] }
+        : null,
     );
   };
 
   const handleEnhanceQuestion = async (questionText: string) => {
     if (!quiz) throw new Error("Quiz not found");
-    
+
     const context = {
       title: quiz.title,
       description: quiz.description,
       difficulty: quiz.difficulty,
       originalPrompt: quiz.title,
     };
-    
+
     return await aiAssistance.enhanceQuestion(context, questionText);
   };
 
-  const handleAcceptEnhancement = (questionId: string, enhancedText: string) => {
+  const handleAcceptEnhancement = (
+    questionId: string,
+    enhancedText: string,
+  ) => {
     updateQuestion(questionId, { question_text: enhancedText });
   };
 
@@ -434,8 +439,12 @@ export default function AdvancedQuizEditPage() {
     return await aiAssistance.generateOptions(params);
   };
 
-  const handleReplaceOptions = (questionId: string, selectedOptionIds: string[], newOptions: any[]) => {
-    const question = quiz?.questions.find(q => q.id === questionId);
+  const handleReplaceOptions = (
+    questionId: string,
+    selectedOptionIds: string[],
+    newOptions: any[],
+  ) => {
+    const question = quiz?.questions.find((q) => q.id === questionId);
     if (!question) return;
 
     // Create new options with the same IDs as selected options to replace them
@@ -443,11 +452,13 @@ export default function AdvancedQuizEditPage() {
       id: selectedOptionIds[index] || `option-${Date.now()}-${index}`,
       option_text: opt.option_text,
       is_correct: opt.is_correct,
-      order_index: question.options.find(o => o.id === selectedOptionIds[index])?.order_index || 0,
+      order_index:
+        question.options.find((o) => o.id === selectedOptionIds[index])
+          ?.order_index || 0,
     }));
 
     // Replace selected options with new ones
-    const updatedOptions = question.options.map(option => {
+    const updatedOptions = question.options.map((option) => {
       const replacementIndex = selectedOptionIds.indexOf(option.id);
       if (replacementIndex !== -1) {
         return replacementOptions[replacementIndex];
@@ -460,13 +471,26 @@ export default function AdvancedQuizEditPage() {
     });
   };
 
-  const handleUndoReplace = (questionId: string, undoData: { selectedOptionIds: string[], originalOptions: Array<{ id: string; option_text: string; is_correct: boolean; order_index: number }> }) => {
-    const question = quiz?.questions.find(q => q.id === questionId);
+  const handleUndoReplace = (
+    questionId: string,
+    undoData: {
+      selectedOptionIds: string[];
+      originalOptions: Array<{
+        id: string;
+        option_text: string;
+        is_correct: boolean;
+        order_index: number;
+      }>;
+    },
+  ) => {
+    const question = quiz?.questions.find((q) => q.id === questionId);
     if (!question) return;
 
     // Restore the original options
-    const restoredOptions = question.options.map(option => {
-      const originalOption = undoData.originalOptions.find(orig => orig.id === option.id);
+    const restoredOptions = question.options.map((option) => {
+      const originalOption = undoData.originalOptions.find(
+        (orig) => orig.id === option.id,
+      );
       if (originalOption) {
         return {
           id: originalOption.id,
@@ -485,7 +509,7 @@ export default function AdvancedQuizEditPage() {
 
   const handleGetQuestionTypes = async () => {
     if (!quiz) throw new Error("Quiz not found");
-    
+
     return await aiAssistance.getQuestionTypes(quiz.title, quiz.difficulty);
   };
 
@@ -811,8 +835,8 @@ export default function AdvancedQuizEditPage() {
                     disabled={quiz.questions.length >= 20}
                     remainingQuestions={20 - quiz.questions.length}
                   />
-                  <Button 
-                    onClick={addQuestion} 
+                  <Button
+                    onClick={addQuestion}
                     className="gap-2"
                     disabled={quiz.questions.length >= 20}
                   >
@@ -843,11 +867,21 @@ export default function AdvancedQuizEditPage() {
                     onRemove={() => removeQuestion(question.id)}
                     onMove={(direction) => moveQuestion(question.id, direction)}
                     // AI Assistance props
-                    onEnhanceQuestion={(questionText) => handleEnhanceQuestion(questionText)}
-                    onAcceptEnhancement={(enhancedText) => handleAcceptEnhancement(question.id, enhancedText)}
-                    onGenerateOptions={(params) => handleGenerateOptions(params)}
-                    onReplaceOptions={(questionId, selectedIds, newOptions) => handleReplaceOptions(questionId, selectedIds, newOptions)}
-                    onUndoReplace={(questionId, undoData) => handleUndoReplace(questionId, undoData)}
+                    onEnhanceQuestion={(questionText) =>
+                      handleEnhanceQuestion(questionText)
+                    }
+                    onAcceptEnhancement={(enhancedText) =>
+                      handleAcceptEnhancement(question.id, enhancedText)
+                    }
+                    onGenerateOptions={(params) =>
+                      handleGenerateOptions(params)
+                    }
+                    onReplaceOptions={(questionId, selectedIds, newOptions) =>
+                      handleReplaceOptions(questionId, selectedIds, newOptions)
+                    }
+                    onUndoReplace={(questionId, undoData) =>
+                      handleUndoReplace(questionId, undoData)
+                    }
                     aiAssistance={aiAssistance}
                   />
                 ))}
@@ -884,7 +918,7 @@ export default function AdvancedQuizEditPage() {
                   stiffness: 100,
                   damping: 20,
                 }}
-                className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent"
+                className="from-primary/10 via-primary/5 absolute inset-0 bg-gradient-to-br to-transparent"
               />
 
               {/* Main Content */}
@@ -905,7 +939,7 @@ export default function AdvancedQuizEditPage() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.4 }}
-                    className="flex items-center justify-center rounded-full bg-primary/10 p-6 ring-1 ring-primary/20"
+                    className="bg-primary/10 ring-primary/20 flex items-center justify-center rounded-full p-6 ring-1"
                   >
                     <motion.div
                       animate={{
@@ -917,7 +951,7 @@ export default function AdvancedQuizEditPage() {
                         ease: "easeInOut",
                       }}
                     >
-                      <Rocket className="h-16 w-16 text-primary" />
+                      <Rocket className="text-primary h-16 w-16" />
                     </motion.div>
                   </motion.div>
                 </motion.div>
@@ -929,14 +963,14 @@ export default function AdvancedQuizEditPage() {
                   transition={{ delay: 0.5 }}
                   className="space-y-2"
                 >
-                  <h2 className="text-4xl font-bold text-foreground">
+                  <h2 className="text-foreground text-4xl font-bold">
                     Quiz Published Successfully!
                   </h2>
                   <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.7 }}
-                    className="text-lg font-medium text-muted-foreground"
+                    className="text-muted-foreground text-lg font-medium"
                   >
                     Your quiz has been published and is now available.
                   </motion.p>
@@ -945,7 +979,7 @@ export default function AdvancedQuizEditPage() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 1 }}
-                    className="mt-4 flex items-center justify-center gap-2 text-sm text-muted-foreground"
+                    className="text-muted-foreground mt-4 flex items-center justify-center gap-2 text-sm"
                   >
                     <motion.div
                       animate={{ rotate: 360 }}
@@ -991,8 +1025,23 @@ interface QuestionEditorProps {
     existingOptions: Array<{ option_text: string; is_correct: boolean }>;
     optionsCount: number;
   }) => Promise<any>;
-  onReplaceOptions: (questionId: string, selectedIds: string[], newOptions: any[]) => void;
-  onUndoReplace: (questionId: string, undoData: { selectedOptionIds: string[], originalOptions: Array<{ id: string; option_text: string; is_correct: boolean; order_index: number }> }) => void;
+  onReplaceOptions: (
+    questionId: string,
+    selectedIds: string[],
+    newOptions: any[],
+  ) => void;
+  onUndoReplace: (
+    questionId: string,
+    undoData: {
+      selectedOptionIds: string[];
+      originalOptions: Array<{
+        id: string;
+        option_text: string;
+        is_correct: boolean;
+        order_index: number;
+      }>;
+    },
+  ) => void;
   aiAssistance: ReturnType<typeof useAIAssistance>;
 }
 
@@ -1098,16 +1147,16 @@ function QuestionEditor({
               <div className="flex items-center gap-2">
                 <GenerateOptionsDialog
                   questionText={question.question_text}
-                  existingOptions={question.options.map(opt => ({
+                  existingOptions={question.options.map((opt) => ({
                     id: opt.id,
                     option_text: opt.option_text,
                     is_correct: opt.is_correct,
                   }))}
                   onGenerate={onGenerateOptions}
-                  onReplaceOptions={(selectedIds, newOptions) => 
+                  onReplaceOptions={(selectedIds, newOptions) =>
                     onReplaceOptions(question.id, selectedIds, newOptions)
                   }
-                  onUndoReplace={(undoData) => 
+                  onUndoReplace={(undoData) =>
                     onUndoReplace(question.id, undoData)
                   }
                   isLoading={aiAssistance.isGeneratingOptions}
