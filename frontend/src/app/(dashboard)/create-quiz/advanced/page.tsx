@@ -29,6 +29,7 @@ import {
   Loader2,
   Lock,
   Plus,
+  Rocket,
   Save,
   Trash2,
   X,
@@ -683,28 +684,108 @@ export default function AdvancedQuizEditPage() {
         <AnimatePresence>
           {showSuccess && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.9 }}
-              className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+              key="successOverlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden"
             >
+              {/* Background Mask */}
               <motion.div
-                initial={{ scale: 0.8 }}
-                animate={{ scale: 1 }}
-                className="bg-background mx-4 max-w-md rounded-2xl p-8 text-center shadow-xl"
-              >
-                <div className="mb-4 flex items-center justify-center">
-                  <CheckCircle className="h-16 w-16 text-green-500" />
-                </div>
-                <h3 className="mb-2 text-2xl font-bold">Quiz Published!</h3>
-                <p className="text-muted-foreground mb-4">
-                  Your quiz has been successfully published and is now
-                  available.
-                </p>
-                <div className="text-muted-foreground text-sm">
-                  Redirecting to My Quizzes...
-                </div>
-              </motion.div>
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.4 }}
+                className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              />
+
+              {/* Subtle Gradient Effect */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{
+                  delay: 0.2,
+                  type: "spring",
+                  stiffness: 100,
+                  damping: 20,
+                }}
+                className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent"
+              />
+
+              {/* Main Content */}
+              <div className="relative z-10 flex flex-col items-center text-center">
+                {/* Success Icon */}
+                <motion.div
+                  initial={{ scale: 0, rotate: -90 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 150,
+                    damping: 15,
+                    delay: 0.3,
+                  }}
+                  className="relative mb-6"
+                >
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.4 }}
+                    className="flex items-center justify-center rounded-full bg-primary/10 p-6 ring-1 ring-primary/20"
+                  >
+                    <motion.div
+                      animate={{
+                        scale: [1, 1.05, 1],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
+                    >
+                      <Rocket className="h-16 w-16 text-primary" />
+                    </motion.div>
+                  </motion.div>
+                </motion.div>
+
+                {/* Success Text */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="space-y-2"
+                >
+                  <h2 className="text-4xl font-bold text-foreground">
+                    Quiz Published Successfully!
+                  </h2>
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.7 }}
+                    className="text-lg font-medium text-muted-foreground"
+                  >
+                    Your quiz has been published and is now available.
+                  </motion.p>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1 }}
+                    className="mt-4 flex items-center justify-center gap-2 text-sm text-muted-foreground"
+                  >
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{
+                        duration: 1,
+                        repeat: Infinity,
+                        ease: "linear",
+                      }}
+                    >
+                      <Loader2 className="h-4 w-4" />
+                    </motion.div>
+                    Redirecting to My Quizzes...
+                  </motion.div>
+                </motion.div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>

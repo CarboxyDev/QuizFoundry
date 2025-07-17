@@ -295,11 +295,10 @@ export default function CreateQuizPage() {
                       </div>
                     </div>
                   </div>
-                  <Separator />
 
-                  <div className="space-y-6">
-                    <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                      <div className="space-y-3">
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                      <div className="space-y-2">
                         <Label
                           htmlFor="difficulty"
                           className="text-sm font-medium"
@@ -341,7 +340,7 @@ export default function CreateQuizPage() {
                         </Select>
                       </div>
 
-                      <div className="space-y-3">
+                      <div className="space-y-2">
                         <Label
                           htmlFor="questionCount"
                           className="text-sm font-medium"
@@ -370,7 +369,7 @@ export default function CreateQuizPage() {
                         </Select>
                       </div>
 
-                      <div className="space-y-3">
+                      <div className="space-y-2">
                         <Label
                           htmlFor="optionsCount"
                           className="text-sm font-medium"
@@ -398,75 +397,52 @@ export default function CreateQuizPage() {
                           </SelectContent>
                         </Select>
                       </div>
-                    </div>
-                  </div>
 
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-1">
+                      <div className="space-y-2">
                         <Label
                           htmlFor="visibility-switch"
-                          className="text-base font-medium"
+                          className="text-sm font-medium"
                         >
-                          {formData.isPublic ? "Public" : "Private"} Quiz
+                          Quiz Visibility
                         </Label>
-                        <p className="text-muted-foreground text-sm">
-                          <AnimatePresence mode="wait">
-                            <motion.span
-                              key={
-                                formData.isPublic
-                                  ? "public-desc"
-                                  : "private-desc"
-                              }
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: -10 }}
-                              transition={{ duration: 0.2, ease: "easeInOut" }}
-                            >
-                              {formData.isPublic
-                                ? "Anyone can find and take this quiz"
-                                : "Only you and your collaborators can access this quiz"}
-                            </motion.span>
-                          </AnimatePresence>
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="flex items-center gap-2 text-sm">
-                          <AnimatePresence mode="wait">
-                            <motion.div
-                              key={formData.isPublic ? "public" : "private"}
-                              initial={{ opacity: 0, x: 20 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              exit={{ opacity: 0, x: -20 }}
-                              transition={{ duration: 0.2, ease: "easeInOut" }}
-                              className="flex items-center gap-2"
-                            >
-                              {formData.isPublic ? (
-                                <>
-                                  <Globe className="h-4 w-4 text-emerald-500" />
-                                  <span className="font-medium text-emerald-500">
-                                    Public
-                                  </span>
-                                </>
-                              ) : (
-                                <>
-                                  <Lock className="h-4 w-4 text-red-500" />
-                                  <span className="font-medium text-red-500">
-                                    Private
-                                  </span>
-                                </>
-                              )}
-                            </motion.div>
-                          </AnimatePresence>
+                        <div className="flex items-center justify-between rounded-md border px-3 py-2">
+                          <div className="flex items-center gap-2">
+                            <AnimatePresence mode="wait">
+                              <motion.div
+                                key={formData.isPublic ? "public" : "private"}
+                                initial={{ opacity: 0, x: 10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -10 }}
+                                transition={{ duration: 0.2, ease: "easeInOut" }}
+                                className="flex items-center gap-2"
+                              >
+                                {formData.isPublic ? (
+                                  <>
+                                    <Globe className="h-4 w-4 text-emerald-500" />
+                                    <span className="text-sm font-medium text-emerald-500">
+                                      Public
+                                    </span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Lock className="h-4 w-4 text-red-500" />
+                                    <span className="text-sm font-medium text-red-500">
+                                      Private
+                                    </span>
+                                  </>
+                                )}
+                              </motion.div>
+                            </AnimatePresence>
+                          </div>
+                          <Switch
+                            id="visibility-switch"
+                            checked={formData.isPublic}
+                            onCheckedChange={(checked) =>
+                              handleFormDataChange({ isPublic: checked })
+                            }
+                            disabled={isGenerating}
+                          />
                         </div>
-                        <Switch
-                          id="visibility-switch"
-                          checked={formData.isPublic}
-                          onCheckedChange={(checked) =>
-                            handleFormDataChange({ isPublic: checked })
-                          }
-                          disabled={isGenerating}
-                        />
                       </div>
                     </div>
                   </div>
@@ -595,129 +571,130 @@ export default function CreateQuizPage() {
                   </div>
                 </CardContent>
 
-                {/* Success Overlay */}
-                <AnimatePresence>
-                  {showSuccess && (
-                    <motion.div
-                      key="successOverlay"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="absolute inset-0 z-50 flex items-center justify-center overflow-hidden rounded-lg"
-                    >
-                      {/* Background Mask */}
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.4 }}
-                        className="bg-background/95 absolute inset-0 backdrop-blur-md"
-                      />
-
-                      {/* Subtle Gradient Effect */}
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        transition={{
-                          delay: 0.2,
-                          type: "spring",
-                          stiffness: 100,
-                          damping: 20,
-                        }}
-                        className="from-primary/10 via-primary/5 absolute inset-0 bg-gradient-to-br to-transparent"
-                      />
-
-                      {/* Main Content */}
-                      <div className="relative z-10 flex flex-col items-center text-center">
-                        {/* Success Icon */}
-                        <motion.div
-                          initial={{ scale: 0, rotate: -90 }}
-                          animate={{ scale: 1, rotate: 0 }}
-                          transition={{
-                            type: "spring",
-                            stiffness: 150,
-                            damping: 15,
-                            delay: 0.3,
-                          }}
-                          className="relative mb-6"
-                        >
-                          <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 0.4 }}
-                            className="bg-primary/10 ring-primary/20 flex items-center justify-center rounded-full p-6 ring-1"
-                          >
-                            <motion.div
-                              animate={{
-                                scale: [1, 1.05, 1],
-                              }}
-                              transition={{
-                                duration: 2,
-                                repeat: Infinity,
-                                ease: "easeInOut",
-                              }}
-                            >
-                              {formData.mode === "express" ? (
-                                <Zap className="text-primary h-16 w-16" />
-                              ) : (
-                                <Wand2 className="text-primary h-16 w-16" />
-                              )}
-                            </motion.div>
-                          </motion.div>
-                        </motion.div>
-
-                        {/* Success Text */}
-                        <motion.div
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.5 }}
-                          className="space-y-2"
-                        >
-                          <h2 className="text-foreground text-4xl font-bold">
-                            {formData.mode === "express"
-                              ? "Quiz Created Successfully!"
-                              : "Prototype Quiz Created Successfully!"}
-                          </h2>
-                          <motion.p
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 0.7 }}
-                            className="text-muted-foreground text-lg font-medium"
-                          >
-                            {formData.mode === "express"
-                              ? "Your quiz is ready to share and take"
-                              : "Your quiz is ready to edit and customize"}
-                          </motion.p>
-
-                          <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 1 }}
-                            className="text-muted-foreground mt-4 flex items-center justify-center gap-2 text-sm"
-                          >
-                            <motion.div
-                              animate={{ rotate: 360 }}
-                              transition={{
-                                duration: 1,
-                                repeat: Infinity,
-                                ease: "linear",
-                              }}
-                            >
-                              <Loader2 className="h-4 w-4" />
-                            </motion.div>
-                            {formData.mode === "express"
-                              ? "Redirecting to your quizzes..."
-                              : "Redirecting to the quiz editor..."}
-                          </motion.div>
-                        </motion.div>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
               </Card>
             </motion.div>
           </div>
         </div>
+
+        {/* Success Overlay */}
+        <AnimatePresence>
+          {showSuccess && (
+            <motion.div
+              key="successOverlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden"
+            >
+              {/* Background Mask */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.4 }}
+                className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              />
+
+              {/* Subtle Gradient Effect */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{
+                  delay: 0.2,
+                  type: "spring",
+                  stiffness: 100,
+                  damping: 20,
+                }}
+                className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent"
+              />
+
+              {/* Main Content */}
+              <div className="relative z-10 flex flex-col items-center text-center">
+                {/* Success Icon */}
+                <motion.div
+                  initial={{ scale: 0, rotate: -90 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 150,
+                    damping: 15,
+                    delay: 0.3,
+                  }}
+                  className="relative mb-6"
+                >
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.4 }}
+                    className="flex items-center justify-center rounded-full bg-primary/10 p-6 ring-1 ring-primary/20"
+                  >
+                    <motion.div
+                      animate={{
+                        scale: [1, 1.05, 1],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
+                    >
+                      {formData.mode === "express" ? (
+                        <Zap className="h-16 w-16 text-primary" />
+                      ) : (
+                        <Wand2 className="h-16 w-16 text-primary" />
+                      )}
+                    </motion.div>
+                  </motion.div>
+                </motion.div>
+
+                {/* Success Text */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 }}
+                  className="space-y-2"
+                >
+                  <h2 className="text-4xl font-bold text-foreground">
+                    {formData.mode === "express"
+                      ? "Quiz Created Successfully!"
+                      : "Prototype Quiz Created Successfully!"}
+                  </h2>
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.7 }}
+                    className="text-lg font-medium text-muted-foreground"
+                  >
+                    {formData.mode === "express"
+                      ? "Your quiz is ready to share and take"
+                      : "Your quiz is ready to edit and customize"}
+                  </motion.p>
+
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1 }}
+                    className="mt-4 flex items-center justify-center gap-2 text-sm text-muted-foreground"
+                  >
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{
+                        duration: 1,
+                        repeat: Infinity,
+                        ease: "linear",
+                      }}
+                    >
+                      <Loader2 className="h-4 w-4" />
+                    </motion.div>
+                    {formData.mode === "express"
+                      ? "Redirecting to your quizzes..."
+                      : "Redirecting to the quiz editor..."}
+                  </motion.div>
+                </motion.div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </ProtectedRouteGuard>
   );
