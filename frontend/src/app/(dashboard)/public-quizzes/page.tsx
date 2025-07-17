@@ -511,19 +511,46 @@ export default function PublicQuizzesPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4, delay: i * 0.05 }}
                   >
-                    <Card className="overflow-hidden">
-                      <CardHeader className="pb-4">
-                        <Skeleton className="h-6 w-3/4" />
-                        <Skeleton className="h-4 w-full" />
-                        <Skeleton className="h-4 w-2/3" />
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between">
-                            <Skeleton className="h-4 w-20" />
-                            <Skeleton className="h-6 w-16" />
+                    <Card className="border-border/50 bg-card/80 relative flex h-full flex-col overflow-hidden backdrop-blur-sm">
+                      <CardHeader className="flex-shrink-0 pb-4">
+                        <div className="flex h-[3rem] items-start justify-between gap-3">
+                          <Skeleton className="h-6 w-3/4" />
+                        </div>
+                        <div className="flex h-[2.5rem] items-start">
+                          <div className="space-y-2 flex-1">
+                            <Skeleton className="h-4 w-full" />
+                            <Skeleton className="h-4 w-2/3" />
                           </div>
-                          <Skeleton className="h-9 w-full" />
+                        </div>
+                      </CardHeader>
+                      <CardContent className="flex flex-grow flex-col pt-0">
+                        {/* AI Badge Area */}
+                        <div className="mb-2 flex min-h-[24px] items-center justify-end">
+                          <Skeleton className="h-6 w-12 rounded-full" />
+                        </div>
+                        
+                        {/* Stats Row */}
+                        <div className="mb-4 flex items-center justify-between text-sm">
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-1">
+                              <Skeleton className="h-3.5 w-3.5 rounded" />
+                              <Skeleton className="h-4 w-4" />
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Skeleton className="h-3.5 w-3.5 rounded" />
+                              <Skeleton className="h-4 w-4" />
+                            </div>
+                            <Skeleton className="h-2 w-2 rounded-full" />
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Skeleton className="h-3.5 w-3.5 rounded" />
+                            <Skeleton className="h-4 w-16" />
+                          </div>
+                        </div>
+                        
+                        {/* Button */}
+                        <div className="mt-auto">
+                          <Skeleton className="h-10 w-full rounded-md" />
                         </div>
                       </CardContent>
                     </Card>

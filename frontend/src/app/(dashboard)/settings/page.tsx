@@ -359,12 +359,13 @@ export default function SettingsPage() {
                       <input
                         ref={fileInputRef}
                         type="file"
-                        accept="image/jpeg,image/png,image/gif,image/webp"
+                        accept="image/jpeg,image/png,image/webp"
                         onChange={handleFileSelect}
                         className="hidden"
                       />
                       <p className={cn("text-muted-foreground text-sm")}>
-                        JPEG, PNG, GIF, or WebP. Max size of 5MB.
+                        Files allowed: JPEG, PNG, and WebP. Max file size of
+                        5MB.
                       </p>
                     </div>
                   </div>
@@ -486,7 +487,7 @@ export default function SettingsPage() {
                 <CardContent>
                   <div className="space-y-6">
                     <div className="rounded-lg border border-red-200/50 bg-red-50/50 p-4 dark:border-red-800/30 dark:bg-red-950/20">
-                      <h3 className="mb-2 flex items-center gap-2 font-semibold dark:text-red-600">
+                      <h3 className="mb-2 flex items-center gap-2 font-semibold dark:text-red-500">
                         <LogOut className="h-4 w-4" />
                         Sign Out
                       </h3>

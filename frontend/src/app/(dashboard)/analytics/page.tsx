@@ -166,7 +166,7 @@ function QuickStatsCard({
                 {isLoading ? (
                   <Skeleton className="h-8 w-16 rounded-md" />
                 ) : (
-                  <p className="text-2xl font-bold">{value}</p>
+                  <p className="text-2xl font-bold leading-8">{value}</p>
                 )}
               </div>
             </div>
