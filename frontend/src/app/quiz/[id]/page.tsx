@@ -71,13 +71,11 @@ const QuizLoadingSkeleton = () => (
   <div className="from-background via-muted/30 to-muted/50 min-h-screen bg-gradient-to-br">
     <div className="container mx-auto max-w-5xl px-4 py-8">
       <div className="space-y-8">
-        {/* Navigation skeleton */}
         <div className="mb-8 flex items-center justify-between">
           <Skeleton className="h-10 w-32 rounded-lg" />
           <Skeleton className="h-10 w-24 rounded-lg" />
         </div>
 
-        {/* Hero header skeleton */}
         <div className="from-muted/20 to-muted/40 relative mb-12 overflow-hidden rounded-2xl bg-gradient-to-r p-8 shadow-xl">
           <div className="space-y-6">
             <div className="flex items-center gap-4">
@@ -96,13 +94,11 @@ const QuizLoadingSkeleton = () => (
           </div>
         </div>
 
-        {/* Question skeletons */}
         {[1, 2, 3].map((i) => (
           <div
             key={i}
             className="bg-background/80 relative overflow-hidden rounded-xl border p-6 shadow-lg backdrop-blur-sm"
           >
-            {/* Question header */}
             <div className="mb-6 flex items-start gap-4">
               <Skeleton className="h-8 w-8 rounded-lg" />
               <div className="flex-1 space-y-3">
@@ -111,7 +107,6 @@ const QuizLoadingSkeleton = () => (
               </div>
             </div>
 
-            {/* Options skeleton */}
             <div className="space-y-3">
               {[1, 2, 3, 4].map((j) => (
                 <div
@@ -126,7 +121,6 @@ const QuizLoadingSkeleton = () => (
           </div>
         ))}
 
-        {/* Submit section skeleton */}
         <div className="from-muted/20 to-muted/40 mt-16 overflow-hidden rounded-2xl bg-gradient-to-r p-8 text-center shadow-xl">
           <div className="space-y-6">
             <Skeleton className="mx-auto h-12 w-12 rounded-full" />
@@ -141,7 +135,7 @@ const QuizLoadingSkeleton = () => (
 );
 
 const QuizError = () => (
-  <div className="from-background via-muted/30 to-muted/50 flex min-h-screen items-center justify-center bg-gradient-to-br">
+  <div className="flex min-h-screen items-center justify-center">
     <motion.div
       className="mx-4 w-full max-w-md"
       initial={{ opacity: 0, scale: 0.9 }}
@@ -198,7 +192,6 @@ const QuizHeader = ({
     transition={{ duration: 0.25, ease: "easeInOut" }}
     className="relative mb-12"
   >
-    {/* Navigation */}
     <div className="mb-8 flex items-center justify-between">
       <motion.div whileHover={{ x: -4 }} whileTap={{ scale: 0.95 }}>
         <Link href="/dashboard">
@@ -220,7 +213,6 @@ const QuizHeader = ({
       </motion.div>
     </div>
 
-    {/* Hero Header */}
     <motion.div
       className="from-primary to-primary/80 text-primary-foreground relative overflow-hidden rounded-2xl bg-gradient-to-r p-8 shadow-xl"
       variants={headerVariants}
@@ -464,7 +456,6 @@ const QuizResultsCard = ({
                   />
                 </svg>
 
-                {/* Center content */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                   <motion.div
                     initial={{ scale: 0 }}
@@ -494,14 +485,12 @@ const QuizResultsCard = ({
                 </div>
               </motion.div>
 
-              {/* Score Breakdown */}
               <motion.div
                 className="w-full space-y-4"
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.5, delay: 1.0 }}
               >
-                {/* Main Score */}
                 <div className="text-center">
                   <div className="text-2xl font-bold">
                     {result.score} out of {quiz.questions?.length || 0}
@@ -511,9 +500,7 @@ const QuizResultsCard = ({
                   </div>
                 </div>
 
-                {/* Visual breakdown */}
                 <div className="space-y-3">
-                  {/* Correct answers bar */}
                   <div className="flex items-center gap-3">
                     <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-500/20">
                       <CheckCircle className="h-4 w-4 text-green-600" />
@@ -535,7 +522,6 @@ const QuizResultsCard = ({
                     </div>
                   </div>
 
-                  {/* Incorrect answers bar */}
                   {(quiz.questions?.length || 0) - result.score > 0 && (
                     <div className="flex items-center gap-3">
                       <div className="flex h-6 w-6 items-center justify-center rounded-full bg-red-500/20">
@@ -563,7 +549,6 @@ const QuizResultsCard = ({
             </div>
           </motion.div>
 
-          {/* Action Button */}
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Button
               onClick={onRetake}
@@ -577,7 +562,6 @@ const QuizResultsCard = ({
           </motion.div>
         </div>
 
-        {/* Decorative elements */}
         <motion.div
           className="bg-primary/20 absolute -top-4 -right-4 h-24 w-24 rounded-full"
           animate={{ rotate: 360 }}
@@ -621,7 +605,6 @@ const QuestionCard = ({
       whileHover={!isSubmitted ? "hover" : undefined}
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
-      {/* Answered badge */}
       <AnimatePresence>
         {!isSubmitted && isAnswered && (
           <motion.div

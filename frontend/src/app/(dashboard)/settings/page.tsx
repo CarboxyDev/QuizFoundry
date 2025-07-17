@@ -468,10 +468,10 @@ export default function SettingsPage() {
 
             <motion.div variants={cardVariants}>
               <Card className={cn("bg-card/60 backdrop-blur-sm")}>
-                <CardHeader className="pb-4">
+                <CardHeader className="pb-6">
                   <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-red-500/10 p-2 text-red-500">
-                      <LogOut className="h-5 w-5" />
+                    <div className="rounded-xl bg-gradient-to-br from-cyan-500/10 to-cyan-600/10 p-3 text-cyan-500 shadow-sm">
+                      <User className="h-5 w-5" />
                     </div>
                     <div>
                       <CardTitle className="text-xl">
@@ -484,19 +484,27 @@ export default function SettingsPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
-                    <div>
-                      <h3 className="mb-2 font-medium">Sign Out</h3>
-                      <p className={cn("text-muted-foreground mb-4 text-sm")}>
-                        This will sign you out of your account and redirect you
-                        to the login page.
+                  <div className="space-y-6">
+                    <div className="rounded-lg border border-red-200/50 bg-red-50/50 p-4 dark:border-red-800/30 dark:bg-red-950/20">
+                      <h3 className="mb-2 flex items-center gap-2 font-semibold dark:text-red-600">
+                        <LogOut className="h-4 w-4" />
+                        Sign Out
+                      </h3>
+                      <p
+                        className={cn(
+                          "mb-4 text-sm leading-relaxed text-red-600/80 dark:text-red-400/80",
+                        )}
+                      >
+                        End your current session and return to the login page.
+                        You&apos;ll need to sign in again to access your
+                        account.
                       </p>
                       <Button
                         variant="destructive"
                         onClick={logout}
-                        className="w-full sm:w-auto"
+                        className="group relative overflow-hidden bg-gradient-to-r from-red-500 to-red-600 transition-all duration-200 hover:from-red-600 hover:to-red-700 hover:shadow-lg hover:shadow-red-500/25"
                       >
-                        <LogOut className="mr-2 h-4 w-4" />
+                        <LogOut className="mr-2 h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
                         Sign Out
                       </Button>
                     </div>
