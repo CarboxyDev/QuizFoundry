@@ -150,13 +150,68 @@ export default function CreateQuizPage() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
+              transition={{ delay: 0.1, duration: 0.5 }}
               className="mb-12 text-center"
             >
-              <div className="bg-primary/10 text-primary mb-4 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium">
-                <Sparkles className="h-4 w-4" />
-                AI Quiz Generator
-              </div>
+              <motion.div
+                key={formData.mode}
+                initial={{ scale: 0.8, opacity: 0, y: 10 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                transition={{
+                  type: "spring",
+                  stiffness: 200,
+                  damping: 20,
+                  duration: 0.6
+                }}
+                className={`mb-4 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all duration-500 ${
+                  formData.mode === "express"
+                    ? "bg-gradient-to-r from-emerald-100 to-emerald-200 text-emerald-700 ring-1 ring-emerald-300/50 dark:from-emerald-900/30 dark:to-emerald-800/30 dark:text-emerald-300 dark:ring-emerald-500/30"
+                    : "bg-gradient-to-r from-purple-100 to-purple-200 text-purple-700 ring-1 ring-purple-300/50 dark:from-purple-900/30 dark:to-purple-800/30 dark:text-purple-300 dark:ring-purple-500/30"
+                }`}
+              >
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={formData.mode}
+                    initial={{ rotate: -90, scale: 0 }}
+                    animate={{ rotate: 0, scale: 1 }}
+                    exit={{ rotate: 90, scale: 0 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 300,
+                      damping: 25,
+                      duration: 0.4
+                    }}
+                    className="flex items-center gap-2"
+                  >
+                    <motion.div
+                      animate={{
+                        scale: [1, 1.2, 1],
+                        rotate: formData.mode === "express" ? [0, 15, -15, 0] : [0, -15, 15, 0]
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        repeatDelay: 2,
+                        ease: "easeInOut"
+                      }}
+                    >
+                      {formData.mode === "express" ? (
+                        <Zap className="h-4 w-4" />
+                      ) : (
+                        <Wand2 className="h-4 w-4" />
+                      )}
+                    </motion.div>
+                    <motion.span
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.2, duration: 0.3 }}
+                      className="font-semibold"
+                    >
+                      {formData.mode === "express" ? "Express Mode" : "Advanced Mode"}
+                    </motion.span>
+                  </motion.div>
+                </AnimatePresence>
+              </motion.div>
               <h1 className="mb-4 text-4xl font-bold">Create Your Quiz</h1>
             </motion.div>
 
@@ -413,7 +468,10 @@ export default function CreateQuizPage() {
                                 initial={{ opacity: 0, x: 10 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: -10 }}
-                                transition={{ duration: 0.2, ease: "easeInOut" }}
+                                transition={{
+                                  duration: 0.2,
+                                  ease: "easeInOut",
+                                }}
                                 className="flex items-center gap-2"
                               >
                                 {formData.isPublic ? (
@@ -456,63 +514,111 @@ export default function CreateQuizPage() {
                       </Label>
                     </div> */}
 
-                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                       <motion.div
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                       >
-                        <Button
-                          type="button"
-                          variant={
-                            formData.mode === "express" ? "default" : "outline"
-                          }
-                          className={`h-20 w-full flex-col gap-2 text-left ${
+                        <div
+                          className={`relative cursor-pointer overflow-hidden rounded-xl border-2 p-6 transition-all duration-300 ${
                             formData.mode === "express"
-                              ? "bg-primary text-primary-foreground shadow-md"
-                              : "hover:bg-muted/50"
+                              ? "border-emerald-300 bg-gradient-to-br from-emerald-50 to-emerald-100 shadow-lg ring-1 ring-emerald-200 dark:border-emerald-500 dark:from-emerald-900/20 dark:to-emerald-800/20 dark:ring-emerald-500/20"
+                              : "border-border bg-card hover:border-emerald-200 hover:bg-emerald-50/50 dark:hover:bg-emerald-900/10"
                           }`}
                           onClick={() =>
                             handleFormDataChange({ mode: "express" })
                           }
-                          disabled={isGenerating}
                         >
-                          <div className="flex items-center gap-2">
-                            <Sparkles className="h-5 w-5" />
-                            <span className="font-semibold">Express Mode</span>
+                          {formData.mode === "express" && (
+                            <div className="absolute top-2 right-2 h-6 w-6 rounded-full bg-emerald-500 p-1">
+                              <Sparkles className="h-4 w-4 text-white" />
+                            </div>
+                          )}
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`rounded-lg p-2 ${
+                                formData.mode === "express"
+                                  ? "bg-emerald-500 text-white"
+                                  : "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/50 dark:text-emerald-400"
+                              }`}
+                            >
+                              <Zap className="h-6 w-6" />
+                            </div>
+                            <div>
+                              <h3
+                                className={`text-lg font-semibold ${
+                                  formData.mode === "express"
+                                    ? "text-emerald-900 dark:text-emerald-100"
+                                    : "text-foreground"
+                                }`}
+                              >
+                                Express Mode
+                              </h3>
+                              <p
+                                className={`text-sm ${
+                                  formData.mode === "express"
+                                    ? "text-emerald-700 dark:text-emerald-300"
+                                    : "text-muted-foreground"
+                                }`}
+                              >
+                                Creates final quiz instantly
+                              </p>
+                            </div>
                           </div>
-                          <span className="text-xs opacity-80">
-                            Creates final quiz instantly
-                          </span>
-                        </Button>
+                        </div>
                       </motion.div>
 
                       <motion.div
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                       >
-                        <Button
-                          type="button"
-                          variant={
-                            formData.mode === "advanced" ? "default" : "outline"
-                          }
-                          className={`h-20 w-full flex-col gap-2 text-left ${
+                        <div
+                          className={`relative cursor-pointer overflow-hidden rounded-xl border-2 p-6 transition-all duration-300 ${
                             formData.mode === "advanced"
-                              ? "bg-primary text-primary-foreground shadow-md"
-                              : "hover:bg-muted/50"
+                              ? "border-purple-300 bg-gradient-to-br from-purple-50 to-purple-100 shadow-lg ring-1 ring-purple-200 dark:border-purple-500 dark:from-purple-900/20 dark:to-purple-800/20 dark:ring-purple-500/20"
+                              : "border-border bg-card hover:border-purple-200 hover:bg-purple-50/50 dark:hover:bg-purple-900/10"
                           }`}
                           onClick={() =>
                             handleFormDataChange({ mode: "advanced" })
                           }
-                          disabled={isGenerating}
                         >
-                          <div className="flex items-center gap-2">
-                            <Wand2 className="h-5 w-5" />
-                            <span className="font-semibold">Advanced Mode</span>
+                          {formData.mode === "advanced" && (
+                            <div className="absolute top-2 right-2 h-6 w-6 rounded-full bg-purple-500 p-1">
+                              <Wand2 className="h-4 w-4 text-white" />
+                            </div>
+                          )}
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`rounded-lg p-2 ${
+                                formData.mode === "advanced"
+                                  ? "bg-purple-500 text-white"
+                                  : "bg-purple-100 text-purple-600 dark:bg-purple-900/50 dark:text-purple-400"
+                              }`}
+                            >
+                              <Wand2 className="h-6 w-6" />
+                            </div>
+                            <div>
+                              <h3
+                                className={`text-lg font-semibold ${
+                                  formData.mode === "advanced"
+                                    ? "text-purple-900 dark:text-purple-100"
+                                    : "text-foreground"
+                                }`}
+                              >
+                                Advanced Mode
+                              </h3>
+                              <p
+                                className={`text-sm ${
+                                  formData.mode === "advanced"
+                                    ? "text-purple-700 dark:text-purple-300"
+                                    : "text-muted-foreground"
+                                }`}
+                              >
+                                Creates AI prototype for editing
+                              </p>
+                            </div>
                           </div>
-                          <span className="text-xs opacity-80">
-                            Creates AI prototype for editing
-                          </span>
-                        </Button>
+                        </div>
                       </motion.div>
                     </div>
                   </div>
@@ -550,27 +656,8 @@ export default function CreateQuizPage() {
                         )}
                       </Button>
                     </div>
-
-                    <div className="text-center">
-                      <div className="text-muted-foreground text-sm">
-                        <AnimatePresence mode="wait">
-                          <motion.span
-                            key={formData.mode}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            transition={{ duration: 0.2, ease: "easeInOut" }}
-                          >
-                            {formData.mode === "express"
-                              ? "Will create a final quiz ready to take immediately"
-                              : "Will create a prototype quiz that you can edit and customize"}
-                          </motion.span>
-                        </AnimatePresence>
-                      </div>
-                    </div>
                   </div>
                 </CardContent>
-
               </Card>
             </motion.div>
           </div>
@@ -605,7 +692,7 @@ export default function CreateQuizPage() {
                   stiffness: 100,
                   damping: 20,
                 }}
-                className="absolute inset-0 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent"
+                className="from-primary/10 via-primary/5 absolute inset-0 bg-gradient-to-br to-transparent"
               />
 
               {/* Main Content */}
@@ -626,7 +713,7 @@ export default function CreateQuizPage() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.4 }}
-                    className="flex items-center justify-center rounded-full bg-primary/10 p-6 ring-1 ring-primary/20"
+                    className="bg-primary/10 ring-primary/20 flex items-center justify-center rounded-full p-6 ring-1"
                   >
                     <motion.div
                       animate={{
@@ -639,9 +726,9 @@ export default function CreateQuizPage() {
                       }}
                     >
                       {formData.mode === "express" ? (
-                        <Zap className="h-16 w-16 text-primary" />
+                        <Zap className="text-primary h-16 w-16" />
                       ) : (
-                        <Wand2 className="h-16 w-16 text-primary" />
+                        <Wand2 className="text-primary h-16 w-16" />
                       )}
                     </motion.div>
                   </motion.div>
@@ -654,7 +741,7 @@ export default function CreateQuizPage() {
                   transition={{ delay: 0.5 }}
                   className="space-y-2"
                 >
-                  <h2 className="text-4xl font-bold text-foreground">
+                  <h2 className="text-foreground text-4xl font-bold">
                     {formData.mode === "express"
                       ? "Quiz Created Successfully!"
                       : "Prototype Quiz Created Successfully!"}
@@ -663,7 +750,7 @@ export default function CreateQuizPage() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.7 }}
-                    className="text-lg font-medium text-muted-foreground"
+                    className="text-muted-foreground text-lg font-medium"
                   >
                     {formData.mode === "express"
                       ? "Your quiz is ready to share and take"
@@ -674,7 +761,7 @@ export default function CreateQuizPage() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 1 }}
-                    className="mt-4 flex items-center justify-center gap-2 text-sm text-muted-foreground"
+                    className="text-muted-foreground mt-4 flex items-center justify-center gap-2 text-sm"
                   >
                     <motion.div
                       animate={{ rotate: 360 }}
