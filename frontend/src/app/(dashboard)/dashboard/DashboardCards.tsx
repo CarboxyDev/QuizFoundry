@@ -79,17 +79,17 @@ export function DashboardCards() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Sparkles className="text-primary h-5 w-5" />
-              Create Quiz
+              <TrendingUp className="text-primary h-5 w-5" />
+              Analytics Dashboard
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground mb-4 text-sm">
-              Generate intelligent quizzes with AI on any topic in seconds.
+              Track your quiz performance and insights.
             </p>
-            <Link href="/create-quiz">
-              <Button variant="default" className="w-full">
-                Create Quiz
+            <Link href="/analytics">
+              <Button variant="outline" className="w-full">
+                View Analytics
               </Button>
             </Link>
           </CardContent>
@@ -101,21 +101,23 @@ export function DashboardCards() {
         whileHover={{ scale: 1.02 }}
         className="col-span-full"
       >
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="text-primary h-5 w-5" />
-              Analytics Dashboard
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground mb-4">
-              Track your quiz performance, learning progress, and detailed
-              insights across all your activities.
-            </p>
-            <Link href="/analytics">
-              <Button variant="outline" className="w-full">
-                View Analytics
+        <Card className="bg-gradient-to-r from-primary/3 to-primary/8 border-primary/10">
+          <CardContent className="flex items-center justify-between p-6">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                <Sparkles className="text-primary h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">Create AI-Powered Quiz</h3>
+                <p className="text-muted-foreground text-sm">
+                  Generate intelligent quizzes with AI on any topic in seconds
+                </p>
+              </div>
+            </div>
+            <Link href="/create-quiz">
+              <Button size="lg" className="min-w-32">
+                <Sparkles className="mr-2 h-4 w-4" />
+                Create Quiz
               </Button>
             </Link>
           </CardContent>
