@@ -19,6 +19,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { getQuizByIdForPreview, updateQuizWithQuestions } from "@/lib/quiz-api";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowDown,
@@ -253,7 +254,6 @@ export default function EditQuizPage() {
   const quizId = params.quizid as string;
 
   const [quiz, setQuiz] = useState<EditableQuiz | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showStickyHeader, setShowStickyHeader] = useState(false);
@@ -272,49 +272,52 @@ export default function EditQuizPage() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const {
+    data: previewQuiz,
+    isLoading,
+    error: fetchError,
+  } = useQuery({
+    queryKey: ["quiz-preview", quizId],
+    queryFn: () => getQuizByIdForPreview(quizId),
+    enabled: !!quizId,
+  });
+
   useEffect(() => {
-    const loadQuiz = async () => {
-      if (!quizId) return;
+    if (!previewQuiz) return;
 
-      try {
-        setIsLoading(true);
-        const quizData = await getQuizByIdForPreview(quizId);
-
-        // Convert API response to editable format
-        const editableQuiz: EditableQuiz = {
-          id: quizData.id,
-          title: quizData.title,
-          description: quizData.description,
-          difficulty: quizData.difficulty,
-          is_public: quizData.is_public,
-          questions:
-            quizData.questions?.map((q, index) => ({
-              id: q.id,
-              question_text: q.question_text,
-              question_type: q.question_type,
-              order_index: index,
-              options:
-                q.question_options?.map((opt, optIndex) => ({
-                  id: opt.id,
-                  option_text: opt.option_text,
-                  is_correct: opt.is_correct,
-                  order_index: optIndex,
-                })) || [],
+    const editableQuiz: EditableQuiz = {
+      id: previewQuiz.id,
+      title: previewQuiz.title,
+      description: previewQuiz.description,
+      difficulty: previewQuiz.difficulty,
+      is_public: previewQuiz.is_public,
+      questions:
+        previewQuiz.questions?.map((q, index) => ({
+          id: q.id,
+          question_text: q.question_text,
+          question_type: q.question_type,
+          order_index: index,
+          options:
+            q.question_options?.map((opt, optIndex) => ({
+              id: opt.id,
+              option_text: opt.option_text,
+              is_correct: opt.is_correct,
+              order_index: optIndex,
             })) || [],
-        };
-
-        setQuiz(editableQuiz);
-      } catch (error) {
-        console.error("Error loading quiz:", error);
-        enhancedToastError("Failed to load quiz data");
-        router.push("/my-quizzes");
-      } finally {
-        setIsLoading(false);
-      }
+        })) || [],
     };
 
-    loadQuiz();
-  }, [quizId, router]);
+    setQuiz(editableQuiz);
+  }, [previewQuiz]);
+
+  // Handle potential fetch error
+  useEffect(() => {
+    if (fetchError) {
+      console.error("Error loading quiz:", fetchError);
+      enhancedToastError("Failed to load quiz data");
+      router.push("/my-quizzes");
+    }
+  }, [fetchError, router]);
 
   const updateQuiz = (updates: Partial<EditableQuiz>) => {
     setQuiz((prev) => (prev ? { ...prev, ...updates } : null));

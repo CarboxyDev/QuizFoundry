@@ -16,6 +16,7 @@ import {
   Clock,
   Eye,
   EyeOff,
+  PencilLine,
   Sparkles,
   Trophy,
   User,
@@ -193,6 +194,12 @@ const QuizHeader = ({
             <EyeOff className="text-muted-foreground h-4 w-4" />
           )}
         </div>
+        <Link href={`/my-quizzes/edit/${quiz.id}`}>
+          <Button variant="outline" className="ml-2">
+            <PencilLine className="mr-2 h-4 w-4" />
+            Edit Quiz
+          </Button>
+        </Link>
       </div>
     </div>
 
