@@ -67,41 +67,41 @@ export default function HomePage() {
     },
     {
       icon: BookOpen,
-      title: "Public Quizzes",
+      title: "Public Quiz Library",
       description:
-        "Access a plethora of quizzes on different topics created by other users with the help of AI.",
+        "Access diverse quizzes created by the community, or share your own publicly for others to discover and take.",
       color: "text-green-500",
       bg: "bg-green-500/10",
     },
     {
       icon: BarChart3,
-      title: "Deep Analytics",
+      title: "Comprehensive Analytics",
       description:
-        "Track performance, identify weak spots, and gain insights from detailed quiz analytics.",
+        "Track performance, identify patterns, and gain deep insights with detailed analytics for creators and quiz-takers.",
       color: "text-purple-500",
       bg: "bg-purple-500/10",
     },
     {
       icon: Wand2,
-      title: "Manual Tweaking Support",
+      title: "Full Customization Control",
       description:
-        "Create AI prototypes then edit every question, answer, and setting to perfection.",
+        "Generate AI prototypes then fine-tune every question, answer, and setting with advanced editing tools.",
       color: "text-amber-500",
       bg: "bg-amber-500/10",
     },
     {
-      icon: Globe,
-      title: "Public & Private",
+      icon: Target,
+      title: "Privacy & Sharing Options",
       description:
-        "Share your quizzes publicly or keep them private for personal use and testing.",
+        "Choose between public sharing for community engagement or private quizzes for personal use and testing.",
       color: "text-cyan-500",
       bg: "bg-cyan-500/10",
     },
     {
       icon: Bot,
-      title: "Smart AI Validation",
+      title: "Quality Assurance",
       description:
-        "Our AI validates public quizzes for quality assurance and spam prevention.",
+        "Advanced AI validation ensures high-quality public content with automated spam prevention and content moderation.",
       color: "text-rose-500",
       bg: "bg-rose-500/10",
     },
@@ -131,7 +131,7 @@ export default function HomePage() {
         >
           <motion.div variants={fadeInUp} className="mb-8">
             <h1 className="mb-6 text-5xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
-              Create & Take Smart Quizzes
+              Generate Professional Quizzes
               <br />
               <motion.span
                 className="from-primary via-primary/80 to-primary/60 bg-gradient-to-r bg-[length:200%_100%] bg-clip-text text-transparent"
@@ -141,13 +141,13 @@ export default function HomePage() {
                   textShadow: "0 0 30px hsl(var(--primary) / 0.4)",
                 }}
               >
-                with Deep Analytics
+                in 15 Seconds with AI
               </motion.span>
             </h1>
             <p className="text-muted-foreground mx-auto max-w-3xl text-xl sm:text-2xl">
-              Generate quizzes instantly with AI, take quizzes seamlessly, and
-              analyze performance with detailed insights. Create public or
-              private quizzes and track every metric that matters.
+              From topic to complete quiz in seconds. AI-powered generation with
+              advanced customization, comprehensive analytics, and seamless sharing.
+              Perfect for educators, trainers, and quiz enthusiasts.
             </p>
           </motion.div>
 
@@ -282,14 +282,20 @@ export default function HomePage() {
             <motion.div
               variants={fadeInUp}
               className="group lg:col-span-7 lg:row-span-8"
+              whileHover={{ scale: 1.02 }}
+              transition={{ duration: 0.2 }}
             >
-              <Card className="bg-card/60 hover:bg-card/80 h-full backdrop-blur-sm transition-all duration-300 hover:shadow-lg">
+              <Card className="bg-card/60 hover:bg-card/80 h-full backdrop-blur-sm transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10">
                 <CardContent className="flex h-full flex-col p-8">
                   <div className="mb-6">
                     <div className="mb-4 flex items-center gap-3">
-                      <div className="rounded-xl bg-blue-500/10 p-3">
+                      <motion.div 
+                        className="rounded-xl bg-blue-500/10 p-3"
+                        whileHover={{ rotate: 5 }}
+                        transition={{ duration: 0.2 }}
+                      >
                         <Zap className="h-8 w-8 text-blue-500" />
-                      </div>
+                      </motion.div>
                       <h3 className="mb-3 text-3xl font-bold">Express Mode</h3>
                     </div>
 
@@ -313,16 +319,25 @@ export default function HomePage() {
                     ))}
                   </div>
 
-                  <div className="mt-8 border-t pt-6">
+                  <motion.div 
+                    className="mt-8 border-t pt-6"
+                    initial={{ opacity: 0.7 }}
+                    whileHover={{ opacity: 1 }}
+                    transition={{ duration: 0.2 }}
+                  >
                     <div className="text-center">
-                      <div className="text-3xl font-bold text-blue-500">
+                      <motion.div 
+                        className="text-3xl font-bold text-blue-500"
+                        whileHover={{ scale: 1.05 }}
+                        transition={{ duration: 0.2 }}
+                      >
                         ~15 seconds
-                      </div>
+                      </motion.div>
                       <div className="text-muted-foreground text-sm">
                         Average creation time
                       </div>
                     </div>
-                  </div>
+                  </motion.div>
                 </CardContent>
               </Card>
             </motion.div>
@@ -331,14 +346,20 @@ export default function HomePage() {
             <motion.div
               variants={fadeInUp}
               className="group lg:col-span-5 lg:row-span-8"
+              whileHover={{ scale: 1.02 }}
+              transition={{ duration: 0.2 }}
             >
-              <Card className="bg-card/60 hover:bg-card/80 h-full backdrop-blur-sm transition-all duration-300">
+              <Card className="bg-card/60 hover:bg-card/80 h-full backdrop-blur-sm transition-all duration-300 hover:shadow-xl hover:shadow-purple-500/10">
                 <CardContent className="flex h-full flex-col p-6">
                   <div className="mb-6">
                     <div className="mb-4 flex items-center gap-3">
-                      <div className="rounded-lg bg-purple-500/10 p-3">
+                      <motion.div 
+                        className="rounded-lg bg-purple-500/10 p-3"
+                        whileHover={{ rotate: -5 }}
+                        transition={{ duration: 0.2 }}
+                      >
                         <Wand2 className="h-8 w-8 text-purple-500" />
-                      </div>
+                      </motion.div>
                       <h3 className="text-3xl font-bold">Advanced Mode</h3>
                     </div>
                     <p className="text-muted-foreground text-lg">
