@@ -154,7 +154,6 @@ export default function MyQuizzesPage() {
     },
   });
 
-  // Filtering – applied to fetched quizzes
   const filteredQuizzes = quizzes.filter((quiz) => {
     const matchesSearch =
       quiz.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -212,7 +211,7 @@ export default function MyQuizzesPage() {
   return (
     <div className="mt-4 flex flex-1 flex-col gap-4 p-4 pt-0">
       <motion.div
-        className="from-background via-muted/30 to-muted/50 min-h-screen flex-1 bg-gradient-to-br"
+        className="min-h-screen flex-1"
         initial="initial"
         animate="animate"
         exit="exit"

@@ -109,8 +109,7 @@ export default function OnboardingPage() {
 
   return (
     <OnboardingGuard>
-      <div className="from-background via-muted/20 to-background flex min-h-screen items-center justify-center bg-gradient-to-br p-4">
-        {/* Subtle background pattern */}
+      <div className="flex min-h-screen items-center justify-center p-4">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(120,119,198,0.1),transparent_25%),radial-gradient(circle_at_80%_80%,rgba(255,255,255,0.03),transparent_25%)]" />
 
         <motion.div
