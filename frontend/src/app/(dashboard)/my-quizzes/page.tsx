@@ -35,7 +35,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
-import { deleteQuiz, getUserQuizzes, type Quiz } from "@/lib/quiz-api";
+import { deleteQuiz, getUserQuizzes, toggleQuizVisibility, type Quiz } from "@/lib/quiz-api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -154,6 +154,47 @@ export default function MyQuizzesPage() {
     },
   });
 
+  // Toggle visibility mutation with optimistic updates
+  const toggleVisibilityMutation = useMutation({
+    mutationFn: ({ id, isPublic }: { id: string; isPublic: boolean }) => 
+      toggleQuizVisibility(id, isPublic),
+    onMutate: async ({ id, isPublic }) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ["my-quizzes"] });
+
+      // Snapshot the previous value
+      const previousQuizzes = queryClient.getQueryData<Quiz[]>(["my-quizzes"]);
+
+      // Optimistically update to the new value
+      queryClient.setQueryData<Quiz[]>(["my-quizzes"], (old) => {
+        if (!old) return old;
+        return old.map((quiz) =>
+          quiz.id === id ? { ...quiz, is_public: isPublic } : quiz
+        );
+      });
+
+      // Return a context object with the snapshotted value
+      return { previousQuizzes };
+    },
+    onSuccess: (updatedQuiz) => {
+      // Update cache with the actual server response to ensure accuracy
+      queryClient.setQueryData<Quiz[]>(["my-quizzes"], (old) => {
+        if (!old) return old;
+        return old.map((quiz) =>
+          quiz.id === updatedQuiz.id ? updatedQuiz : quiz
+        );
+      });
+      toast.success(`Quiz is now ${updatedQuiz.is_public ? 'public' : 'private'}`);
+    },
+    onError: (error: Error, variables, context) => {
+      // If the mutation fails, use the context returned from onMutate to roll back
+      queryClient.setQueryData(["my-quizzes"], context?.previousQuizzes);
+      toast.error(error.message || "Failed to update quiz visibility");
+      // Only refetch on error to get the correct state from server
+      queryClient.invalidateQueries({ queryKey: ["my-quizzes"] });
+    },
+  });
+
   const filteredQuizzes = quizzes.filter((quiz) => {
     const matchesSearch =
       quiz.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -199,6 +240,14 @@ export default function MyQuizzesPage() {
       router.push(`/my-quizzes/edit/${quizId}`);
     } else if (action === "analytics") {
       router.push(`/analytics/quiz/${quizId}`);
+    } else if (action === "toggleVisibility") {
+      const quiz = quizzes.find((q) => q.id === quizId);
+      if (quiz) {
+        toggleVisibilityMutation.mutate({ 
+          id: quizId, 
+          isPublic: !quiz.is_public 
+        });
+      }
     }
   };
 

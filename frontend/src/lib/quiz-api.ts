@@ -446,6 +446,22 @@ export async function updateQuizWithQuestions(
 }
 
 /**
+ * Toggle quiz visibility (public/private)
+ */
+export async function toggleQuizVisibility(id: string, isPublic: boolean): Promise<Quiz> {
+  const response = await axiosInstance.patch<CreateQuizResponse>(
+    `/quizzes/${id}/visibility`,
+    { is_public: isPublic }
+  );
+
+  if (!response.data.success) {
+    throw new Error(response.data.message || "Failed to toggle quiz visibility");
+  }
+
+  return response.data.data.quiz;
+}
+
+/**
  * Delete a quiz
  */
 export async function deleteQuiz(id: string): Promise<void> {

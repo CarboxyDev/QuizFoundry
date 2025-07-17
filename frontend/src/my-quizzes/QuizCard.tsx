@@ -103,6 +103,16 @@ export default function QuizCard({ quiz, index, onAction }: QuizCardProps) {
                   Share
                 </DropdownMenuItem>
                 <DropdownMenuItem
+                  onClick={() => onAction("toggleVisibility", quiz.id)}
+                >
+                  {quiz.is_public ? (
+                    <GlobeLock className="mr-2 h-4 w-4" />
+                  ) : (
+                    <Globe className="mr-2 h-4 w-4" />
+                  )}
+                  Make {quiz.is_public ? "Private" : "Public"}
+                </DropdownMenuItem>
+                <DropdownMenuItem
                   onClick={() => onAction("analytics", quiz.id)}
                 >
                   <BarChart3 className="mr-2 h-4 w-4" />

@@ -421,6 +421,39 @@ quizzesRouter.put(
 );
 
 /**
+ * PATCH /quizzes/:id/visibility - Toggle quiz visibility (public/private)
+ */
+quizzesRouter.patch(
+  "/:id/visibility",
+  authMiddleware,
+  requireCompletedOnboarding,
+  asyncHandler(async (req: AuthenticatedRequest, res) => {
+    const { id } = req.params;
+    const userId = req.user?.id;
+
+    if (!userId) {
+      throw new AppError("User not authenticated", 401);
+    }
+
+    if (!id || typeof id !== "string") {
+      throw new AppError("Quiz ID is required", 400);
+    }
+
+    const quiz = await updateQuiz(id, userId, { 
+      is_public: req.body.is_public 
+    });
+
+    res.json({
+      success: true,
+      data: {
+        quiz,
+      },
+      message: `Quiz visibility updated to ${quiz.is_public ? 'public' : 'private'}`,
+    });
+  })
+);
+
+/**
  * DELETE /quizzes/:id - Delete a quiz
  */
 quizzesRouter.delete(
