@@ -699,3 +699,148 @@ export const getOverviewAnalytics = async (): Promise<OverviewAnalytics> => {
   const response = await axiosInstance.get("/analytics/overview");
   return response.data.data.analytics;
 };
+
+// =============================================
+// AI ASSISTANCE API FUNCTIONS
+// =============================================
+
+export interface GeneratedQuestion {
+  question_text: string;
+  question_type: "multiple_choice";
+  order_index: number;
+  options: Array<{
+    option_text: string;
+    is_correct: boolean;
+    order_index: number;
+  }>;
+}
+
+export interface GeneratedQuestionsResult {
+  questions: GeneratedQuestion[];
+}
+
+export interface EnhancedQuestionResult {
+  enhanced_question: {
+    question_text: string;
+    reasoning: string;
+  };
+}
+
+export interface GeneratedOption {
+  option_text: string;
+  is_correct: boolean;
+  order_index: number;
+}
+
+export interface GeneratedOptionsResult {
+  options: GeneratedOption[];
+}
+
+export interface QuestionTypeSuggestion {
+  type: string;
+  description: string;
+  example: string;
+}
+
+export interface QuestionTypeSuggestionsResult {
+  suggestions: QuestionTypeSuggestion[];
+}
+
+/**
+ * Generate additional questions for a quiz using AI
+ */
+export async function generateQuestionsForQuiz(
+  context: {
+    title: string;
+    description?: string;
+    difficulty: "easy" | "medium" | "hard";
+    originalPrompt: string;
+    existingQuestions?: Array<{
+      question_text: string;
+      options: Array<{ option_text: string; is_correct: boolean }>;
+    }>;
+  },
+  count: number
+): Promise<GeneratedQuestionsResult> {
+  const response = await axiosInstance.post<{
+    success: boolean;
+    data: GeneratedQuestionsResult;
+    message: string;
+  }>(`/quizzes/prototype/ai-assist/generate-questions`, { count, context });
+
+  if (!response.data.success) {
+    throw new Error(response.data.message || "Failed to generate questions");
+  }
+
+  return response.data.data;
+}
+
+/**
+ * Enhance a question using AI
+ */
+export async function enhanceQuestion(
+  context: {
+    title: string;
+    description?: string;
+    difficulty: "easy" | "medium" | "hard";
+    originalPrompt: string;
+  },
+  questionText: string
+): Promise<EnhancedQuestionResult> {
+  const response = await axiosInstance.post<{
+    success: boolean;
+    data: EnhancedQuestionResult;
+    message: string;
+  }>(`/quizzes/prototype/ai-assist/enhance-question`, { questionText, context });
+
+  if (!response.data.success) {
+    throw new Error(response.data.message || "Failed to enhance question");
+  }
+
+  return response.data.data;
+}
+
+/**
+ * Generate additional options for a question using AI
+ */
+export async function generateOptionsForQuestion(
+  questionText: string,
+  existingOptions: Array<{ option_text: string; is_correct: boolean }>,
+  optionsCount: number
+): Promise<GeneratedOptionsResult> {
+  const response = await axiosInstance.post<{
+    success: boolean;
+    data: GeneratedOptionsResult;
+    message: string;
+  }>(`/quizzes/prototype/ai-assist/generate-options`, {
+    questionText,
+    existingOptions,
+    optionsCount,
+  });
+
+  if (!response.data.success) {
+    throw new Error(response.data.message || "Failed to generate options");
+  }
+
+  return response.data.data;
+}
+
+/**
+ * Get AI suggestions for question types based on quiz topic
+ */
+export async function getQuestionTypeSuggestions(
+  topic: string,
+  difficulty: "easy" | "medium" | "hard"
+): Promise<QuestionTypeSuggestionsResult> {
+  const response = await axiosInstance.post<{
+    success: boolean;
+    data: QuestionTypeSuggestionsResult;
+    message: string;
+  }>(`/quizzes/prototype/ai-assist/suggest-question-types`, { topic, difficulty });
+
+  if (!response.data.success) {
+    throw new Error(response.data.message || "Failed to get question type suggestions");
+  }
+
+  return response.data.data;
+}

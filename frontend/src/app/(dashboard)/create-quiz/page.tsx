@@ -3,7 +3,7 @@
 import { ProtectedRouteGuard } from "@/components/AuthGuard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -161,7 +161,7 @@ export default function CreateQuizPage() {
                   type: "spring",
                   stiffness: 200,
                   damping: 20,
-                  duration: 0.6
+                  duration: 0.6,
                 }}
                 className={`mb-4 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all duration-500 ${
                   formData.mode === "express"
@@ -179,20 +179,23 @@ export default function CreateQuizPage() {
                       type: "spring",
                       stiffness: 300,
                       damping: 25,
-                      duration: 0.4
+                      duration: 0.4,
                     }}
                     className="flex items-center gap-2"
                   >
                     <motion.div
                       animate={{
                         scale: [1, 1.2, 1],
-                        rotate: formData.mode === "express" ? [0, 15, -15, 0] : [0, -15, 15, 0]
+                        rotate:
+                          formData.mode === "express"
+                            ? [0, 15, -15, 0]
+                            : [0, -15, 15, 0],
                       }}
                       transition={{
                         duration: 2,
                         repeat: Infinity,
                         repeatDelay: 2,
-                        ease: "easeInOut"
+                        ease: "easeInOut",
                       }}
                     >
                       {formData.mode === "express" ? (
@@ -207,7 +210,9 @@ export default function CreateQuizPage() {
                       transition={{ delay: 0.2, duration: 0.3 }}
                       className="font-semibold"
                     >
-                      {formData.mode === "express" ? "Express Mode" : "Advanced Mode"}
+                      {formData.mode === "express"
+                        ? "Express Mode"
+                        : "Advanced Mode"}
                     </motion.span>
                   </motion.div>
                 </AnimatePresence>
@@ -259,12 +264,12 @@ export default function CreateQuizPage() {
                   )}
                 </AnimatePresence>
 
-                <CardHeader className="relative z-20">
+                {/* <CardHeader className="relative z-20">
                   <CardTitle className="flex items-center gap-2">
                     <Sparkles className="h-5 w-5" />
                     Quiz Configuration
                   </CardTitle>
-                </CardHeader>
+                </CardHeader> */}
                 <CardContent className="relative z-20 space-y-8">
                   {/* Quiz Prompt */}
                   <div className="space-y-4">
@@ -272,7 +277,7 @@ export default function CreateQuizPage() {
                       <div>
                         <Label
                           htmlFor="prompt"
-                          className="text-base font-medium"
+                          className="text-base font-semibold"
                         >
                           Quiz Topic
                         </Label>
@@ -280,7 +285,6 @@ export default function CreateQuizPage() {
                           Describe what you want your quiz to be about
                         </p>
                       </div>
-                      {/* Surprise Me Button (moved above textarea, right-aligned) */}
                       <motion.div
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
@@ -288,16 +292,15 @@ export default function CreateQuizPage() {
                         <Button
                           type="button"
                           variant="outline"
-                          size="sm"
                           onClick={handleSurpriseMe}
                           disabled={isGenerating || isSurpriseLoading}
-                          className="h-8 gap-2 border-purple-200 bg-gradient-to-r from-purple-500/10 to-pink-500/10 px-3 transition-all duration-300 hover:border-purple-300 hover:from-purple-500/20 hover:to-pink-500/20"
+                          className="h-9 gap-2 bg-gradient-to-r from-purple-50 to-pink-50 px-4 shadow-sm transition-all duration-300 hover:border-purple-400 hover:from-purple-100 hover:to-pink-100 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 dark:from-purple-900/20 dark:to-pink-900/20 dark:hover:from-purple-900/30 dark:hover:to-pink-900/30"
                         >
                           {isSurpriseLoading ? (
                             <>
-                              <Loader2 className="h-3 w-3 animate-spin" />
-                              <span className="text-xs font-medium">
-                                Generating...
+                              <Loader2 className="h-4 w-4 animate-spin text-purple-600" />
+                              <span className="text-sm font-medium text-purple-700 dark:text-purple-300">
+                                Surprising...
                               </span>
                             </>
                           ) : (
@@ -313,9 +316,9 @@ export default function CreateQuizPage() {
                                   repeatDelay: 3,
                                 }}
                               >
-                                <Wand2 className="h-3 w-3 text-purple-600" />
+                                <Wand2 className="h-4 w-4 text-purple-600" />
                               </motion.div>
-                              <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-xs font-medium text-transparent">
+                              <span className="text-sm font-medium text-purple-700 dark:text-purple-300">
                                 Surprise Me
                               </span>
                             </>

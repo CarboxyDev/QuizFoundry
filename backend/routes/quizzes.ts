@@ -23,6 +23,10 @@ import {
   getCreativeQuizPrompt,
   submitQuizAttempt,
   getQuizAttempts,
+  generateQuestionsForQuiz,
+  enhanceQuizQuestion,
+  generateOptionsForQuestion,
+  getQuestionTypeSuggestions,
 } from "../services/quizService";
 import {
   authMiddleware,
@@ -555,6 +559,209 @@ quizzesRouter.post(
       success: true,
       data: result,
     });
+  })
+);
+
+// =============================================
+// AI ASSISTANCE ENDPOINTS FOR ADVANCED QUIZ EDITING
+// =============================================
+
+/**
+ * POST /quizzes/prototype/ai-assist/generate-questions - Generate additional questions for a prototype quiz
+ */
+quizzesRouter.post(
+  "/prototype/ai-assist/generate-questions",
+  aiOperationsLimiter,
+  authMiddleware,
+  requireCompletedOnboarding,
+  asyncHandler(async (req: AuthenticatedRequest, res) => {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      throw new AppError("User not authenticated", 401);
+    }
+
+    const schema = z.object({
+      count: z.number().min(1).max(5),
+      context: z.object({
+        title: z.string(),
+        description: z.string().optional(),
+        difficulty: z.enum(["easy", "medium", "hard"]),
+        originalPrompt: z.string(),
+        existingQuestions: z.array(z.object({
+          question_text: z.string(),
+          options: z.array(z.object({
+            option_text: z.string(),
+            is_correct: z.boolean(),
+          })),
+        })).optional(),
+      }),
+    });
+
+    const parseResult = schema.safeParse(req.body);
+    if (!parseResult.success) {
+      const errors = parseResult.error.errors.map((err) => err.message);
+      throw new AppError(errors.join("; "), 400);
+    }
+
+    const { count, context } = parseResult.data;
+
+    try {
+      const result = await generateQuestionsForQuiz(null, userId, count, context);
+      
+      res.json({
+        success: true,
+        data: result,
+        message: `Successfully generated ${result.questions.length} questions`,
+      });
+    } catch (error) {
+      console.error("[AI Assist] Error generating questions:", error);
+      throw error;
+    }
+  })
+);
+
+/**
+ * POST /quizzes/prototype/ai-assist/enhance-question - Enhance a question using AI for prototype quiz
+ */
+quizzesRouter.post(
+  "/prototype/ai-assist/enhance-question",
+  aiOperationsLimiter,
+  authMiddleware,
+  requireCompletedOnboarding,
+  asyncHandler(async (req: AuthenticatedRequest, res) => {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      throw new AppError("User not authenticated", 401);
+    }
+
+    const schema = z.object({
+      questionText: z.string().min(10).max(500),
+      context: z.object({
+        title: z.string(),
+        description: z.string().optional(),
+        difficulty: z.enum(["easy", "medium", "hard"]),
+        originalPrompt: z.string(),
+      }),
+    });
+
+    const parseResult = schema.safeParse(req.body);
+    if (!parseResult.success) {
+      const errors = parseResult.error.errors.map((err) => err.message);
+      throw new AppError(errors.join("; "), 400);
+    }
+
+    const { questionText, context } = parseResult.data;
+
+    try {
+      const result = await enhanceQuizQuestion(null, userId, questionText, context);
+      
+      res.json({
+        success: true,
+        data: result,
+        message: "Question enhanced successfully",
+      });
+    } catch (error) {
+      console.error("[AI Assist] Error enhancing question:", error);
+      throw error;
+    }
+  })
+);
+
+/**
+ * POST /quizzes/prototype/ai-assist/generate-options - Generate additional options for a question in prototype quiz
+ */
+quizzesRouter.post(
+  "/prototype/ai-assist/generate-options",
+  aiOperationsLimiter,
+  authMiddleware,
+  requireCompletedOnboarding,
+  asyncHandler(async (req: AuthenticatedRequest, res) => {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      throw new AppError("User not authenticated", 401);
+    }
+
+    const schema = z.object({
+      questionText: z.string().min(10).max(500),
+      existingOptions: z.array(z.object({
+        option_text: z.string().min(1).max(200),
+        is_correct: z.boolean(),
+      })).min(1),
+      optionsCount: z.number().min(1).max(4),
+    });
+
+    const parseResult = schema.safeParse(req.body);
+    if (!parseResult.success) {
+      const errors = parseResult.error.errors.map((err) => err.message);
+      throw new AppError(errors.join("; "), 400);
+    }
+
+    const { questionText, existingOptions, optionsCount } = parseResult.data;
+
+    try {
+      const result = await generateOptionsForQuestion(
+        null,
+        userId,
+        questionText,
+        existingOptions,
+        optionsCount
+      );
+      
+      res.json({
+        success: true,
+        data: result,
+        message: `Successfully generated ${result.options.length} options`,
+      });
+    } catch (error) {
+      console.error("[AI Assist] Error generating options:", error);
+      throw error;
+    }
+  })
+);
+
+/**
+ * POST /quizzes/prototype/ai-assist/suggest-question-types - Get AI suggestions for question types for prototype quiz
+ */
+quizzesRouter.post(
+  "/prototype/ai-assist/suggest-question-types",
+  aiOperationsLimiter,
+  authMiddleware,
+  requireCompletedOnboarding,
+  asyncHandler(async (req: AuthenticatedRequest, res) => {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      throw new AppError("User not authenticated", 401);
+    }
+
+    const schema = z.object({
+      topic: z.string().min(1).max(200),
+      difficulty: z.enum(["easy", "medium", "hard"]),
+    });
+
+    const parseResult = schema.safeParse(req.body);
+    if (!parseResult.success) {
+      const errors = parseResult.error.errors.map((err) => err.message);
+      throw new AppError(errors.join("; "), 400);
+    }
+
+    const { topic, difficulty } = parseResult.data;
+
+    try {
+      const result = await getQuestionTypeSuggestions(null, userId, topic, difficulty);
+      
+      res.json({
+        success: true,
+        data: result,
+        message: `Successfully generated ${result.suggestions.length} question type suggestions`,
+      });
+    } catch (error) {
+      console.error("[AI Assist] Error getting question type suggestions:", error);
+      throw error;
+    }
   })
 );
 

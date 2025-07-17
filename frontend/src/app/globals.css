@@ -263,6 +263,20 @@
   .sidebar-menu-button:hover::before {
     left: 100%;
   }
+
+  /* Shimmer animation for surprise button */
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  .animate-shimmer {
+    animation: shimmer 2s infinite;
+  }
 }
 
 /* @layer utilities {

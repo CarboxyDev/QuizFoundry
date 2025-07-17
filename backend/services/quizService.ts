@@ -6,6 +6,15 @@ import {
   generateCreativeQuizPrompt,
   validateQuizContent,
   type QuizContentForValidation,
+  generateAdditionalQuestions,
+  enhanceQuestion,
+  generateAdditionalOptions,
+  suggestQuestionTypes,
+  type QuizContext,
+  type GeneratedQuestionsResult,
+  type EnhancedQuestionResult,
+  type GeneratedOptionsResult,
+  type QuestionTypeSuggestionsResult,
 } from "../lib/gemini";
 import type {
   CreateQuizExpressModeInput,
@@ -2916,4 +2925,185 @@ export async function getOverviewAnalytics(
   );
 
   return analytics;
+}
+
+// =============================================
+// AI ASSISTANCE SERVICES FOR ADVANCED QUIZ EDITING
+// =============================================
+
+export async function generateQuestionsForQuiz(
+  quizId: string | null,
+  userId: string,
+  count: number,
+  context?: QuizContext
+): Promise<GeneratedQuestionsResult> {
+  console.log(`[Quiz Service] Generating ${count} questions for ${quizId ? `quiz ${quizId}` : 'prototype'} by user ${userId}`);
+
+  let quizContext: QuizContext;
+
+  if (quizId) {
+    // Verify user owns the quiz
+    const { data: quiz, error: quizError } = await supabase
+      .from("quizzes")
+      .select("title, description, difficulty, original_prompt")
+      .eq("id", quizId)
+      .eq("user_id", userId)
+      .single();
+
+    if (quizError || !quiz) {
+      throw new AppError("Quiz not found or access denied", 404);
+    }
+
+    // Get existing questions to provide context
+    const { data: existingQuestions, error: questionsError } = await supabase
+      .from("questions")
+      .select(`
+        question_text,
+        question_options (
+          option_text,
+          is_correct
+        )
+      `)
+      .eq("quiz_id", quizId)
+      .order("order_index");
+
+    if (questionsError) {
+      throw new AppError(`Failed to fetch existing questions: ${questionsError.message}`, 500);
+    }
+
+    // Build quiz context
+    quizContext = {
+      title: quiz.title,
+      description: quiz.description,
+      difficulty: quiz.difficulty,
+      originalPrompt: quiz.original_prompt || quiz.title,
+      existingQuestions: existingQuestions?.map(q => ({
+        question_text: q.question_text,
+        options: (q.question_options || []).map((opt: any) => ({
+          option_text: opt.option_text,
+          is_correct: opt.is_correct,
+        })),
+      })) || [],
+    };
+  } else {
+    // Use provided context for prototype mode
+    if (!context) {
+      throw new AppError("Context is required for prototype mode", 400);
+    }
+    quizContext = context;
+  }
+
+  // Generate questions using AI
+  const result = await generateAdditionalQuestions(quizContext, count);
+
+  console.log(`[Quiz Service] Successfully generated ${result.questions.length} questions for ${quizId || 'prototype'}`);
+  
+  return result;
+}
+
+export async function enhanceQuizQuestion(
+  quizId: string | null,
+  userId: string,
+  questionText: string,
+  context?: QuizContext
+): Promise<EnhancedQuestionResult> {
+  console.log(`[Quiz Service] Enhancing question for ${quizId ? `quiz ${quizId}` : 'prototype'} by user ${userId}`);
+
+  let quizContext: QuizContext;
+
+  if (quizId) {
+    // Verify user owns the quiz
+    const { data: quiz, error: quizError } = await supabase
+      .from("quizzes")
+      .select("title, description, difficulty, original_prompt")
+      .eq("id", quizId)
+      .eq("user_id", userId)
+      .single();
+
+    if (quizError || !quiz) {
+      throw new AppError("Quiz not found or access denied", 404);
+    }
+
+    // Build quiz context
+    quizContext = {
+      title: quiz.title,
+      description: quiz.description,
+      difficulty: quiz.difficulty,
+      originalPrompt: quiz.original_prompt || quiz.title,
+    };
+  } else {
+    // Use provided context for prototype mode
+    if (!context) {
+      throw new AppError("Context is required for prototype mode", 400);
+    }
+    quizContext = context;
+  }
+
+  // Enhance question using AI
+  const result = await enhanceQuestion(questionText, quizContext);
+
+  console.log(`[Quiz Service] Successfully enhanced question for ${quizId || 'prototype'}`);
+  
+  return result;
+}
+
+export async function generateOptionsForQuestion(
+  quizId: string | null,
+  userId: string,
+  questionText: string,
+  existingOptions: Array<{ option_text: string; is_correct: boolean }>,
+  optionsCount: number
+): Promise<GeneratedOptionsResult> {
+  console.log(`[Quiz Service] Generating ${optionsCount} options for question in ${quizId ? `quiz ${quizId}` : 'prototype'} by user ${userId}`);
+
+  if (quizId) {
+    // Verify user owns the quiz
+    const { data: quiz, error: quizError } = await supabase
+      .from("quizzes")
+      .select("id")
+      .eq("id", quizId)
+      .eq("user_id", userId)
+      .single();
+
+    if (quizError || !quiz) {
+      throw new AppError("Quiz not found or access denied", 404);
+    }
+  }
+
+  // Generate options using AI
+  const result = await generateAdditionalOptions(questionText, existingOptions, optionsCount);
+
+  console.log(`[Quiz Service] Successfully generated ${result.options.length} options for question in ${quizId || 'prototype'}`);
+  
+  return result;
+}
+
+export async function getQuestionTypeSuggestions(
+  quizId: string | null,
+  userId: string,
+  topic: string,
+  difficulty: "easy" | "medium" | "hard"
+): Promise<QuestionTypeSuggestionsResult> {
+  console.log(`[Quiz Service] Getting question type suggestions for ${quizId ? `quiz ${quizId}` : 'prototype'} by user ${userId}`);
+
+  if (quizId) {
+    // Verify user owns the quiz
+    const { data: quiz, error: quizError } = await supabase
+      .from("quizzes")
+      .select("id")
+      .eq("id", quizId)
+      .eq("user_id", userId)
+      .single();
+
+    if (quizError || !quiz) {
+      throw new AppError("Quiz not found or access denied", 404);
+    }
+  }
+
+  // Get question type suggestions using AI
+  const result = await suggestQuestionTypes(topic, difficulty);
+
+  console.log(`[Quiz Service] Successfully generated ${result.suggestions.length} question type suggestions for ${quizId || 'prototype'}`);
+  
+  return result;
 }

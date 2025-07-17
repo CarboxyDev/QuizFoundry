@@ -19,6 +19,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { publishManualQuiz } from "@/lib/quiz-api";
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
+import { useAIAssistance } from "@/hooks/use-ai-assistance";
+import {
+  GenerateQuestionsDialog,
+  EnhanceQuestionDialog,
+  GenerateOptionsDialog,
+  QuestionTypeSuggestionsDialog,
+} from "@/components/ai-assistance";
 import {
   ArrowDown,
   ArrowLeft,
@@ -147,9 +154,13 @@ export default function AdvancedQuizEditPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [quiz, setQuiz] = useState<EditableQuiz | null>(null);
+  const [quizId, setQuizId] = useState<string>("");
   const [isPublishing, setIsPublishing] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showStickyHeader, setShowStickyHeader] = useState(false);
+
+  // AI assistance hook
+  const aiAssistance = useAIAssistance();
 
   const headerRef = useRef<HTMLDivElement | null>(null);
 
@@ -194,6 +205,8 @@ export default function AdvancedQuizEditPage() {
         };
 
         setQuiz(editableQuiz);
+        // Generate a temporary quiz ID for AI assistance (in a real app this would come from the backend)
+        setQuizId(`temp-quiz-${Date.now()}`);
       } catch (error) {
         console.error("Error parsing prototype data:", error);
         enhancedToastError("Failed to load prototype quiz data");
@@ -345,6 +358,142 @@ export default function AdvancedQuizEditPage() {
     }));
 
     updateQuestion(questionId, { options: updatedOptions });
+  };
+
+  // AI Assistance Functions
+  const handleGenerateQuestions = async (count: number) => {
+    if (!quiz) throw new Error("Quiz not found");
+    
+    const context = {
+      title: quiz.title,
+      description: quiz.description,
+      difficulty: quiz.difficulty,
+      originalPrompt: quiz.title,
+      existingQuestions: quiz.questions.map(q => ({
+        question_text: q.question_text,
+        options: q.options.map(opt => ({
+          option_text: opt.option_text,
+          is_correct: opt.is_correct,
+        })),
+      })),
+    };
+    
+    return await aiAssistance.generateQuestions(context, count);
+  };
+
+  const handleAcceptGeneratedQuestions = (questions: any[]) => {
+    if (!quiz) return;
+
+    // Check if adding these questions would exceed the limit
+    const totalQuestionsAfterAdd = quiz.questions.length + questions.length;
+    if (totalQuestionsAfterAdd > 20) {
+      toast.error(`Cannot add ${questions.length} questions. Quiz limit is 20 questions. You can add ${20 - quiz.questions.length} more questions.`);
+      return;
+    }
+
+    const newQuestions = questions.map((q, index) => ({
+      id: `question-${Date.now()}-${index}`,
+      question_text: q.question_text,
+      question_type: q.question_type as "multiple_choice",
+      order_index: quiz.questions.length + index,
+      options: q.options.map((opt: any, optIndex: number) => ({
+        id: `option-${Date.now()}-${index}-${optIndex}`,
+        option_text: opt.option_text,
+        is_correct: opt.is_correct,
+        order_index: optIndex,
+      })),
+    }));
+
+    setQuiz((prev) =>
+      prev ? { ...prev, questions: [...prev.questions, ...newQuestions] } : null
+    );
+  };
+
+  const handleEnhanceQuestion = async (questionText: string) => {
+    if (!quiz) throw new Error("Quiz not found");
+    
+    const context = {
+      title: quiz.title,
+      description: quiz.description,
+      difficulty: quiz.difficulty,
+      originalPrompt: quiz.title,
+    };
+    
+    return await aiAssistance.enhanceQuestion(context, questionText);
+  };
+
+  const handleAcceptEnhancement = (questionId: string, enhancedText: string) => {
+    updateQuestion(questionId, { question_text: enhancedText });
+  };
+
+  const handleGenerateOptions = async (params: {
+    questionText: string;
+    existingOptions: Array<{ option_text: string; is_correct: boolean }>;
+    optionsCount: number;
+  }) => {
+    return await aiAssistance.generateOptions(params);
+  };
+
+  const handleReplaceOptions = (questionId: string, selectedOptionIds: string[], newOptions: any[]) => {
+    const question = quiz?.questions.find(q => q.id === questionId);
+    if (!question) return;
+
+    // Create new options with the same IDs as selected options to replace them
+    const replacementOptions = newOptions.map((opt, index) => ({
+      id: selectedOptionIds[index] || `option-${Date.now()}-${index}`,
+      option_text: opt.option_text,
+      is_correct: opt.is_correct,
+      order_index: question.options.find(o => o.id === selectedOptionIds[index])?.order_index || 0,
+    }));
+
+    // Replace selected options with new ones
+    const updatedOptions = question.options.map(option => {
+      const replacementIndex = selectedOptionIds.indexOf(option.id);
+      if (replacementIndex !== -1) {
+        return replacementOptions[replacementIndex];
+      }
+      return option;
+    });
+
+    updateQuestion(questionId, {
+      options: updatedOptions,
+    });
+  };
+
+  const handleUndoReplace = (questionId: string, undoData: { selectedOptionIds: string[], originalOptions: Array<{ id: string; option_text: string; is_correct: boolean; order_index: number }> }) => {
+    const question = quiz?.questions.find(q => q.id === questionId);
+    if (!question) return;
+
+    // Restore the original options
+    const restoredOptions = question.options.map(option => {
+      const originalOption = undoData.originalOptions.find(orig => orig.id === option.id);
+      if (originalOption) {
+        return {
+          id: originalOption.id,
+          option_text: originalOption.option_text,
+          is_correct: originalOption.is_correct,
+          order_index: originalOption.order_index,
+        };
+      }
+      return option;
+    });
+
+    updateQuestion(questionId, {
+      options: restoredOptions,
+    });
+  };
+
+  const handleGetQuestionTypes = async () => {
+    if (!quiz) throw new Error("Quiz not found");
+    
+    return await aiAssistance.getQuestionTypes(quiz.title, quiz.difficulty);
+  };
+
+  const handleSelectQuestionType = (suggestion: any) => {
+    // Create a new question based on the suggestion
+    addQuestion();
+    // Note: In a real implementation, you might want to pre-fill the question with the suggestion's example
+    toast.success(`Added new question slot for: ${suggestion.type}`);
   };
 
   const handlePublish = async () => {
@@ -648,10 +797,29 @@ export default function AdvancedQuizEditPage() {
                 <h2 className="text-2xl font-bold">
                   Questions ({quiz.questions.length})
                 </h2>
-                <Button onClick={addQuestion} className="gap-2">
-                  <Plus className="h-4 w-4" />
-                  Add Question
-                </Button>
+                <div className="flex items-center gap-2">
+                  <QuestionTypeSuggestionsDialog
+                    onGetSuggestions={handleGetQuestionTypes}
+                    onSelectSuggestion={handleSelectQuestionType}
+                    isLoading={aiAssistance.isGettingSuggestions}
+                    disabled={quiz.questions.length >= 20}
+                  />
+                  <GenerateQuestionsDialog
+                    onGenerate={handleGenerateQuestions}
+                    onAcceptQuestions={handleAcceptGeneratedQuestions}
+                    isLoading={aiAssistance.isGeneratingQuestions}
+                    disabled={quiz.questions.length >= 20}
+                    remainingQuestions={20 - quiz.questions.length}
+                  />
+                  <Button 
+                    onClick={addQuestion} 
+                    className="gap-2"
+                    disabled={quiz.questions.length >= 20}
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add Question
+                  </Button>
+                </div>
               </div>
 
               <AnimatePresence>
@@ -674,6 +842,13 @@ export default function AdvancedQuizEditPage() {
                     }
                     onRemove={() => removeQuestion(question.id)}
                     onMove={(direction) => moveQuestion(question.id, direction)}
+                    // AI Assistance props
+                    onEnhanceQuestion={(questionText) => handleEnhanceQuestion(questionText)}
+                    onAcceptEnhancement={(enhancedText) => handleAcceptEnhancement(question.id, enhancedText)}
+                    onGenerateOptions={(params) => handleGenerateOptions(params)}
+                    onReplaceOptions={(questionId, selectedIds, newOptions) => handleReplaceOptions(questionId, selectedIds, newOptions)}
+                    onUndoReplace={(questionId, undoData) => handleUndoReplace(questionId, undoData)}
+                    aiAssistance={aiAssistance}
                   />
                 ))}
               </AnimatePresence>
@@ -808,6 +983,17 @@ interface QuestionEditorProps {
   onSetCorrectOption: (optionId: string) => void;
   onRemove: () => void;
   onMove: (direction: "up" | "down") => void;
+  // AI Assistance props
+  onEnhanceQuestion: (questionText: string) => Promise<any>;
+  onAcceptEnhancement: (enhancedText: string) => void;
+  onGenerateOptions: (params: {
+    questionText: string;
+    existingOptions: Array<{ option_text: string; is_correct: boolean }>;
+    optionsCount: number;
+  }) => Promise<any>;
+  onReplaceOptions: (questionId: string, selectedIds: string[], newOptions: any[]) => void;
+  onUndoReplace: (questionId: string, undoData: { selectedOptionIds: string[], originalOptions: Array<{ id: string; option_text: string; is_correct: boolean; order_index: number }> }) => void;
+  aiAssistance: ReturnType<typeof useAIAssistance>;
 }
 
 function QuestionEditor({
@@ -821,6 +1007,12 @@ function QuestionEditor({
   onSetCorrectOption,
   onRemove,
   onMove,
+  onEnhanceQuestion,
+  onAcceptEnhancement,
+  onGenerateOptions,
+  onReplaceOptions,
+  onUndoReplace,
+  aiAssistance,
 }: QuestionEditorProps) {
   return (
     <motion.div
@@ -882,7 +1074,15 @@ function QuestionEditor({
 
         <CardContent className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor={`question-${question.id}`}>Question Text</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor={`question-${question.id}`}>Question Text</Label>
+              <EnhanceQuestionDialog
+                questionText={question.question_text}
+                onEnhance={onEnhanceQuestion}
+                onAcceptEnhancement={onAcceptEnhancement}
+                isLoading={aiAssistance.isEnhancingQuestion}
+              />
+            </div>
             <Textarea
               id={`question-${question.id}`}
               value={question.question_text}
@@ -895,16 +1095,34 @@ function QuestionEditor({
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <Label>Answer Options</Label>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onAddOption}
-                className="gap-2"
-                disabled={question.options.length >= 8}
-              >
-                <Plus className="h-3 w-3" />
-                Add Option
-              </Button>
+              <div className="flex items-center gap-2">
+                <GenerateOptionsDialog
+                  questionText={question.question_text}
+                  existingOptions={question.options.map(opt => ({
+                    id: opt.id,
+                    option_text: opt.option_text,
+                    is_correct: opt.is_correct,
+                  }))}
+                  onGenerate={onGenerateOptions}
+                  onReplaceOptions={(selectedIds, newOptions) => 
+                    onReplaceOptions(question.id, selectedIds, newOptions)
+                  }
+                  onUndoReplace={(undoData) => 
+                    onUndoReplace(question.id, undoData)
+                  }
+                  isLoading={aiAssistance.isGeneratingOptions}
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onAddOption}
+                  className="gap-2"
+                  disabled={question.options.length >= 8}
+                >
+                  <Plus className="h-3 w-3" />
+                  Add Option
+                </Button>
+              </div>
             </div>
 
             <div className="space-y-3">
