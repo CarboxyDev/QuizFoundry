@@ -72,7 +72,7 @@ export const RATE_LIMIT_CONFIG = {
 } as const;
 
 const generateKeyFromUser = (req: Request): string => {
-  const authReq = req as any;
+  const authReq = req as Request & { user?: { id: string } };
   return authReq.user?.id || req.ip || "anonymous";
 };
 

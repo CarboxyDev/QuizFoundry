@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from "framer-motion";
-import { BookOpen, FileText, Sparkles } from "lucide-react";
+import { BookOpen, FileText, Sparkles, TrendingUp } from "lucide-react";
 import Link from "next/link";
 
 const containerVariants = {
@@ -38,7 +38,7 @@ export function DashboardCards() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <BookOpen className="text-primary h-5 w-5" />
-              Browse Quizzes
+              Public Quizzes
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -47,7 +47,7 @@ export function DashboardCards() {
             </p>
             <Link href="/public-quizzes">
               <Button variant="outline" className="w-full">
-                Browse All
+                View Public Quizzes
               </Button>
             </Link>
           </CardContent>
@@ -90,6 +90,32 @@ export function DashboardCards() {
             <Link href="/create-quiz">
               <Button variant="default" className="w-full">
                 Create Quiz
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </motion.div>
+
+      <motion.div
+        variants={cardVariants}
+        whileHover={{ scale: 1.02 }}
+        className="col-span-full"
+      >
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="text-primary h-5 w-5" />
+              Analytics Dashboard
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground mb-4">
+              Track your quiz performance, learning progress, and detailed
+              insights across all your activities.
+            </p>
+            <Link href="/analytics">
+              <Button variant="outline" className="w-full">
+                View Analytics
               </Button>
             </Link>
           </CardContent>

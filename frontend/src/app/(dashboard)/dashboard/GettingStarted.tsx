@@ -47,10 +47,9 @@ export function GettingStarted() {
               1
             </div>
             <div>
-              <h4 className="font-medium">Explore Your Dashboard</h4>
+              <h4 className="font-medium">Explore Dashboard</h4>
               <p className="text-muted-foreground text-sm">
-                Familiarize yourself with your dashboard, My Quizzes, and
-                analytics sections.
+                Navigate dashboard, My Quizzes, and analytics.
               </p>
             </div>
           </motion.div>
@@ -63,9 +62,9 @@ export function GettingStarted() {
               2
             </div>
             <div>
-              <h4 className="font-medium">Choose Creation Mode</h4>
+              <h4 className="font-medium">Choose Mode</h4>
               <p className="text-muted-foreground text-sm">
-                Pick Express for speed or Advanced for customization.
+                Express for speed, Advanced for customization.
               </p>
             </div>
           </motion.div>
@@ -78,10 +77,9 @@ export function GettingStarted() {
               3
             </div>
             <div>
-              <h4 className="font-medium">Configure Settings</h4>
+              <h4 className="font-medium">Configure Quiz</h4>
               <p className="text-muted-foreground text-sm">
-                Set your topic, difficulty level, question count, and visibility
-                preferences.
+                Set topic, difficulty, and question count.
               </p>
             </div>
           </motion.div>
@@ -94,10 +92,9 @@ export function GettingStarted() {
               4
             </div>
             <div>
-              <h4 className="font-medium">Generate with AI</h4>
+              <h4 className="font-medium">Create Quiz</h4>
               <p className="text-muted-foreground text-sm">
-                Let AI instantly create comprehensive quizzes tailored to your
-                specifications.
+                Create a quiz with AI and customize it to your needs.
               </p>
             </div>
           </motion.div>
@@ -112,8 +109,7 @@ export function GettingStarted() {
             <div>
               <h4 className="font-medium">Share & Manage</h4>
               <p className="text-muted-foreground text-sm">
-                Access your quizzes in My Quizzes, share them publicly, or
-                explore community quizzes.
+                Access, share, and explore community quizzes.
               </p>
             </div>
           </motion.div>
@@ -126,10 +122,9 @@ export function GettingStarted() {
               6
             </div>
             <div>
-              <h4 className="font-medium">Track Performance</h4>
+              <h4 className="font-medium">Track Progress</h4>
               <p className="text-muted-foreground text-sm">
-                View detailed analytics on quiz performance and track personal
-                progress insights.
+                View analytics and track performance.
               </p>
             </div>
           </motion.div>

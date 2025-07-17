@@ -29,16 +29,16 @@ import { toast } from "sonner";
 
 const roleOptions = [
   {
-    value: "education",
-    label: "Education",
-    description: "Learning, teaching, or academic use",
-    icon: GraduationCap,
-  },
-  {
     value: "casual",
     label: "Casual",
     description: "Just exploring and having fun",
     icon: Users,
+  },
+  {
+    value: "education",
+    label: "Education",
+    description: "Learning, teaching, or academic use",
+    icon: GraduationCap,
   },
 ];
 
@@ -290,7 +290,7 @@ export default function OnboardingPage() {
                                   tabIndex={0}
                                   role="button"
                                   aria-pressed={isSelected}
-                                  className={`group focus:ring-primary relative cursor-pointer overflow-hidden rounded-xl border-2 p-5 transition-all duration-200 focus:ring-2 focus:ring-offset-2 focus:outline-none ${
+                                  className={`group relative cursor-pointer overflow-hidden rounded-xl border-2 p-5 transition-all duration-200 focus:outline-none ${
                                     isSelected
                                       ? "border-primary from-primary/10 via-primary/5 to-primary/10 shadow-primary/10 bg-gradient-to-br shadow-lg"
                                       : "border-border bg-card hover:border-primary/30 hover:from-primary/5 hover:bg-gradient-to-br hover:to-transparent hover:shadow-md"

@@ -33,8 +33,8 @@ authRouter.post(
     }
 
     const sessionData = {
-      userAgent: req.headers["user-agent"],
-      ipAddress: req.ip || req.connection.remoteAddress,
+      userAgent: req.headers["user-agent"]?.substring(0, 500),
+      ipAddress: (req.ip || req.connection.remoteAddress)?.replace(/[^\d\.\:]/g, ''),
     };
 
     const loginResponse = await signupUser(validationResult.data, sessionData);
@@ -52,12 +52,13 @@ authRouter.post(
   asyncHandler(async (req, res) => {
     const validationResult = loginSchema.safeParse(req.body);
     if (!validationResult.success) {
-      throw new AppError("Invalid input data", 400);
+      const errors = validationResult.error.errors.map((err) => err.message);
+      throw new AppError(errors.join("; "), 400);
     }
 
     const sessionData = {
-      userAgent: req.headers["user-agent"],
-      ipAddress: req.ip || req.connection.remoteAddress,
+      userAgent: req.headers["user-agent"]?.substring(0, 500),
+      ipAddress: (req.ip || req.connection.remoteAddress)?.replace(/[^\d\.\:]/g, ''),
     };
 
     const loginResponse = await loginUser(validationResult.data, sessionData);
@@ -203,8 +204,8 @@ authRouter.get(
       created_at: session.created_at,
       updated_at: session.updated_at,
       expires_at: session.expires_at,
-      user_agent: session.user_agent,
-      ip_address: session.ip_address,
+      user_agent: session.user_agent ? session.user_agent.substring(0, 50) + "..." : null,
+      ip_address: session.ip_address ? session.ip_address.replace(/\.\d+$/, ".***") : null,
       is_active: session.is_active,
     }));
 
