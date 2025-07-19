@@ -35,20 +35,22 @@ import {
   Sparkles,
 } from "lucide-react";
 
-import { deleteQuiz, getUserQuizzes, toggleQuizVisibility, type Quiz } from "@/lib/quiz-api";
+import {
+  deleteQuiz,
+  getUserQuizzes,
+  toggleQuizVisibility,
+  type Quiz,
+} from "@/lib/quiz-api";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
-// No more mock data – quizzes will be fetched from the backend
-
 type DifficultyFilter = "all" | "easy" | "medium" | "hard";
 type TypeFilter = "all" | "ai" | "manual";
 type VisibilityFilter = "all" | "public" | "private";
 
-// Animation variants
 const pageVariants = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0 },
@@ -130,7 +132,6 @@ export default function MyQuizzesPage() {
 
   const queryClient = useQueryClient();
 
-  // Data fetching – React Query
   const {
     data: quizzes = [],
     isLoading,
@@ -140,7 +141,6 @@ export default function MyQuizzesPage() {
     queryFn: getUserQuizzes,
   });
 
-  // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: deleteQuiz,
     onSuccess: () => {
@@ -154,43 +154,39 @@ export default function MyQuizzesPage() {
     },
   });
 
-  // Toggle visibility mutation with optimistic updates
   const toggleVisibilityMutation = useMutation({
-    mutationFn: ({ id, isPublic }: { id: string; isPublic: boolean }) => 
+    mutationFn: ({ id, isPublic }: { id: string; isPublic: boolean }) =>
       toggleQuizVisibility(id, isPublic),
     onMutate: async ({ id, isPublic }) => {
-      // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: ["my-quizzes"] });
 
-      // Snapshot the previous value
       const previousQuizzes = queryClient.getQueryData<Quiz[]>(["my-quizzes"]);
 
-      // Optimistically update to the new value
+      // ! Optimistically update to the new value
       queryClient.setQueryData<Quiz[]>(["my-quizzes"], (old) => {
         if (!old) return old;
         return old.map((quiz) =>
-          quiz.id === id ? { ...quiz, is_public: isPublic } : quiz
+          quiz.id === id ? { ...quiz, is_public: isPublic } : quiz,
         );
       });
 
-      // Return a context object with the snapshotted value
       return { previousQuizzes };
     },
     onSuccess: (updatedQuiz) => {
-      // Update cache with the actual server response to ensure accuracy
+      // ! Update cache which was optimistically updated
       queryClient.setQueryData<Quiz[]>(["my-quizzes"], (old) => {
         if (!old) return old;
         return old.map((quiz) =>
-          quiz.id === updatedQuiz.id ? updatedQuiz : quiz
+          quiz.id === updatedQuiz.id ? updatedQuiz : quiz,
         );
       });
-      toast.success(`Quiz is now ${updatedQuiz.is_public ? 'public' : 'private'}`);
+      toast.success(
+        `Quiz is now ${updatedQuiz.is_public ? "public" : "private"}`,
+      );
     },
     onError: (error: Error, variables, context) => {
-      // If the mutation fails, use the context returned from onMutate to roll back
       queryClient.setQueryData(["my-quizzes"], context?.previousQuizzes);
       toast.error(error.message || "Failed to update quiz visibility");
-      // Only refetch on error to get the correct state from server
       queryClient.invalidateQueries({ queryKey: ["my-quizzes"] });
     },
   });
@@ -243,9 +239,9 @@ export default function MyQuizzesPage() {
     } else if (action === "toggleVisibility") {
       const quiz = quizzes.find((q) => q.id === quizId);
       if (quiz) {
-        toggleVisibilityMutation.mutate({ 
-          id: quizId, 
-          isPublic: !quiz.is_public 
+        toggleVisibilityMutation.mutate({
+          id: quizId,
+          isPublic: !quiz.is_public,
         });
       }
     }
@@ -274,12 +270,12 @@ export default function MyQuizzesPage() {
             initial="initial"
             animate="animate"
           >
-            <div className="mb-6 flex items-center justify-between">
+            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h1 className="text-4xl font-bold tracking-tight">
+                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight">
                   My Quizzes
                 </h1>
-                <p className="text-muted-foreground mt-2">
+                <p className="text-muted-foreground mt-2 text-sm sm:text-base">
                   Manage and track the quizzes you have created
                 </p>
               </div>
@@ -287,6 +283,7 @@ export default function MyQuizzesPage() {
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
+                className="self-start sm:self-auto"
               >
                 <Link href="/create-quiz">
                   <Button
@@ -298,46 +295,46 @@ export default function MyQuizzesPage() {
                     )}
                   >
                     <Plus className="mr-2 h-4 w-4" />
-                    Create New Quiz
+                    <span className="hidden sm:inline">Create New Quiz</span>
+                    <span className="sm:hidden">Create Quiz</span>
                   </Button>
                 </Link>
               </motion.div>
             </div>
 
-            {/* Stats Cards */}
             <motion.div
-              className="grid grid-cols-1 gap-4 md:grid-cols-4"
+              className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-4"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
             >
               <Card className="bg-card/60 backdrop-blur-sm">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-blue-500/10 p-2 text-blue-500">
-                      <Brain className="h-5 w-5" />
+                <CardContent className="p-3 sm:p-4">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="rounded-lg bg-blue-500/10 p-1.5 sm:p-2 text-blue-500">
+                      <Brain className="h-4 w-4 sm:h-5 sm:w-5" />
                     </div>
-                    <div>
-                      <p className="text-muted-foreground text-sm">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-muted-foreground text-xs sm:text-sm truncate">
                         Total Quizzes
                       </p>
-                      <p className="text-2xl font-bold">{quizzes.length}</p>
+                      <p className="text-lg sm:text-2xl font-bold">{quizzes.length}</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
               <Card className="bg-card/60 backdrop-blur-sm">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-green-500/10 p-2 text-green-500">
-                      <Globe className="h-5 w-5" />
+                <CardContent className="p-3 sm:p-4">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="rounded-lg bg-green-500/10 p-1.5 sm:p-2 text-green-500">
+                      <Globe className="h-4 w-4 sm:h-5 sm:w-5" />
                     </div>
-                    <div>
-                      <p className="text-muted-foreground text-sm">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-muted-foreground text-xs sm:text-sm truncate">
                         Public Quizzes
                       </p>
-                      <p className="text-2xl font-bold">
+                      <p className="text-lg sm:text-2xl font-bold">
                         {quizzes.filter((q) => q.is_public).length}
                       </p>
                     </div>
@@ -346,16 +343,16 @@ export default function MyQuizzesPage() {
               </Card>
 
               <Card className="bg-card/60 backdrop-blur-sm">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-red-500/10 p-2 text-red-500">
-                      <LockIcon className="h-5 w-5" />
+                <CardContent className="p-3 sm:p-4">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="rounded-lg bg-red-500/10 p-1.5 sm:p-2 text-red-500">
+                      <LockIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                     </div>
-                    <div>
-                      <p className="text-muted-foreground text-sm">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-muted-foreground text-xs sm:text-sm truncate">
                         Private Quizzes
                       </p>
-                      <p className="text-2xl font-bold">
+                      <p className="text-lg sm:text-2xl font-bold">
                         {quizzes.filter((q) => !q.is_public).length}
                       </p>
                     </div>
@@ -364,16 +361,16 @@ export default function MyQuizzesPage() {
               </Card>
 
               <Card className="bg-card/60 backdrop-blur-sm">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="rounded-lg bg-amber-500/10 p-2 text-amber-500">
-                      <Clock className="h-5 w-5" />
+                <CardContent className="p-3 sm:p-4">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="rounded-lg bg-amber-500/10 p-1.5 sm:p-2 text-amber-500">
+                      <Clock className="h-4 w-4 sm:h-5 sm:w-5" />
                     </div>
-                    <div>
-                      <p className="text-muted-foreground text-sm">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-muted-foreground text-xs sm:text-sm truncate">
                         Recent Quizzes
                       </p>
-                      <p className="text-2xl font-bold">
+                      <p className="text-lg sm:text-2xl font-bold">
                         {
                           quizzes.filter((q) => {
                             const quizDate = new Date(q.created_at);
@@ -394,7 +391,6 @@ export default function MyQuizzesPage() {
               </Card>
             </motion.div>
 
-            {/* Enhanced Search and Filters */}
             <motion.div
               className="mt-8 space-y-4"
               variants={filtersVariants}
@@ -422,7 +418,7 @@ export default function MyQuizzesPage() {
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ duration: 0.5, delay: 0.4 }}
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="hidden items-center gap-2 md:flex">
                     <Filter className="text-muted-foreground h-4 w-4" />
                     <span className="text-foreground text-sm font-medium">
                       Filters:
@@ -536,7 +532,6 @@ export default function MyQuizzesPage() {
               </div>
             </motion.div>
 
-            {/* Quizzes Grid */}
             <motion.div
               className="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
               variants={gridVariants}
@@ -634,7 +629,6 @@ export default function MyQuizzesPage() {
         </div>
       </motion.div>
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
