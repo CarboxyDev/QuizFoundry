@@ -279,6 +279,7 @@ export default function CreateQuizPage() {
                           htmlFor="prompt"
                           className="text-base font-semibold"
                         >
+                          <Sparkles className="h-4 w-4" />
                           Quiz Topic
                         </Label>
                         <p className="text-muted-foreground mt-1 text-sm">
