@@ -461,7 +461,7 @@ function StreaksCard({
               </div>
             </div>
           </div>
-          <div className="from-muted/30 to-muted/60 border-border/50 rounded-xl border bg-gradient-to-br p-5 backdrop-blur-sm">
+          <div className="bg-card/60 rounded-xl border p-5 backdrop-blur-sm">
             <div className="mb-4 flex items-center gap-3">
               <div className="rounded-lg bg-blue-500/10 p-2 text-blue-500">
                 <Clock className="h-4 w-4" />
@@ -537,7 +537,7 @@ function StreaksCard({
 function ParticipantAnalyticsPageSkeleton() {
   return (
     <div className="mt-4 flex flex-1 flex-col gap-4 p-4 pt-0">
-      <div className="from-background via-muted/30 to-muted/50 min-h-screen flex-1 bg-gradient-to-br">
+      <div className="min-h-screen flex-1">
         <div className="container mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <div className="mb-8 space-y-4">
             <Skeleton className="h-8 w-32" />
@@ -591,7 +591,7 @@ export default function ParticipantAnalyticsPage() {
   return (
     <div className="mt-4 flex flex-1 flex-col gap-4 p-4 pt-0">
       <motion.div
-        className="from-background via-muted/30 to-muted/50 min-h-screen flex-1 bg-gradient-to-br"
+        className="min-h-screen flex-1"
         initial="initial"
         animate="animate"
         exit="exit"

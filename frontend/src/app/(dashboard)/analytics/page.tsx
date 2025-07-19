@@ -166,7 +166,7 @@ function QuickStatsCard({
                 {isLoading ? (
                   <Skeleton className="h-8 w-16 rounded-md" />
                 ) : (
-                  <p className="text-2xl font-bold leading-8">{value}</p>
+                  <p className="text-2xl leading-8 font-bold">{value}</p>
                 )}
               </div>
             </div>
@@ -266,7 +266,7 @@ export default function AnalyticsPage() {
               <AnalyticsCard
                 title="Creator Analytics"
                 description="Deep insights into the quizzes you've created and their performance across all participants"
-                href="/analytics/my-quizzes"
+                href="/analytics/creator"
                 icon={Brain}
                 color="blue"
                 features={[
@@ -280,7 +280,7 @@ export default function AnalyticsPage() {
               <AnalyticsCard
                 title="Participant Analytics"
                 description="Track your personal quiz-taking journey and discover insights about your learning progress"
-                href="/analytics/my-attempts"
+                href="/analytics/participant"
                 icon={TrendingUp}
                 color="green"
                 features={[
