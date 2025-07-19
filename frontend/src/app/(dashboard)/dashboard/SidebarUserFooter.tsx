@@ -8,7 +8,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SidebarMenu, SidebarMenuItem } from "@/components/ui/sidebar";
-import { capitalize } from "@/lib/string";
 import { LogOut, Settings } from "lucide-react";
 import Link from "next/link";
 
@@ -45,9 +44,6 @@ export function SidebarUserFooter({ user, logout }: SidebarUserFooterProps) {
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">
                     {user?.name || "User"}
-                  </span>
-                  <span className="text-muted-foreground truncate text-xs">
-                    {capitalize(user?.role || "Member")}
                   </span>
                 </div>
               </div>
