@@ -33,7 +33,7 @@ export function DashboardCards() {
       animate="visible"
       className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
     >
-      <motion.div variants={cardVariants} whileHover={{ scale: 1.02 }}>
+      <motion.div variants={cardVariants}>
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -46,15 +46,17 @@ export function DashboardCards() {
               Explore public quizzes created by the community.
             </p>
             <Link href="/public-quizzes">
-              <Button variant="outline" className="w-full">
-                View Public Quizzes
-              </Button>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button variant="outline" className="w-full">
+                  View Public Quizzes
+                </Button>
+              </motion.div>
             </Link>
           </CardContent>
         </Card>
       </motion.div>
 
-      <motion.div variants={cardVariants} whileHover={{ scale: 1.02 }}>
+      <motion.div variants={cardVariants}>
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -67,15 +69,17 @@ export function DashboardCards() {
               View and manage all the quizzes you&apos;ve created.
             </p>
             <Link href="/my-quizzes">
-              <Button variant="outline" className="w-full">
-                View My Quizzes
-              </Button>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button variant="outline" className="w-full">
+                  View My Quizzes
+                </Button>
+              </motion.div>
             </Link>
           </CardContent>
         </Card>
       </motion.div>
 
-      <motion.div variants={cardVariants} whileHover={{ scale: 1.02 }}>
+      <motion.div variants={cardVariants}>
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -88,9 +92,11 @@ export function DashboardCards() {
               Track your quiz performance and insights.
             </p>
             <Link href="/analytics">
-              <Button variant="outline" className="w-full">
-                View Analytics
-              </Button>
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button variant="outline" className="w-full">
+                  View Analytics
+                </Button>
+              </motion.div>
             </Link>
           </CardContent>
         </Card>
@@ -98,15 +104,25 @@ export function DashboardCards() {
 
       <motion.div
         variants={cardVariants}
-        whileHover={{ scale: 1.02 }}
+        whileHover={{ 
+          scale: 1.01,
+          transition: { duration: 0.2 }
+        }}
         className="col-span-full"
       >
-        <Card className="bg-gradient-to-r from-primary/3 to-primary/8 border-primary/10">
+        <Card className="bg-gradient-to-r from-primary/3 to-primary/8 border-primary/10 hover:shadow-lg hover:shadow-primary/10 transition-shadow duration-300">
           <CardContent className="flex items-center justify-between p-6">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+              <motion.div 
+                className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10"
+                whileHover={{ 
+                  scale: 1.1,
+                  rotate: 5,
+                  transition: { duration: 0.2 }
+                }}
+              >
                 <Sparkles className="text-primary h-6 w-6" />
-              </div>
+              </motion.div>
               <div>
                 <h3 className="text-lg font-semibold">Create AI-Powered Quiz</h3>
                 <p className="text-muted-foreground text-sm">
@@ -115,10 +131,18 @@ export function DashboardCards() {
               </div>
             </div>
             <Link href="/create-quiz">
-              <Button size="lg" className="min-w-32">
-                <Sparkles className="mr-2 h-4 w-4" />
-                Create Quiz
-              </Button>
+              <motion.div 
+                whileHover={{ 
+                  scale: 1.05,
+                  transition: { duration: 0.2 }
+                }} 
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button size="lg" className="min-w-32">
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Create Quiz
+                </Button>
+              </motion.div>
             </Link>
           </CardContent>
         </Card>
