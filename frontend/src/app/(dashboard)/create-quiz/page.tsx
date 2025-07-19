@@ -348,9 +348,6 @@ export default function CreateQuizPage() {
                         </Badge>{" "}
                         each
                       </div>
-                      <div className="text-muted-foreground">
-                        {formData.prompt.length} characters
-                      </div>
                     </div>
                   </div>
 
@@ -418,7 +415,7 @@ export default function CreateQuizPage() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {[3, 5, 7, 10, 15, 20].map((num) => (
+                            {[3, 5, 7, 10, 15].map((num) => (
                               <SelectItem key={num} value={num.toString()}>
                                 {num} {num === 1 ? "Question" : "Questions"}
                               </SelectItem>
