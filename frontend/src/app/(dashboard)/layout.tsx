@@ -10,6 +10,7 @@ import {
   SidebarHeader,
   SidebarInset,
   SidebarProvider,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/hooks/auth/useAuth";
 import Image from "next/image";
@@ -54,7 +55,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <SidebarUserFooter user={user} logout={logout} />
           </SidebarFooter>
         </Sidebar>
-        <SidebarInset>{children}</SidebarInset>
+        <SidebarInset>
+          <header className="flex h-12 shrink-0 items-center border-b px-6 md:hidden">
+            <SidebarTrigger className="h-7 w-7" />
+          </header>
+          {children}
+        </SidebarInset>
       </SidebarProvider>
     </ProtectedRouteGuard>
   );
