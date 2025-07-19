@@ -25,7 +25,6 @@ export default function DashboardPage() {
               Ready to create and take some amazing AI-powered quizzes?
             </p>
           </motion.div>
-
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -33,7 +32,6 @@ export default function DashboardPage() {
           >
             <GettingStarted />
           </motion.div>
-
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}

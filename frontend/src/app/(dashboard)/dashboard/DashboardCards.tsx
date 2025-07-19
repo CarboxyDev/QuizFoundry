@@ -111,10 +111,10 @@ export function DashboardCards() {
         className="col-span-full"
       >
         <Card className="bg-gradient-to-r from-primary/3 to-primary/8 border-primary/10 hover:shadow-lg hover:shadow-primary/10 transition-shadow duration-300">
-          <CardContent className="flex items-center justify-between p-6">
-            <div className="flex items-center gap-4">
+          <CardContent className="flex flex-col sm:flex-row items-center justify-between gap-4 p-6">
+            <div className="flex items-center gap-4 text-center sm:text-left">
               <motion.div 
-                className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10"
+                className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 shrink-0"
                 whileHover={{ 
                   scale: 1.1,
                   rotate: 5,
@@ -130,7 +130,7 @@ export function DashboardCards() {
                 </p>
               </div>
             </div>
-            <Link href="/create-quiz">
+            <Link href="/create-quiz" className="w-full sm:w-auto">
               <motion.div 
                 whileHover={{ 
                   scale: 1.05,
@@ -138,7 +138,7 @@ export function DashboardCards() {
                 }} 
                 whileTap={{ scale: 0.95 }}
               >
-                <Button size="lg" className="min-w-32">
+                <Button size="lg" className="w-full sm:min-w-32">
                   <Sparkles className="mr-2 h-4 w-4" />
                   Create Quiz
                 </Button>
