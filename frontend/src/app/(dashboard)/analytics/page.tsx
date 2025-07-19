@@ -83,48 +83,55 @@ function AnalyticsCard({
       <Link href={href}>
         <Card className="group hover:border-primary/30 relative h-full overflow-hidden transition-all duration-300 hover:shadow-lg">
           <CardHeader className="pb-4">
-            <div className="flex items-start gap-4">
-              <div className={cn("rounded-xl p-3", colors.iconBg)}>
-                <Icon className="h-7 w-7" />
+            <div className="flex items-start gap-3 sm:gap-4">
+              <div className={cn("rounded-xl p-2 sm:p-3", colors.iconBg)}>
+                <Icon className="h-5 w-5 sm:h-7 sm:w-7" />
               </div>
-              <div className="flex-1">
-                <CardTitle className="text-xl font-bold">{title}</CardTitle>
+              <div className="min-w-0 flex-1">
+                <CardTitle className="text-lg font-bold sm:text-xl">
+                  {title}
+                </CardTitle>
                 <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
                   {description}
                 </p>
               </div>
-              <div className="rounded-full p-2 transition-transform group-hover:scale-110">
+              <div className="hidden rounded-full p-2 transition-transform group-hover:scale-110 sm:block">
                 <ChevronRight className="text-muted-foreground h-5 w-5 transition-transform group-hover:translate-x-1" />
               </div>
             </div>
           </CardHeader>
 
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-2 sm:space-y-3">
             {features.map((feature, index) => (
               <motion.div
                 key={index}
-                className="flex items-center gap-3"
+                className="flex items-center gap-2 sm:gap-3"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
               >
                 <div
                   className={cn(
-                    "flex h-5 w-5 items-center justify-center rounded-full",
+                    "flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full sm:h-5 sm:w-5",
                     colors.dotBg,
                   )}
                 >
-                  <div className={cn("h-2 w-2 rounded-full", colors.dot)} />
+                  <div
+                    className={cn(
+                      "h-1.5 w-1.5 rounded-full sm:h-2 sm:w-2",
+                      colors.dot,
+                    )}
+                  />
                 </div>
-                <span className="text-sm">{feature}</span>
+                <span className="text-xs sm:text-sm">{feature}</span>
               </motion.div>
             ))}
 
-            <div className="pt-4">
+            <div className="pt-3 sm:pt-4">
               <Button
                 variant="outline"
                 className={cn(
-                  "group-hover:border-primary/50 w-full justify-between transition-colors",
+                  "group-hover:border-primary/50 w-full justify-between text-sm transition-colors",
                   colors.buttonHover,
                 )}
               >
@@ -198,7 +205,7 @@ export default function AnalyticsPage() {
             animate="animate"
           >
             <div className="mb-6">
-              <h1 className="mb-2 text-4xl font-bold tracking-tight">
+              <h1 className="mb-2 text-2xl font-bold tracking-tight sm:text-4xl">
                 Analytics Dashboard
               </h1>
               <p className="text-muted-foreground text-lg">
@@ -258,7 +265,7 @@ export default function AnalyticsPage() {
             </motion.div>
 
             <motion.div
-              className="grid grid-cols-1 gap-8 lg:grid-cols-2"
+              className="grid grid-cols-1 gap-6 md:gap-8 lg:grid-cols-2"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
