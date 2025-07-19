@@ -146,12 +146,12 @@ export default function CreateQuizPage() {
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(120,119,198,0.08),transparent_50%),radial-gradient(circle_at_70%_70%,rgba(255,255,255,0.02),transparent_50%)]" />
 
         <div className="relative z-10">
-          <div className="container mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">
+          <div className="container mx-auto max-w-4xl px-3 py-6 sm:px-6 sm:py-8 lg:px-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1, duration: 0.5 }}
-              className="mb-12 text-center"
+              className="mb-8 text-center sm:mb-12"
             >
               <motion.div
                 key={formData.mode}
@@ -217,7 +217,7 @@ export default function CreateQuizPage() {
                   </motion.div>
                 </AnimatePresence>
               </motion.div>
-              <h1 className="mb-4 text-4xl font-bold">Create Your Quiz</h1>
+              <h1 className="mb-4 text-2xl font-bold sm:text-3xl lg:text-4xl">Create Your Quiz</h1>
             </motion.div>
 
             <motion.div
@@ -226,7 +226,6 @@ export default function CreateQuizPage() {
               transition={{ delay: 0.2 }}
             >
               <Card className="relative mx-auto max-w-3xl overflow-hidden shadow-lg">
-                {/* Animated Border Effect */}
                 <AnimatePresence>
                   {isGenerating && (
                     <motion.div
@@ -235,7 +234,6 @@ export default function CreateQuizPage() {
                       exit={{ opacity: 0 }}
                       className="absolute inset-0 z-10 rounded-lg"
                     >
-                      {/* Single rotating beam */}
                       <motion.div
                         className="absolute inset-0 rounded-lg"
                         style={{
@@ -258,22 +256,14 @@ export default function CreateQuizPage() {
                         }}
                       />
 
-                      {/* Inner content mask - preserves card background */}
                       <div className="bg-card absolute inset-[2px] rounded-lg" />
                     </motion.div>
                   )}
                 </AnimatePresence>
 
-                {/* <CardHeader className="relative z-20">
-                  <CardTitle className="flex items-center gap-2">
-                    <Sparkles className="h-5 w-5" />
-                    Quiz Configuration
-                  </CardTitle>
-                </CardHeader> */}
-                <CardContent className="relative z-20 space-y-8">
-                  {/* Quiz Prompt */}
+                <CardContent className="relative z-20 space-y-6 p-4 sm:space-y-8 sm:p-6">
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                       <div>
                         <Label
                           htmlFor="prompt"
@@ -289,13 +279,14 @@ export default function CreateQuizPage() {
                       <motion.div
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
+                        className="sm:flex-shrink-0"
                       >
                         <Button
                           type="button"
                           variant="outline"
                           onClick={handleSurpriseMe}
                           disabled={isGenerating || isSurpriseLoading}
-                          className="h-9 gap-2 bg-gradient-to-r from-purple-50 to-pink-50 px-4 shadow-sm transition-all duration-300 hover:border-purple-400 hover:from-purple-100 hover:to-pink-100 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 dark:from-purple-900/20 dark:to-pink-900/20 dark:hover:from-purple-900/30 dark:hover:to-pink-900/30"
+                          className="h-9 w-full gap-2 bg-gradient-to-r from-purple-50 to-pink-50 px-4 shadow-sm transition-all duration-300 hover:border-purple-400 hover:from-purple-100 hover:to-pink-100 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 dark:from-purple-900/20 dark:to-pink-900/20 dark:hover:from-purple-900/30 dark:hover:to-pink-900/30 sm:w-auto"
                         >
                           {isSurpriseLoading ? (
                             <>
@@ -353,11 +344,11 @@ export default function CreateQuizPage() {
                   </div>
 
                   <div className="space-y-4">
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                    <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
                       <div className="space-y-2">
                         <Label
                           htmlFor="difficulty"
-                          className="text-sm font-medium"
+                          className="text-xs font-medium sm:text-sm"
                         >
                           Difficulty Level
                         </Label>
@@ -370,7 +361,7 @@ export default function CreateQuizPage() {
                           }
                           disabled={isGenerating}
                         >
-                          <SelectTrigger>
+                          <SelectTrigger className="w-full">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -399,9 +390,9 @@ export default function CreateQuizPage() {
                       <div className="space-y-2">
                         <Label
                           htmlFor="questionCount"
-                          className="text-sm font-medium"
+                          className="text-xs font-medium sm:text-sm"
                         >
-                          Number of Questions
+                          Questions
                         </Label>
                         <Select
                           value={formData.questionCount.toString()}
@@ -412,7 +403,7 @@ export default function CreateQuizPage() {
                           }
                           disabled={isGenerating}
                         >
-                          <SelectTrigger>
+                          <SelectTrigger className="w-full">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -428,9 +419,9 @@ export default function CreateQuizPage() {
                       <div className="space-y-2">
                         <Label
                           htmlFor="optionsCount"
-                          className="text-sm font-medium"
+                          className="text-xs font-medium sm:text-sm"
                         >
-                          Options per Question
+                          Options
                         </Label>
                         <Select
                           value={formData.optionsCount.toString()}
@@ -441,7 +432,7 @@ export default function CreateQuizPage() {
                           }
                           disabled={isGenerating}
                         >
-                          <SelectTrigger>
+                          <SelectTrigger className="w-full">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -457,11 +448,11 @@ export default function CreateQuizPage() {
                       <div className="space-y-2">
                         <Label
                           htmlFor="visibility-switch"
-                          className="text-sm font-medium"
+                          className="text-xs font-medium sm:text-sm"
                         >
-                          Quiz Visibility
+                          Visibility
                         </Label>
-                        <div className="flex items-center justify-between rounded-md border px-3 py-2">
+                        <div className="flex w-full items-center justify-between rounded-md border px-3 py-2 h-9">
                           <div className="flex items-center gap-2">
                             <AnimatePresence mode="wait">
                               <motion.div
@@ -477,15 +468,15 @@ export default function CreateQuizPage() {
                               >
                                 {formData.isPublic ? (
                                   <>
-                                    <Globe className="h-4 w-4 text-emerald-500" />
-                                    <span className="text-sm font-medium text-emerald-500">
+                                    <Globe className="h-3 w-3 text-emerald-500 sm:h-4 sm:w-4" />
+                                    <span className="text-xs font-medium text-emerald-500 sm:text-sm">
                                       Public
                                     </span>
                                   </>
                                 ) : (
                                   <>
-                                    <Lock className="h-4 w-4 text-red-500" />
-                                    <span className="text-sm font-medium text-red-500">
+                                    <Lock className="h-3 w-3 text-red-500 sm:h-4 sm:w-4" />
+                                    <span className="text-xs font-medium text-red-500 sm:text-sm">
                                       Private
                                     </span>
                                   </>
@@ -509,19 +500,13 @@ export default function CreateQuizPage() {
                   <Separator />
 
                   <div className="space-y-4">
-                    {/* <div>
-                      <Label className="text-base font-medium">
-                        Generation Mode
-                      </Label>
-                    </div> */}
-
-                    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2">
                       <motion.div
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                       >
                         <div
-                          className={`relative cursor-pointer overflow-hidden rounded-xl border-2 p-6 transition-all duration-300 ${
+                          className={`relative cursor-pointer overflow-hidden rounded-xl border-2 p-4 transition-all duration-300 sm:p-6 ${
                             formData.mode === "express"
                               ? "border-emerald-300 bg-gradient-to-br from-emerald-50 to-emerald-100 shadow-lg ring-1 ring-emerald-200 dark:border-emerald-500 dark:from-emerald-900/20 dark:to-emerald-800/20 dark:ring-emerald-500/20"
                               : "border-border bg-card hover:border-emerald-200 hover:bg-emerald-50/50 dark:hover:bg-emerald-900/10"
@@ -547,7 +532,7 @@ export default function CreateQuizPage() {
                             </div>
                             <div>
                               <h3
-                                className={`text-lg font-semibold ${
+                                className={`text-base font-semibold sm:text-lg ${
                                   formData.mode === "express"
                                     ? "text-emerald-900 dark:text-emerald-100"
                                     : "text-foreground"
@@ -574,7 +559,7 @@ export default function CreateQuizPage() {
                         whileTap={{ scale: 0.98 }}
                       >
                         <div
-                          className={`relative cursor-pointer overflow-hidden rounded-xl border-2 p-6 transition-all duration-300 ${
+                          className={`relative cursor-pointer overflow-hidden rounded-xl border-2 p-4 transition-all duration-300 sm:p-6 ${
                             formData.mode === "advanced"
                               ? "border-purple-300 bg-gradient-to-br from-purple-50 to-purple-100 shadow-lg ring-1 ring-purple-200 dark:border-purple-500 dark:from-purple-900/20 dark:to-purple-800/20 dark:ring-purple-500/20"
                               : "border-border bg-card hover:border-purple-200 hover:bg-purple-50/50 dark:hover:bg-purple-900/10"
@@ -600,7 +585,7 @@ export default function CreateQuizPage() {
                             </div>
                             <div>
                               <h3
-                                className={`text-lg font-semibold ${
+                                className={`text-base font-semibold sm:text-lg ${
                                   formData.mode === "advanced"
                                     ? "text-purple-900 dark:text-purple-100"
                                     : "text-foreground"
@@ -624,13 +609,12 @@ export default function CreateQuizPage() {
                     </div>
                   </div>
 
-                  {/* Generate Buttons */}
                   <div className="space-y-3 pt-4">
                     <div className="flex justify-center">
                       <Button
                         onClick={handleGenerateQuiz}
                         disabled={!canSubmit || isGenerating}
-                        className="h-14 w-full max-w-md gap-2 text-lg font-medium"
+                        className="h-12 w-full max-w-md gap-2 text-base font-medium sm:h-14 sm:text-lg"
                         size="lg"
                       >
                         {isGenerating ? (
@@ -664,7 +648,6 @@ export default function CreateQuizPage() {
           </div>
         </div>
 
-        {/* Success Overlay */}
         <AnimatePresence>
           {showSuccess && (
             <motion.div
@@ -675,7 +658,6 @@ export default function CreateQuizPage() {
               transition={{ duration: 0.3 }}
               className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden"
             >
-              {/* Background Mask */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -683,7 +665,6 @@ export default function CreateQuizPage() {
                 className="absolute inset-0 bg-black/50 backdrop-blur-sm"
               />
 
-              {/* Subtle Gradient Effect */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -696,9 +677,7 @@ export default function CreateQuizPage() {
                 className="from-primary/10 via-primary/5 absolute inset-0 bg-gradient-to-br to-transparent"
               />
 
-              {/* Main Content */}
               <div className="relative z-10 flex flex-col items-center text-center">
-                {/* Success Icon */}
                 <motion.div
                   initial={{ scale: 0, rotate: -90 }}
                   animate={{ scale: 1, rotate: 0 }}
@@ -735,7 +714,6 @@ export default function CreateQuizPage() {
                   </motion.div>
                 </motion.div>
 
-                {/* Success Text */}
                 <motion.div
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
