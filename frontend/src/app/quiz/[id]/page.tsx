@@ -214,7 +214,7 @@ const QuizHeader = ({
     </div>
 
     <motion.div
-      className="from-primary to-primary/80 text-primary-foreground relative overflow-hidden rounded-2xl bg-gradient-to-r p-8 shadow-xl"
+      className="from-primary to-primary/80 text-primary-foreground relative overflow-hidden rounded-2xl bg-gradient-to-r p-4 sm:p-6 lg:p-8 shadow-xl"
       variants={headerVariants}
       initial="initial"
       animate="animate"
@@ -225,24 +225,24 @@ const QuizHeader = ({
     >
       <div className="relative z-10">
         <motion.div
-          className="mb-6 flex items-center gap-4"
+          className="mb-4 sm:mb-6 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4"
           initial={{ x: -30, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.6, delay: 0.3 }}
         >
           <motion.div
-            className="bg-primary-foreground/20 rounded-md p-3 backdrop-blur-sm"
+            className="bg-primary-foreground/20 rounded-md p-2 sm:p-3 backdrop-blur-sm"
             whileHover={{
               scale: 1.1,
               backgroundColor: "rgba(255, 255, 255, 0.3)",
             }}
             transition={{ duration: 0.2 }}
           >
-            <Brain className="h-8 w-8" />
+            <Brain className="h-6 w-6 sm:h-8 sm:w-8" />
           </motion.div>
           <div className="flex-1">
             <motion.h1
-              className="text-2xl font-bold drop-shadow-sm"
+              className="text-xl sm:text-2xl font-bold drop-shadow-sm"
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.4 }}
@@ -251,7 +251,7 @@ const QuizHeader = ({
             </motion.h1>
             {quiz.description && (
               <motion.p
-                className="text-primary-foreground/90 text-sm font-medium"
+                className="text-primary-foreground/90 text-xs sm:text-sm font-medium"
                 initial={{ y: 20, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ duration: 0.5, delay: 0.5 }}
@@ -263,68 +263,71 @@ const QuizHeader = ({
         </motion.div>
 
         <motion.div
-          className="text-primary-foreground/90 flex flex-wrap items-center gap-4 text-sm font-medium"
+          className="text-primary-foreground/90 flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm font-medium"
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.6 }}
         >
           <motion.div
-            className="bg-primary-foreground/10 flex items-center gap-2 rounded-full px-3 py-1.5 backdrop-blur-sm"
+            className="bg-primary-foreground/10 flex items-center gap-1 sm:gap-2 rounded-full px-2 sm:px-3 py-1 sm:py-1.5 backdrop-blur-sm"
             whileHover={{
               scale: 1.05,
               backgroundColor: "rgba(255, 255, 255, 0.2)",
             }}
           >
-            <Clock className="h-4 w-4" />
+            <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
             <span>{quiz.questions?.length || 0} questions</span>
           </motion.div>
           <motion.div
             className={cn(
-              "bg-primary-foreground/10 flex items-center gap-2 rounded-full px-3 py-1.5 backdrop-blur-sm",
+              "bg-primary-foreground/10 flex items-center gap-1 sm:gap-2 rounded-full px-2 sm:px-3 py-1 sm:py-1.5 backdrop-blur-sm",
             )}
             whileHover={{
               scale: 1.05,
               backgroundColor: "rgba(255, 255, 255, 0.2)",
             }}
           >
-            <Trophy className="h-4 w-4" />
+            <Trophy className="h-3 w-3 sm:h-4 sm:w-4" />
             <span className="capitalize">{quiz.difficulty}</span>
           </motion.div>
           {quiz.is_ai_generated ? (
             <motion.div
-              className="bg-primary-foreground/10 flex items-center gap-2 rounded-full px-3 py-1.5 backdrop-blur-sm"
+              className="bg-primary-foreground/10 flex items-center gap-1 sm:gap-2 rounded-full px-2 sm:px-3 py-1 sm:py-1.5 backdrop-blur-sm"
               whileHover={{
                 scale: 1.05,
                 backgroundColor: "rgba(255, 255, 255, 0.2)",
               }}
             >
-              <Sparkles className="h-4 w-4" />
-              <span>AI Generated</span>
+              <Sparkles className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">AI Generated</span>
+              <span className="sm:hidden">AI</span>
             </motion.div>
           ) : (
             <motion.div
-              className="bg-primary-foreground/10 flex items-center gap-2 rounded-full px-3 py-1.5 backdrop-blur-sm"
+              className="bg-primary-foreground/10 flex items-center gap-1 sm:gap-2 rounded-full px-2 sm:px-3 py-1 sm:py-1.5 backdrop-blur-sm"
               whileHover={{
                 scale: 1.05,
                 backgroundColor: "rgba(255, 255, 255, 0.2)",
               }}
             >
-              <Brain className="h-4 w-4" />
-              <span>Human Made</span>
+              <Brain className="h-3 w-3 sm:h-4 sm:w-4" />
+              <span className="hidden sm:inline">Human Made</span>
+              <span className="sm:hidden">Human</span>
             </motion.div>
           )}
           <motion.div
-            className="bg-primary-foreground/10 flex items-center gap-2 rounded-full px-3 py-1.5 backdrop-blur-sm"
+            className="bg-primary-foreground/10 flex items-center gap-1 sm:gap-2 rounded-full px-2 sm:px-3 py-1 sm:py-1.5 backdrop-blur-sm"
             whileHover={{
               scale: 1.05,
               backgroundColor: "rgba(255, 255, 255, 0.2)",
             }}
           >
-            <Users className="h-4 w-4" />
-            <span>{quiz.attempts || 0} attempts</span>
+            <Users className="h-3 w-3 sm:h-4 sm:w-4" />
+            <span className="hidden sm:inline">{quiz.attempts || 0} attempts</span>
+            <span className="sm:hidden">{quiz.attempts || 0}</span>
           </motion.div>
           <motion.div
-            className="bg-primary-foreground/10 flex items-center gap-2 rounded-full px-3 py-1.5 backdrop-blur-sm"
+            className="bg-primary-foreground/10 hidden sm:flex items-center gap-2 rounded-full px-3 py-1.5 backdrop-blur-sm"
             whileHover={{
               scale: 1.05,
               backgroundColor: "rgba(255, 255, 255, 0.2)",
