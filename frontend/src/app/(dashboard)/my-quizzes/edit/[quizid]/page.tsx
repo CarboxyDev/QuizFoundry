@@ -85,8 +85,6 @@ const StickyEditHeader = ({
   isSaving: boolean;
   onSave: () => void;
 }) => {
-  const questionCount = quiz?.questions.length || 0;
-
   return (
     <AnimatePresence>
       {show && (
@@ -95,9 +93,9 @@ const StickyEditHeader = ({
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: -60, opacity: 0 }}
           transition={{ duration: 0.25, ease: "easeInOut" }}
-          className="pointer-events-none fixed top-0 right-0 left-64 z-40 flex justify-center"
+          className="pointer-events-none fixed top-0 right-0 left-0 sm:left-64 z-40 flex justify-center"
         >
-          <div className="bg-background/80 pointer-events-auto mx-auto w-full max-w-4xl rounded-b-xl border-x border-b px-6 py-3 shadow-lg backdrop-blur-lg">
+          <div className="bg-background/80 pointer-events-auto mx-auto w-full max-w-4xl rounded-b-xl border-x border-b px-4 sm:px-6 py-3 shadow-lg backdrop-blur-lg">
             <div className="flex items-center justify-between">
               <Link href="/my-quizzes">
                 <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -105,37 +103,39 @@ const StickyEditHeader = ({
                 </Button>
               </Link>
 
-              <div className="flex items-center gap-4">
-                <h3 className="line-clamp-1 max-w-[200px] font-semibold xl:max-w-[400px] 2xl:max-w-[500px]">
-                  {quiz?.title || "Untitled Quiz"}
-                </h3>
+              <h3 className="line-clamp-1 max-w-[120px] sm:max-w-[200px] font-semibold xl:max-w-[400px] 2xl:max-w-[500px] text-sm sm:text-base">
+                {quiz?.title || "Untitled Quiz"}
+              </h3>
+
+              <div className="flex items-center gap-2 sm:gap-3">
                 <Badge
                   variant="outline"
-                  className="bg-primary/10 text-primary rounded-full px-3 py-1"
+                  className="bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 text-xs sm:text-sm hidden sm:inline-flex"
                 >
                   <Edit3 className="mr-1 h-3 w-3" />
-                  {questionCount} questions
+                  Edit
                 </Badge>
+                <Button
+                  onClick={onSave}
+                  disabled={isSaving}
+                  size="sm"
+                  className="gap-1 sm:gap-2 text-xs sm:text-sm px-2 sm:px-4"
+                >
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+                      <span className="hidden sm:inline">Saving...</span>
+                      <span className="sm:hidden">Save</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">Save Changes</span>
+                      <span className="sm:hidden">Save</span>
+                    </>
+                  )}
+                </Button>
               </div>
-
-              <Button
-                onClick={onSave}
-                disabled={isSaving}
-                size="sm"
-                className="gap-2"
-              >
-                {isSaving ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-4 w-4" />
-                    Save Changes
-                  </>
-                )}
-              </Button>
             </div>
           </div>
         </motion.div>
@@ -151,11 +151,11 @@ const EditQuizLoadingSkeleton = () => (
     <div className="relative z-10 container mx-auto px-4 py-8 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl">
         {/* Header skeleton */}
-        <div className="mb-8 flex items-center justify-between">
-          <Skeleton className="h-10 w-36 rounded-lg" />
-          <div className="flex items-center gap-4">
-            <Skeleton className="h-8 w-20 rounded-full" />
-            <Skeleton className="h-10 w-32 rounded-lg" />
+        <div className="mb-6 sm:mb-8 flex items-center justify-between">
+          <Skeleton className="h-8 w-20 sm:h-10 sm:w-36 rounded-lg" />
+          <div className="flex items-center gap-2 sm:gap-4">
+            <Skeleton className="h-6 w-12 sm:h-8 sm:w-20 rounded-full hidden sm:block" />
+            <Skeleton className="h-8 w-16 sm:h-10 sm:w-32 rounded-lg" />
           </div>
         </div>
 
@@ -620,7 +620,7 @@ export default function EditQuizPage() {
       <div className="from-background via-muted/10 to-background min-h-screen bg-gradient-to-br">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,rgba(120,119,198,0.08),transparent_50%),radial-gradient(circle_at_70%_70%,rgba(255,255,255,0.02),transparent_50%)]" />
 
-        <div className="relative z-10 container mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        <div className="relative z-10 container mx-auto px-4 py-6 sm:py-8 sm:px-6 lg:px-8">
           <motion.div
             initial="initial"
             animate="animate"
@@ -629,54 +629,58 @@ export default function EditQuizPage() {
           >
             <div
               ref={headerRef}
-              className="mb-8 flex items-center justify-between"
+              className="mb-6 sm:mb-8 flex items-center justify-between"
             >
               <motion.div whileHover={{ x: -4 }} whileTap={{ scale: 0.95 }}>
                 <Link href="/my-quizzes">
-                  <Button variant="ghost" className="hover:bg-accent">
+                  <Button variant="ghost" className="hover:bg-accent text-sm sm:text-base">
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to My Quizzes
+                    <span className="hidden sm:inline">Back to My Quizzes</span>
+                    <span className="sm:hidden">Back</span>
                   </Button>
                 </Link>
               </motion.div>
 
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 sm:gap-4">
                 <Badge
                   variant="outline"
-                  className="bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300"
+                  className="bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300 text-xs sm:text-sm"
                 >
                   <Edit3 className="mr-1 h-3 w-3" />
-                  Edit Mode
+                  <span className="hidden sm:inline">Edit Mode</span>
+                  <span className="sm:hidden">Edit</span>
                 </Badge>
                 <Button
                   onClick={handleSave}
                   disabled={isSaving}
-                  className="gap-2"
+                  className="gap-1 sm:gap-2 text-xs sm:text-sm px-3 sm:px-4"
                 >
                   {isSaving ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Saving...
+                      <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+                      <span className="hidden sm:inline">Saving...</span>
+                      <span className="sm:hidden">Save</span>
                     </>
                   ) : (
                     <>
-                      <Save className="h-4 w-4" />
-                      Save Changes
+                      <Save className="h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="hidden sm:inline">Save Changes</span>
+                      <span className="sm:hidden">Save</span>
                     </>
                   )}
                 </Button>
               </div>
             </div>
 
-            <motion.div variants={cardVariants} className="mb-8">
+            <motion.div variants={cardVariants} className="mb-6 sm:mb-8">
               <Card className="shadow-lg">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Edit3 className="h-5 w-5" />
+                <CardHeader className="px-4 sm:px-6 py-4 sm:py-6">
+                  <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                    <Edit3 className="h-4 w-4 sm:h-5 sm:w-5" />
                     Quiz Settings
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-6">
+                <CardContent className="space-y-4 sm:space-y-6 px-4 sm:px-6 pb-4 sm:pb-6">
                   <div className="space-y-2">
                     <Label htmlFor="title">Quiz Title</Label>
                     <Input
@@ -770,14 +774,15 @@ export default function EditQuizPage() {
               </Card>
             </motion.div>
 
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold">
+            <div className="space-y-4 sm:space-y-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
+                <h2 className="text-xl sm:text-2xl font-bold">
                   Questions ({quiz.questions.length})
                 </h2>
-                <Button onClick={addQuestion} className="gap-2">
+                <Button onClick={addQuestion} className="gap-2 w-full sm:w-auto">
                   <Plus className="h-4 w-4" />
-                  Add Question
+                  <span className="hidden sm:inline">Add Question</span>
+                  <span className="sm:hidden">Add</span>
                 </Button>
               </div>
 
@@ -959,55 +964,55 @@ function QuestionEditor({
       className="relative"
     >
       <Card className="border-border/50 hover:border-primary/30 border-2 shadow-lg transition-all duration-200">
-        <CardHeader className="pb-4">
+        <CardHeader className="pb-3 sm:pb-4 px-4 sm:px-6 py-4 sm:py-6">
           <div className="flex items-start justify-between">
-            <div className="flex items-center gap-3">
-              <div className="bg-primary/10 text-primary flex size-8 items-center justify-center rounded-lg text-sm font-bold">
+            <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+              <div className="bg-primary/10 text-primary flex size-7 sm:size-8 items-center justify-center rounded-lg text-xs sm:text-sm font-bold flex-shrink-0">
                 {index + 1}
               </div>
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <Label
                   htmlFor={`question-${question.id}`}
-                  className="text-base font-semibold"
+                  className="text-sm sm:text-base font-semibold"
                 >
                   Question {index + 1}
                 </Label>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => onMove("up")}
                 disabled={index === 0}
-                className="h-8 w-8 p-0"
+                className="h-7 w-7 sm:h-8 sm:w-8 p-0"
               >
-                <ArrowUp className="h-4 w-4" />
+                <ArrowUp className="h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => onMove("down")}
                 disabled={index === total - 1}
-                className="h-8 w-8 p-0"
+                className="h-7 w-7 sm:h-8 sm:w-8 p-0"
               >
-                <ArrowDown className="h-4 w-4" />
+                <ArrowDown className="h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
 
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={onRemove}
-                className="h-8 w-8 p-0 text-red-500 hover:bg-red-50 hover:text-red-600"
+                className="h-7 w-7 sm:h-8 sm:w-8 p-0 text-red-500 hover:bg-red-50 hover:text-red-600"
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
             </div>
           </div>
         </CardHeader>
 
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4 sm:space-y-6 px-4 sm:px-6 pb-4 sm:pb-6">
           <div className="space-y-2">
             <Label htmlFor={`question-${question.id}`}>Question Text</Label>
             <Textarea
@@ -1019,27 +1024,28 @@ function QuestionEditor({
             />
           </div>
 
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label>Answer Options</Label>
+          <div className="space-y-3 sm:space-y-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
+              <Label className="text-sm sm:text-base">Answer Options</Label>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={onAddOption}
-                className="gap-2"
+                className="gap-1 sm:gap-2 text-xs sm:text-sm w-full sm:w-auto"
                 disabled={question.options.length >= 8}
               >
                 <Plus className="h-3 w-3" />
-                Add Option
+                <span className="hidden sm:inline">Add Option</span>
+                <span className="sm:hidden">Add</span>
               </Button>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               {question.options.map((option, optionIndex) => (
                 <div
                   key={option.id}
                   className={cn(
-                    "flex items-center gap-3 rounded-lg border-2 p-3 transition-all duration-200",
+                    "flex items-center gap-2 sm:gap-3 rounded-lg border-2 p-2 sm:p-3 transition-all duration-200",
                     option.is_correct
                       ? "border-green-500 bg-green-50 dark:bg-green-900/20"
                       : "border-border hover:border-primary/50",
@@ -1049,14 +1055,14 @@ function QuestionEditor({
                     type="button"
                     onClick={() => onSetCorrectOption(option.id)}
                     className={cn(
-                      "flex h-5 w-5 items-center justify-center rounded-full border-2 transition-all",
+                      "flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded-full border-2 transition-all flex-shrink-0",
                       option.is_correct
                         ? "border-green-500 bg-green-500"
                         : "border-border hover:border-primary/50",
                     )}
                   >
                     {option.is_correct && (
-                      <div className="h-2 w-2 rounded-full bg-white" />
+                      <div className="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-white" />
                     )}
                   </button>
 
@@ -1066,7 +1072,7 @@ function QuestionEditor({
                       onUpdateOption(option.id, { option_text: e.target.value })
                     }
                     placeholder={`Option ${optionIndex + 1}`}
-                    className="flex-1"
+                    className="flex-1 text-sm sm:text-base"
                   />
 
                   <Button
@@ -1074,9 +1080,9 @@ function QuestionEditor({
                     size="sm"
                     onClick={() => onRemoveOption(option.id)}
                     disabled={question.options.length <= 2}
-                    className="h-8 w-8 p-0 text-red-500 hover:bg-red-50 hover:text-red-600"
+                    className="h-7 w-7 sm:h-8 sm:w-8 p-0 text-red-500 hover:bg-red-50 hover:text-red-600 flex-shrink-0"
                   >
-                    <X className="h-4 w-4" />
+                    <X className="h-3 w-3 sm:h-4 sm:w-4" />
                   </Button>
                 </div>
               ))}
