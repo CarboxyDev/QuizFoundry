@@ -158,7 +158,7 @@ export default function PublicQuizzesPage() {
         (currentPage - 1) * QUIZZES_PER_PAGE,
         filters,
       ),
-    staleTime: 30 * 1000, // Reduced stale time since we have server-side filtering
+    staleTime: 5 * 60 * 1000, // 5 minutes - public quizzes don't change frequently
   });
 
   const {
@@ -168,7 +168,7 @@ export default function PublicQuizzesPage() {
   } = useQuery({
     queryKey: ["public-quiz-stats"],
     queryFn: getPublicQuizStats,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 10 * 60 * 1000, // 10 minutes - stats change even less frequently
   });
 
   // Extract quizzes and pagination from response

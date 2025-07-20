@@ -660,7 +660,7 @@ export async function getPublicQuizzes(
     query = query.order(sortBy, { ascending: sortOrder === "asc" });
   }
 
-  // Get total count first for pagination
+  // Build count query with same filters
   let countQuery = supabase
     .from("quizzes")
     .select("id", { count: "exact", head: true })
@@ -680,15 +680,21 @@ export async function getPublicQuizzes(
     );
   }
 
-  const { count: totalCount, error: countError } = await countQuery;
+  // Apply pagination to main query
+  query = query.range(offset, offset + limit - 1);
+
+  // Execute count and main query in parallel
+  const [
+    { count: totalCount, error: countError },
+    { data: quizzesData, error: quizzesError }
+  ] = await Promise.all([
+    countQuery,
+    query
+  ]);
 
   if (countError) {
     throw new AppError(`Failed to get quiz count: ${countError.message}`, 500);
   }
-
-  // Apply pagination and execute query
-  query = query.range(offset, offset + limit - 1);
-  const { data: quizzesData, error: quizzesError } = await query;
 
   if (quizzesError) {
     throw new AppError(
@@ -712,11 +718,20 @@ export async function getPublicQuizzes(
 
   const quizIds = quizzesData.map((quiz) => quiz.id);
 
-  // Get question counts
-  const { data: questionCounts, error: countsError } = await supabase
-    .from("questions")
-    .select("quiz_id")
-    .in("quiz_id", quizIds);
+  // Execute question counts and attempts counts in parallel
+  const [
+    { data: questionCounts, error: countsError },
+    { data: attemptsData, error: attemptsError }
+  ] = await Promise.all([
+    supabase
+      .from("questions")
+      .select("quiz_id")
+      .in("quiz_id", quizIds),
+    supabase
+      .from("quiz_attempts")
+      .select("quiz_id")
+      .in("quiz_id", quizIds)
+  ]);
 
   if (countsError) {
     throw new AppError(
@@ -725,24 +740,19 @@ export async function getPublicQuizzes(
     );
   }
 
-  const countMap = new Map<string, number>();
-  (questionCounts || []).forEach((q: any) => {
-    const quizId = q.quiz_id;
-    countMap.set(quizId, (countMap.get(quizId) || 0) + 1);
-  });
-
-  // Get attempts counts
-  const { data: attemptsData, error: attemptsError } = await supabase
-    .from("quiz_attempts")
-    .select("quiz_id")
-    .in("quiz_id", quizIds);
-
   if (attemptsError) {
     throw new AppError(
       `Failed to fetch attempts counts: ${attemptsError.message}`,
       500
     );
   }
+
+  // Build maps for question counts and attempts
+  const countMap = new Map<string, number>();
+  (questionCounts || []).forEach((q: any) => {
+    const quizId = q.quiz_id;
+    countMap.set(quizId, (countMap.get(quizId) || 0) + 1);
+  });
 
   const attemptsMap = new Map<string, number>();
   (attemptsData || []).forEach((a: any) => {
