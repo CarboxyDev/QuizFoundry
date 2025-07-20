@@ -1,5 +1,11 @@
 import { GoogleGenAI } from "@google/genai";
 import { AppError } from "../errors/AppError";
+import {
+  PromptFormatter,
+  CREATIVE_QUIZ_PROMPT,
+  type QuizGenerationContext,
+  type QuizContext as PromptQuizContext,
+} from "./prompts";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 const model = "gemini-2.5-flash-lite-preview-06-17";
@@ -364,112 +370,14 @@ function normalizeAIResponse(
 }
 
 function createQuizPrompt(input: QuizGenerationInput): string {
-  const suggestedTitle = generateTitleFromPrompt(input.prompt);
+  const context: QuizGenerationContext = {
+    prompt: input.prompt,
+    difficulty: input.difficulty,
+    questionCount: input.questionCount,
+    optionsCount: input.optionsCount,
+  };
 
-  return `You are an expert quiz creator. Create a ${input.difficulty} difficulty quiz with the following specifications:
-
-REQUIREMENTS:
-- Topic: ${input.prompt}
-- Difficulty Level: ${input.difficulty}
-- Number of Questions: ${input.questionCount}
-- Options per Question: ${input.optionsCount}
-- Question Type: Multiple choice only
-
-RESPONSE FORMAT:
-Respond with ONLY a valid JSON object in this exact format:
-
-{
-  "title": "A concise, engaging title (max 8 words)",
-  "description": "Brief description of what this quiz covers (1-2 sentences)",
-  "difficulty": "${input.difficulty}",
-  "questions": [
-    {
-      "question_text": "Clear, unambiguous question text?",
-      "question_type": "multiple_choice",
-      "order_index": 0,
-      "options": [
-        {
-          "option_text": "First option text",
-          "is_correct": false,
-          "order_index": 0
-        },
-        {
-          "option_text": "Second option text",
-          "is_correct": true,
-          "order_index": 1
-        }
-        // Continue for exactly ${input.optionsCount} options
-      ]
-    }
-    // Continue for exactly ${input.questionCount} questions
-  ]
-}
-
-QUALITY GUIDELINES:
-1. Title should be engaging and concise (suggested: "${suggestedTitle}")
-2. For ${input.difficulty} difficulty:
-   ${getDifficultyGuidelines(input.difficulty)}
-3. Each question must have EXACTLY ONE correct answer
-4. Incorrect options should be plausible but clearly wrong
-5. The correct answer must be accurate and correct. Incorrect answers will result in a terrible experience for the user.
-6. Use clear, unambiguous language
-7. Ensure all content relates to: "${input.prompt}"
-8. Number order_index starting from 0
-9. Generate exactly ${input.questionCount} questions with ${input.optionsCount} options each
-10. Do not include any other text in the response.
-11. Make sure you do not include "quiz" or "quiz on" or "Create a quiz on" in the title. The quiz title must consist of the key topic keywords only.
-
-QUESTION QUALITY REQUIREMENTS:
-- Questions should be concise and focused (maximum 15-20 words)
-- Avoid unnecessarily long or complex sentences
-- Each question should test one specific concept or fact
-- Questions should be direct and easy to understand
-- Avoid ambiguous phrasing or double negatives
-- Use active voice when possible
-- Make questions engaging and interesting, not boring
-- Ensure questions are neither too obvious nor impossibly difficult for the target difficulty level
-
-OPTION QUALITY REQUIREMENTS:
-- Keep options concise (maximum 8-10 words each)
-- All options should be similar in length and structure
-- Incorrect options should be believable distractors, not obviously wrong
-- Avoid "all of the above" or "none of the above" options
-- Each option should be a complete, standalone answer
-- Options should be parallel in grammatical structure
-
-Generate the quiz now:`;
-}
-
-function generateTitleFromPrompt(prompt: string): string {
-  const words = prompt
-    .toLowerCase()
-    .replace(/[^\w\s]/g, "")
-    .split(/\s+/)
-    .filter((word) => word.length > 2)
-    .slice(0, 6);
-
-  let title = words
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-
-  if (!title) {
-    title = "Quiz";
-  }
-
-  return title + " Quiz";
-}
-
-function getDifficultyGuidelines(difficulty: string): string {
-  switch (difficulty) {
-    case "easy":
-      return "   - Use straightforward questions with obvious correct answers\n   - Include basic concepts and definitions\n   - Avoid tricky or ambiguous phrasing\n   - Questions should be answerable with fundamental knowledge\n   - Use simple, clear language that's easy to understand";
-    case "medium":
-      return "   - Include some analytical thinking and application of concepts\n   - Mix of factual and reasoning questions\n   - Moderate complexity in language and concepts\n   - Questions may require connecting multiple pieces of information\n   - Balance between recall and understanding";
-    case "hard":
-      return "   - Require deep understanding and critical thinking\n   - Include complex scenarios and edge cases\n   - Challenge advanced knowledge of the topic\n   - Questions may involve analysis, synthesis, or evaluation\n   - May require expert-level knowledge or specialized understanding";
-    default:
-      return "   - Adjust difficulty appropriately for the target audience";
-  }
+  return PromptFormatter.formatQuizGeneration(context);
 }
 
 export async function generateCreativeQuizPrompt(): Promise<string> {
@@ -479,48 +387,16 @@ export async function generateCreativeQuizPrompt(): Promise<string> {
 
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-  const prompt = `Generate a creative and engaging quiz topic title.
-  The response should be a fun, educational, and interesting quiz idea that would make for great trivia.
-  It should be small and concise and good enough to generate a good quiz.
-  
-
-  Choose topics from (but not limited to) areas like:
-  - Pop culture and entertainment
-  - Science and nature
-  - Historical events and figures
-  - Geography and world cultures
-  - Food and cooking traditions
-  - Technology and innovations
-  - Art and literature
-  - Sports and video games
-  - Mythology and legends
-  - Fun facts and general trivia
-  - Other unique and engaging knowledge areas
-
-  The response:
-  - Must be only 1 sentence (at most 2), with no extra explanation
-  - Should not include the word "quiz"
-  - Should not include markdown, emojis, or formatting
-  - Should avoid dramatic, poetic, or clickbait phrases (e.g., "unsung heroes", "unraveling the secrets", "the surprising science behind")
-  - Should avoid vague or filler-heavy phrases
-  - Must use simple, direct, and descriptive language
-
-  Examples of excellent responses:
-  "Food cultures from around the world",
-  "Iconic video game soundtracks",
-  "Popular mythological creatures from around the world",
-  "Solar system planets and their characteristics",
-
-
-  Examples of bad responses:
-  "Unsung heroes of scientific breakthroughs",
-  "Unraveling the secrets of the deep sea's most bizarre inhabitants."
-  "The surprising science behind everyday phenomena"
-  `;
+  const prompt = CREATIVE_QUIZ_PROMPT.user;
 
   const response = await ai.models.generateContent({
     model,
-    contents: prompt,
+    contents: [
+      {
+        role: "user",
+        parts: [{ text: prompt }],
+      },
+    ],
   });
 
   const generatedPrompt = response.text?.trim();
@@ -587,8 +463,10 @@ export async function generateAdditionalQuestions(
 
   try {
     const prompt = createAdditionalQuestionsPrompt(context, count);
-    
-    console.log(`[AI Question Generation] Generating ${count} questions for: "${context.title}"`);
+
+    console.log(
+      `[AI Question Generation] Generating ${count} questions for: "${context.title}"`
+    );
 
     const response = await ai.models.generateContent({
       model,
@@ -600,7 +478,9 @@ export async function generateAdditionalQuestions(
       throw new AIGenerationError("No response received from Gemini API", true);
     }
 
-    console.log(`[AI Question Generation] Received response (${text.length} chars)`);
+    console.log(
+      `[AI Question Generation] Received response (${text.length} chars)`
+    );
 
     if (isContentRefusal(text)) {
       const reasoning = extractRefusalReasoning(text);
@@ -611,25 +491,34 @@ export async function generateAdditionalQuestions(
     }
 
     const parsedResult = parseAIResponse(text);
-    const normalizedResult = normalizeAdditionalQuestionsResponse(parsedResult, context, count);
+    const normalizedResult = normalizeAdditionalQuestionsResponse(
+      parsedResult,
+      context,
+      count
+    );
 
-    console.log(`[AI Question Generation] Successfully generated ${normalizedResult.questions.length} questions`);
-    
+    console.log(
+      `[AI Question Generation] Successfully generated ${normalizedResult.questions.length} questions`
+    );
+
     return normalizedResult;
   } catch (error) {
     console.error(`[AI Question Generation] Error:`, error);
-    
-    if (error instanceof ContentRefusalError || error instanceof InvalidResponseError) {
+
+    if (
+      error instanceof ContentRefusalError ||
+      error instanceof InvalidResponseError
+    ) {
       throw error;
     }
-    
+
     if (!(error instanceof AppError)) {
       throw new AIGenerationError(
         "An unexpected error occurred while generating questions. Please try again.",
         true
       );
     }
-    
+
     throw error;
   }
 }
@@ -652,8 +541,10 @@ export async function enhanceQuestion(
 
   try {
     const prompt = createQuestionEnhancementPrompt(questionText, context);
-    
-    console.log(`[AI Question Enhancement] Enhancing question for: "${context.title}"`);
+
+    console.log(
+      `[AI Question Enhancement] Enhancing question for: "${context.title}"`
+    );
 
     const response = await ai.models.generateContent({
       model,
@@ -665,7 +556,9 @@ export async function enhanceQuestion(
       throw new AIGenerationError("No response received from Gemini API", true);
     }
 
-    console.log(`[AI Question Enhancement] Received response (${text.length} chars)`);
+    console.log(
+      `[AI Question Enhancement] Received response (${text.length} chars)`
+    );
 
     if (isContentRefusal(text)) {
       const reasoning = extractRefusalReasoning(text);
@@ -679,22 +572,25 @@ export async function enhanceQuestion(
     const normalizedResult = normalizeQuestionEnhancementResponse(parsedResult);
 
     console.log(`[AI Question Enhancement] Successfully enhanced question`);
-    
+
     return normalizedResult;
   } catch (error) {
     console.error(`[AI Question Enhancement] Error:`, error);
-    
-    if (error instanceof ContentRefusalError || error instanceof InvalidResponseError) {
+
+    if (
+      error instanceof ContentRefusalError ||
+      error instanceof InvalidResponseError
+    ) {
       throw error;
     }
-    
+
     if (!(error instanceof AppError)) {
       throw new AIGenerationError(
         "An unexpected error occurred while enhancing the question. Please try again.",
         true
       );
     }
-    
+
     throw error;
   }
 }
@@ -721,9 +617,15 @@ export async function generateAdditionalOptions(
   }
 
   try {
-    const prompt = createAdditionalOptionsPrompt(questionText, existingOptions, optionsCount);
-    
-    console.log(`[AI Options Generation] Generating ${optionsCount} options for question`);
+    const prompt = createAdditionalOptionsPrompt(
+      questionText,
+      existingOptions,
+      optionsCount
+    );
+
+    console.log(
+      `[AI Options Generation] Generating ${optionsCount} options for question`
+    );
 
     const response = await ai.models.generateContent({
       model,
@@ -735,7 +637,9 @@ export async function generateAdditionalOptions(
       throw new AIGenerationError("No response received from Gemini API", true);
     }
 
-    console.log(`[AI Options Generation] Received response (${text.length} chars)`);
+    console.log(
+      `[AI Options Generation] Received response (${text.length} chars)`
+    );
 
     if (isContentRefusal(text)) {
       const reasoning = extractRefusalReasoning(text);
@@ -746,25 +650,33 @@ export async function generateAdditionalOptions(
     }
 
     const parsedResult = parseAIResponse(text);
-    const normalizedResult = normalizeAdditionalOptionsResponse(parsedResult, optionsCount);
+    const normalizedResult = normalizeAdditionalOptionsResponse(
+      parsedResult,
+      optionsCount
+    );
 
-    console.log(`[AI Options Generation] Successfully generated ${normalizedResult.options.length} options`);
-    
+    console.log(
+      `[AI Options Generation] Successfully generated ${normalizedResult.options.length} options`
+    );
+
     return normalizedResult;
   } catch (error) {
     console.error(`[AI Options Generation] Error:`, error);
-    
-    if (error instanceof ContentRefusalError || error instanceof InvalidResponseError) {
+
+    if (
+      error instanceof ContentRefusalError ||
+      error instanceof InvalidResponseError
+    ) {
       throw error;
     }
-    
+
     if (!(error instanceof AppError)) {
       throw new AIGenerationError(
         "An unexpected error occurred while generating options. Please try again.",
         true
       );
     }
-    
+
     throw error;
   }
 }
@@ -787,8 +699,10 @@ export async function suggestQuestionTypes(
 
   try {
     const prompt = createQuestionTypeSuggestionsPrompt(topic, difficulty);
-    
-    console.log(`[AI Question Type Suggestions] Generating suggestions for topic: "${topic}"`);
+
+    console.log(
+      `[AI Question Type Suggestions] Generating suggestions for topic: "${topic}"`
+    );
 
     const response = await ai.models.generateContent({
       model,
@@ -800,7 +714,9 @@ export async function suggestQuestionTypes(
       throw new AIGenerationError("No response received from Gemini API", true);
     }
 
-    console.log(`[AI Question Type Suggestions] Received response (${text.length} chars)`);
+    console.log(
+      `[AI Question Type Suggestions] Received response (${text.length} chars)`
+    );
 
     if (isContentRefusal(text)) {
       const reasoning = extractRefusalReasoning(text);
@@ -811,174 +727,63 @@ export async function suggestQuestionTypes(
     }
 
     const parsedResult = parseAIResponse(text);
-    const normalizedResult = normalizeQuestionTypeSuggestionsResponse(parsedResult);
+    const normalizedResult =
+      normalizeQuestionTypeSuggestionsResponse(parsedResult);
 
-    console.log(`[AI Question Type Suggestions] Successfully generated ${normalizedResult.suggestions.length} suggestions`);
-    
+    console.log(
+      `[AI Question Type Suggestions] Successfully generated ${normalizedResult.suggestions.length} suggestions`
+    );
+
     return normalizedResult;
   } catch (error) {
     console.error(`[AI Question Type Suggestions] Error:`, error);
-    
-    if (error instanceof ContentRefusalError || error instanceof InvalidResponseError) {
+
+    if (
+      error instanceof ContentRefusalError ||
+      error instanceof InvalidResponseError
+    ) {
       throw error;
     }
-    
+
     if (!(error instanceof AppError)) {
       throw new AIGenerationError(
         "An unexpected error occurred while generating question type suggestions. Please try again.",
         true
       );
     }
-    
+
     throw error;
   }
 }
 
-function createAdditionalQuestionsPrompt(context: QuizContext, count: number): string {
-  const existingQuestionsText = context.existingQuestions?.length ? 
-    context.existingQuestions.map((q, i) => `${i + 1}. ${q.question_text}`).join('\n') : 
-    "None";
+function createAdditionalQuestionsPrompt(
+  context: QuizContext,
+  count: number
+): string {
+  const promptContext: PromptQuizContext = {
+    title: context.title,
+    description: context.description,
+    difficulty: context.difficulty,
+    originalPrompt: context.originalPrompt,
+    existingQuestions: context.existingQuestions,
+  };
 
-  return `You are an expert quiz creator. Generate ${count} additional questions for an existing quiz.
-
-QUIZ CONTEXT:
-- Title: ${context.title}
-- Description: ${context.description || "No description provided"}
-- Difficulty: ${context.difficulty}
-- Original Prompt: ${context.originalPrompt}
-
-EXISTING QUESTIONS:
-${existingQuestionsText}
-
-REQUIREMENTS:
-- Generate exactly ${count} new questions
-- Match the ${context.difficulty} difficulty level
-- Questions should complement existing questions (avoid duplicates)
-- Each question must have exactly 4 options
-- Each question must have exactly one correct answer
-- Questions should be relevant to the topic: "${context.originalPrompt}"
-
-RESPONSE FORMAT:
-Respond with ONLY a valid JSON object in this exact format:
-
-{
-  "questions": [
-    {
-      "question_text": "Clear, unambiguous question text?",
-      "question_type": "multiple_choice",
-      "order_index": 0,
-      "options": [
-        {
-          "option_text": "First option text",
-          "is_correct": false,
-          "order_index": 0
-        },
-        {
-          "option_text": "Second option text",
-          "is_correct": true,
-          "order_index": 1
-        },
-        {
-          "option_text": "Third option text",
-          "is_correct": false,
-          "order_index": 2
-        },
-        {
-          "option_text": "Fourth option text",
-          "is_correct": false,
-          "order_index": 3
-        }
-      ]
-    }
-  ]
+  return PromptFormatter.formatAdditionalQuestions(promptContext, count);
 }
 
-QUALITY GUIDELINES:
-1. For ${context.difficulty} difficulty:
-   ${getDifficultyGuidelines(context.difficulty)}
-2. Each question must have EXACTLY ONE correct answer
-3. Incorrect options should be plausible but clearly wrong
-4. The correct answer must be accurate and correct
-5. Use clear, unambiguous language
-6. Ensure all content relates to the topic
-7. Number order_index starting from 0
-8. Avoid duplicating existing questions
-9. Do not include any other text in the response
+function createQuestionEnhancementPrompt(
+  questionText: string,
+  context: QuizContext
+): string {
+  const promptContext: PromptQuizContext = {
+    title: context.title,
+    description: context.description,
+    difficulty: context.difficulty,
+    originalPrompt: context.originalPrompt,
+    existingQuestions: context.existingQuestions,
+  };
 
-QUESTION QUALITY REQUIREMENTS:
-- Questions should be concise and focused (maximum 15-20 words)
-- Avoid unnecessarily long or complex sentences
-- Each question should test one specific concept or fact
-- Questions should be direct and easy to understand
-- Avoid ambiguous phrasing or double negatives
-- Use active voice when possible
-- Make questions engaging and interesting, not boring
-- Ensure questions complement existing questions without being repetitive
-- Questions should flow naturally within the quiz context
-
-OPTION QUALITY REQUIREMENTS:
-- Keep options concise (maximum 8-10 words each)
-- All options should be similar in length and structure
-- Incorrect options should be believable distractors, not obviously wrong
-- Avoid "all of the above" or "none of the above" options
-- Each option should be a complete, standalone answer
-- Options should be parallel in grammatical structure
-- Ensure options are relevant to the question and topic
-
-Generate the questions now:`;
-}
-
-function createQuestionEnhancementPrompt(questionText: string, context: QuizContext): string {
-  return `You are an expert quiz creator. Enhance the following question to make it clearer, more engaging, and better suited for the quiz difficulty level.
-
-ORIGINAL QUESTION:
-${questionText}
-
-QUIZ CONTEXT:
-- Title: ${context.title}
-- Difficulty: ${context.difficulty}
-- Topic: ${context.originalPrompt}
-
-ENHANCEMENT GOALS:
-1. Improve clarity and readability
-2. Match the ${context.difficulty} difficulty level
-3. Make the question more engaging
-4. Ensure it's appropriate for the topic
-5. Fix any grammatical or structural issues
-
-RESPONSE FORMAT:
-Respond with ONLY a valid JSON object in this exact format:
-
-{
-  "enhanced_question": {
-    "question_text": "The improved question text here",
-    "reasoning": "Brief explanation of what was improved and why"
-  }
-}
-
-QUALITY GUIDELINES:
-1. For ${context.difficulty} difficulty:
-   ${getDifficultyGuidelines(context.difficulty)}
-2. Keep the core meaning of the original question
-3. Make improvements that genuinely enhance the question
-4. Ensure the enhanced question is still answerable
-5. Use clear, unambiguous language
-6. Keep reasoning concise (1-2 sentences)
-7. Do not include any other text in the response
-
-ENHANCEMENT FOCUS AREAS:
-- Make the question more concise if it's too long (aim for 15-20 words maximum)
-- Improve clarity and readability
-- Remove ambiguous or confusing phrasing
-- Ensure the question is direct and specific
-- Fix grammatical issues or awkward wording
-- Make the question more engaging while maintaining accuracy
-- Ensure the question matches the appropriate difficulty level
-- Remove double negatives or unnecessarily complex constructions
-- Use active voice when possible
-- Ensure the question is self-contained and doesn't rely on external context
-
-Enhance the question now:`;
+  return PromptFormatter.formatQuestionEnhancement(questionText, promptContext);
 }
 
 function createAdditionalOptionsPrompt(
@@ -986,138 +791,23 @@ function createAdditionalOptionsPrompt(
   existingOptions: Array<{ option_text: string; is_correct: boolean }>,
   optionsCount: number
 ): string {
-  const existingOptionsText = existingOptions.map((opt, i) => 
-    `${i + 1}. ${opt.option_text} ${opt.is_correct ? '(CORRECT)' : '(INCORRECT)'}`
-  ).join('\n');
-
-  return `You are an expert quiz creator. Generate ${optionsCount} additional INCORRECT answer options for this question.
-
-QUESTION:
-${questionText}
-
-EXISTING OPTIONS:
-${existingOptionsText}
-
-REQUIREMENTS:
-- Generate exactly ${optionsCount} new INCORRECT options
-- All new options must be wrong answers
-- Options should be plausible but clearly incorrect
-- Avoid duplicating existing options
-- Options should be similar in length and style to existing options
-- Each option should be a reasonable distractor
-
-RESPONSE FORMAT:
-Respond with ONLY a valid JSON object in this exact format:
-
-{
-  "options": [
-    {
-      "option_text": "First new incorrect option",
-      "is_correct": false,
-      "order_index": 0
-    },
-    {
-      "option_text": "Second new incorrect option",
-      "is_correct": false,
-      "order_index": 1
-    }
-  ]
+  return PromptFormatter.formatAdditionalOptions(
+    questionText,
+    existingOptions,
+    optionsCount
+  );
 }
 
-QUALITY GUIDELINES:
-1. All generated options must be INCORRECT answers
-2. Options should be plausible distractors
-3. Avoid obviously wrong or silly options
-4. Match the style and length of existing options
-5. Use clear, unambiguous language
-6. Number order_index starting from 0
-7. Do not include any other text in the response
-
-OPTION QUALITY REQUIREMENTS:
-- Keep options concise (maximum 8-10 words each)
-- All options should be similar in length and structure to existing options
-- Incorrect options should be believable distractors that test common misconceptions
-- Avoid "all of the above" or "none of the above" options
-- Each option should be a complete, standalone answer
-- Options should be parallel in grammatical structure
-- Ensure options are relevant to the question and topic
-- Make sure options are not obviously wrong or absurd
-- Use the same tone and style as the existing options
-- Options should represent common wrong answers or misconceptions
-
-Generate the options now:`;
-}
-
-function createQuestionTypeSuggestionsPrompt(topic: string, difficulty: "easy" | "medium" | "hard"): string {
-  return `You are an expert quiz creator. Suggest 5 different question types that would work well for a ${difficulty} quiz about "${topic}".
-
-TOPIC: ${topic}
-DIFFICULTY: ${difficulty}
-
-REQUIREMENTS:
-- Suggest 5 different question types/approaches
-- Each suggestion should be specific to the topic
-- Include a brief description of what the question type focuses on
-- Provide a sample question text for each type
-- Types should be appropriate for ${difficulty} difficulty
-
-RESPONSE FORMAT:
-Respond with ONLY a valid JSON object in this exact format:
-
-{
-  "suggestions": [
-    {
-      "type": "Definition Questions",
-      "description": "Test understanding of key terms and concepts",
-      "example": "What is the definition of [specific term]?"
-    },
-    {
-      "type": "Application Questions",
-      "description": "Test ability to apply knowledge in practical scenarios",
-      "example": "In which situation would you use [specific concept]?"
-    }
-  ]
-}
-
-QUESTION TYPE CATEGORIES (choose from but not limited to):
-- Definition/Terminology Questions
-- Application/Scenario Questions
-- Comparison/Contrast Questions
-- Cause and Effect Questions
-- Historical/Timeline Questions
-- Process/Procedure Questions
-- Identification Questions
-- Analysis/Evaluation Questions
-- Calculation/Problem-solving Questions
-- True/False Concept Questions
-
-QUALITY GUIDELINES:
-1. For ${difficulty} difficulty:
-   ${getDifficultyGuidelines(difficulty)}
-2. Each type should be distinct and valuable
-3. Examples should be specific to the topic
-4. Descriptions should be clear and helpful
-5. Types should progressively build knowledge
-6. Do not include any other text in the response
-
-SUGGESTION QUALITY REQUIREMENTS:
-- Make suggestions practical and actionable for quiz creators
-- Ensure each suggestion type is clearly different from others
-- Example questions should be concise (15-20 words maximum)
-- Descriptions should be brief but informative (1-2 sentences)
-- Focus on question types that work well for multiple choice format
-- Suggestions should cover different aspects of the topic
-- Examples should be engaging and appropriately challenging
-- Each suggestion should add value to the quiz
-- Avoid overly complex or academic question types
-- Make sure suggestions are relevant to the specific topic provided
-
-Generate the suggestions now:`;
+function createQuestionTypeSuggestionsPrompt(
+  topic: string,
+  difficulty: "easy" | "medium" | "hard"
+): string {
+  return PromptFormatter.formatQuestionTypeSuggestions(topic, difficulty);
 }
 
 function normalizeAdditionalQuestionsResponse(
   parsedResult: any,
-  context: QuizContext,
+  _context: QuizContext,
   expectedCount: number
 ): GeneratedQuestionsResult {
   if (!parsedResult.questions || !Array.isArray(parsedResult.questions)) {
@@ -1128,47 +818,57 @@ function normalizeAdditionalQuestionsResponse(
     throw new InvalidResponseError("No questions were generated");
   }
 
-  const questions: GeneratedQuestion[] = parsedResult.questions.map((q: any, qIndex: number) => {
-    if (!q.question_text || typeof q.question_text !== "string") {
-      throw new InvalidResponseError(`Question ${qIndex + 1}: Missing or invalid question text`);
-    }
-
-    if (!Array.isArray(q.options)) {
-      throw new InvalidResponseError(`Question ${qIndex + 1}: Missing or invalid options`);
-    }
-
-    if (q.options.length === 0) {
-      throw new InvalidResponseError(`Question ${qIndex + 1}: Must have at least one option`);
-    }
-
-    const options: GeneratedOption[] = q.options.map((opt: any, optIndex: number) => {
-      if (!opt.option_text || typeof opt.option_text !== "string") {
+  const questions: GeneratedQuestion[] = parsedResult.questions.map(
+    (q: any, qIndex: number) => {
+      if (!q.question_text || typeof q.question_text !== "string") {
         throw new InvalidResponseError(
-          `Question ${qIndex + 1}, Option ${optIndex + 1}: Missing or invalid option text`
+          `Question ${qIndex + 1}: Missing or invalid question text`
+        );
+      }
+
+      if (!Array.isArray(q.options)) {
+        throw new InvalidResponseError(
+          `Question ${qIndex + 1}: Missing or invalid options`
+        );
+      }
+
+      if (q.options.length === 0) {
+        throw new InvalidResponseError(
+          `Question ${qIndex + 1}: Must have at least one option`
+        );
+      }
+
+      const options: GeneratedOption[] = q.options.map(
+        (opt: any, optIndex: number) => {
+          if (!opt.option_text || typeof opt.option_text !== "string") {
+            throw new InvalidResponseError(
+              `Question ${qIndex + 1}, Option ${optIndex + 1}: Missing or invalid option text`
+            );
+          }
+
+          return {
+            option_text: opt.option_text.trim(),
+            is_correct: Boolean(opt.is_correct),
+            order_index: optIndex,
+          };
+        }
+      );
+
+      const correctCount = options.filter((opt) => opt.is_correct).length;
+      if (correctCount !== 1) {
+        throw new InvalidResponseError(
+          `Question ${qIndex + 1}: Must have exactly one correct answer (found ${correctCount})`
         );
       }
 
       return {
-        option_text: opt.option_text.trim(),
-        is_correct: Boolean(opt.is_correct),
-        order_index: optIndex,
+        question_text: q.question_text.trim(),
+        question_type: "multiple_choice" as const,
+        order_index: qIndex,
+        options,
       };
-    });
-
-    const correctCount = options.filter((opt) => opt.is_correct).length;
-    if (correctCount !== 1) {
-      throw new InvalidResponseError(
-        `Question ${qIndex + 1}: Must have exactly one correct answer (found ${correctCount})`
-      );
     }
-
-    return {
-      question_text: q.question_text.trim(),
-      question_type: "multiple_choice" as const,
-      order_index: qIndex,
-      options,
-    };
-  });
+  );
 
   if (questions.length !== expectedCount) {
     console.warn(
@@ -1179,19 +879,30 @@ function normalizeAdditionalQuestionsResponse(
   return { questions };
 }
 
-function normalizeQuestionEnhancementResponse(parsedResult: any): EnhancedQuestionResult {
-  if (!parsedResult.enhanced_question || typeof parsedResult.enhanced_question !== "object") {
-    throw new InvalidResponseError("Enhanced question object is missing or invalid");
+function normalizeQuestionEnhancementResponse(
+  parsedResult: any
+): EnhancedQuestionResult {
+  if (
+    !parsedResult.enhanced_question ||
+    typeof parsedResult.enhanced_question !== "object"
+  ) {
+    throw new InvalidResponseError(
+      "Enhanced question object is missing or invalid"
+    );
   }
 
   const enhanced = parsedResult.enhanced_question;
 
   if (!enhanced.question_text || typeof enhanced.question_text !== "string") {
-    throw new InvalidResponseError("Enhanced question text is missing or invalid");
+    throw new InvalidResponseError(
+      "Enhanced question text is missing or invalid"
+    );
   }
 
   if (!enhanced.reasoning || typeof enhanced.reasoning !== "string") {
-    throw new InvalidResponseError("Enhancement reasoning is missing or invalid");
+    throw new InvalidResponseError(
+      "Enhancement reasoning is missing or invalid"
+    );
   }
 
   return {
@@ -1214,24 +925,27 @@ function normalizeAdditionalOptionsResponse(
     throw new InvalidResponseError("No options were generated");
   }
 
-  const options: GeneratedOption[] = parsedResult.options.map((opt: any, optIndex: number) => {
-    if (!opt.option_text || typeof opt.option_text !== "string") {
-      throw new InvalidResponseError(
-        `Option ${optIndex + 1}: Missing or invalid option text`
-      );
-    }
+  const options: GeneratedOption[] = parsedResult.options.map(
+    (opt: any, optIndex: number) => {
+      if (!opt.option_text || typeof opt.option_text !== "string") {
+        throw new InvalidResponseError(
+          `Option ${optIndex + 1}: Missing or invalid option text`
+        );
+      }
 
-    // Ensure all generated options are incorrect
-    if (opt.is_correct === true) {
-      console.warn(`[AI Options Generation] Option ${optIndex + 1} was marked as correct, forcing to false`);
-    }
+      if (opt.is_correct === true) {
+        console.warn(
+          `[AI Options Generation] Option ${optIndex + 1} was marked as correct, forcing to false`
+        );
+      }
 
-    return {
-      option_text: opt.option_text.trim(),
-      is_correct: false, // Force all generated options to be incorrect
-      order_index: optIndex,
-    };
-  });
+      return {
+        option_text: opt.option_text.trim(),
+        is_correct: false,
+        order_index: optIndex,
+      };
+    }
+  );
 
   if (options.length !== expectedCount) {
     console.warn(
@@ -1242,7 +956,9 @@ function normalizeAdditionalOptionsResponse(
   return { options };
 }
 
-function normalizeQuestionTypeSuggestionsResponse(parsedResult: any): QuestionTypeSuggestionsResult {
+function normalizeQuestionTypeSuggestionsResponse(
+  parsedResult: any
+): QuestionTypeSuggestionsResult {
   if (!parsedResult.suggestions || !Array.isArray(parsedResult.suggestions)) {
     throw new InvalidResponseError("Suggestions array is missing or invalid");
   }
@@ -1251,25 +967,33 @@ function normalizeQuestionTypeSuggestionsResponse(parsedResult: any): QuestionTy
     throw new InvalidResponseError("No suggestions were generated");
   }
 
-  const suggestions: QuestionTypeSuggestion[] = parsedResult.suggestions.map((sugg: any, index: number) => {
-    if (!sugg.type || typeof sugg.type !== "string") {
-      throw new InvalidResponseError(`Suggestion ${index + 1}: Missing or invalid type`);
-    }
+  const suggestions: QuestionTypeSuggestion[] = parsedResult.suggestions.map(
+    (sugg: any, index: number) => {
+      if (!sugg.type || typeof sugg.type !== "string") {
+        throw new InvalidResponseError(
+          `Suggestion ${index + 1}: Missing or invalid type`
+        );
+      }
 
-    if (!sugg.description || typeof sugg.description !== "string") {
-      throw new InvalidResponseError(`Suggestion ${index + 1}: Missing or invalid description`);
-    }
+      if (!sugg.description || typeof sugg.description !== "string") {
+        throw new InvalidResponseError(
+          `Suggestion ${index + 1}: Missing or invalid description`
+        );
+      }
 
-    if (!sugg.example || typeof sugg.example !== "string") {
-      throw new InvalidResponseError(`Suggestion ${index + 1}: Missing or invalid example`);
-    }
+      if (!sugg.example || typeof sugg.example !== "string") {
+        throw new InvalidResponseError(
+          `Suggestion ${index + 1}: Missing or invalid example`
+        );
+      }
 
-    return {
-      type: sugg.type.trim(),
-      description: sugg.description.trim(),
-      example: sugg.example.trim(),
-    };
-  });
+      return {
+        type: sugg.type.trim(),
+        description: sugg.description.trim(),
+        example: sugg.example.trim(),
+      };
+    }
+  );
 
   return { suggestions };
 }
@@ -1346,70 +1070,11 @@ export async function validateQuizContent(
 function createSecurityCheckPrompt(
   quizContent: QuizContentForValidation
 ): string {
-  const questionsText = quizContent.questions
-    .map(
-      (q, index) =>
-        `Question ${index + 1}: ${q.question_text}
-${q.options.map((opt, optIndex) => `  ${optIndex + 1}. ${opt.option_text}`).join("\n")}`
-    )
-    .join("\n\n");
-
-  return `You are an AI content moderator responsible for reviewing user-generated quiz content for quality and safety. 
-
-QUIZ TO REVIEW:
-Title: ${quizContent.title}
-Description: ${quizContent.description || "No description provided"}
-
-QUESTIONS:
-${questionsText}
-
-EVALUATION CRITERIA:
-Please evaluate ALL parts of this quiz content (title, description, and questions) based on the following criteria:
-
-1. SAFETY:
-   - Title and description contain no harmful, offensive, or inappropriate content
-   - Questions and options contain no harmful, offensive, or inappropriate content
-   - No hate speech, discrimination, or harassment in any part
-   - No dangerous or illegal activities referenced
-   - No adult content or explicit material
-
-2. QUALITY:
-   - Title is appropriate and relevant to the quiz content
-   - Description (if provided) accurately represents the quiz
-   - Questions are clear and well-formed
-   - Options are reasonable and relevant
-   - Content is educational or entertaining
-   - Factual accuracy where applicable
-
-3. AUTHENTICITY:
-   - Title and description appear to be genuine effort
-   - Questions appear to be genuine effort
-   - Not spam or low-effort content
-   - Not misleading or deceptive
-
-RESPONSE FORMAT:
-Respond with ONLY a valid JSON object in this exact format:
-
-{
-  "isApproved": true|false,
-  "reasoning": "Clear explanation of the decision (1-2 sentences)",
-  "confidence": 85,
-  "concerns": ["List any specific concerns or issues found"]
-}
-
-GUIDELINES:
-- Set isApproved to true if the content meets all criteria
-- Set isApproved to false if there are significant violations
-- confidence should be a number between 0-100
-- concerns should be an array of specific issues (empty array if none)
-- Keep reasoning concise but informative
-
-Evaluate the quiz now:`;
+  return PromptFormatter.formatSecurityCheck(quizContent);
 }
 
 function parseSecurityCheckResponse(text: string): AISecurityCheckResult {
   try {
-    // Extract JSON from the response
     const jsonMatch =
       text.match(/```json\s*([\s\S]*?)\s*```/) ||
       text.match(/```\s*([\s\S]*?)\s*```/) ||
@@ -1433,7 +1098,6 @@ function parseSecurityCheckResponse(text: string): AISecurityCheckResult {
       );
     }
 
-    // Validate the response structure
     if (typeof parsed.isApproved !== "boolean") {
       throw new InvalidResponseError(
         "AI security check response missing or invalid isApproved field"
