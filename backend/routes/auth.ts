@@ -33,8 +33,8 @@ authRouter.post(
     }
 
     const sessionData = {
-      userAgent: req.headers["user-agent"]?.substring(0, 500),
-      ipAddress: (req.ip || req.connection.remoteAddress)?.replace(/[^\d\.\:]/g, ''),
+      userAgent: req.headers["user-agent"]?.substring(0, 500) || null,
+      ipAddress: req.ip || req.connection.remoteAddress || null,
     };
 
     const loginResponse = await signupUser(validationResult.data, sessionData);
@@ -57,8 +57,8 @@ authRouter.post(
     }
 
     const sessionData = {
-      userAgent: req.headers["user-agent"]?.substring(0, 500),
-      ipAddress: (req.ip || req.connection.remoteAddress)?.replace(/[^\d\.\:]/g, ''),
+      userAgent: req.headers["user-agent"]?.substring(0, 500) || null,
+      ipAddress: req.ip || req.connection.remoteAddress || null,
     };
 
     const loginResponse = await loginUser(validationResult.data, sessionData);
