@@ -73,41 +73,42 @@ export function GenerateQuestionsDialog({
       <DialogTrigger asChild>
         {trigger || defaultTrigger}
       </DialogTrigger>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5" />
-            Generate Questions with AI
+      <DialogContent className="max-w-md w-[95vw] sm:w-full">
+        <DialogHeader className="space-y-3">
+          <DialogTitle className="flex items-center gap-2 text-lg sm:text-xl">
+            <Sparkles className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="hidden sm:inline">Generate Questions with AI</span>
+            <span className="sm:hidden">Generate Questions</span>
           </DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-sm">
             Generate additional questions for your quiz using AI. The questions will be automatically added to your quiz based on your quiz topic and difficulty level.
             {remainingQuestions > 0 && (
-              <span className="block mt-2 text-sm font-medium text-orange-600">
+              <span className="block mt-2 text-xs sm:text-sm font-medium text-orange-600">
                 You can add {remainingQuestions} more question{remainingQuestions !== 1 ? 's' : ''} (limit: 20 questions)
               </span>
             )}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="space-y-4"
           >
             <div className="space-y-2">
-              <Label htmlFor="questionCount">Number of Questions</Label>
+              <Label htmlFor="questionCount" className="text-sm font-medium">Number of Questions</Label>
               <Select
                 value={questionCount.toString()}
                 onValueChange={(value) => setQuestionCount(parseInt(value))}
               >
-                <SelectTrigger>
+                <SelectTrigger className="text-sm">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {[1, 2, 3, 4, 5].map((count) => (
                     count <= remainingQuestions && (
-                      <SelectItem key={count} value={count.toString()}>
+                      <SelectItem key={count} value={count.toString()} className="text-sm">
                         {count} Question{count !== 1 ? 's' : ''}
                       </SelectItem>
                     )
@@ -119,17 +120,19 @@ export function GenerateQuestionsDialog({
             <Button
               onClick={handleGenerate}
               disabled={isGenerating || isLoading}
-              className="w-full gap-2"
+              className="w-full gap-2 text-sm"
             >
               {isGenerating ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Generating Questions...
+                  <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+                  <span className="hidden sm:inline">Generating Questions...</span>
+                  <span className="sm:hidden">Generating...</span>
                 </>
               ) : (
                 <>
-                  <Sparkles className="h-4 w-4" />
-                  Generate {questionCount} Question{questionCount !== 1 ? "s" : ""}
+                  <Sparkles className="h-3 w-3 sm:h-4 sm:w-4" />
+                  <span className="hidden sm:inline">Generate {questionCount} Question{questionCount !== 1 ? "s" : ""}</span>
+                  <span className="sm:hidden">Generate {questionCount}Q</span>
                 </>
               )}
             </Button>
