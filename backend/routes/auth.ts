@@ -33,8 +33,8 @@ authRouter.post(
     }
 
     const sessionData = {
-      userAgent: req.headers["user-agent"]?.substring(0, 500) || null,
-      ipAddress: req.ip || req.connection.remoteAddress || null,
+      userAgent: req.headers["user-agent"]?.substring(0, 500) || undefined,
+      ipAddress: req.ip || req.connection.remoteAddress || undefined,
     };
 
     const loginResponse = await signupUser(validationResult.data, sessionData);
@@ -57,8 +57,8 @@ authRouter.post(
     }
 
     const sessionData = {
-      userAgent: req.headers["user-agent"]?.substring(0, 500) || null,
-      ipAddress: req.ip || req.connection.remoteAddress || null,
+      userAgent: req.headers["user-agent"]?.substring(0, 500) || undefined,
+      ipAddress: req.ip || req.connection.remoteAddress || undefined,
     };
 
     const loginResponse = await loginUser(validationResult.data, sessionData);
@@ -204,8 +204,12 @@ authRouter.get(
       created_at: session.created_at,
       updated_at: session.updated_at,
       expires_at: session.expires_at,
-      user_agent: session.user_agent ? session.user_agent.substring(0, 50) + "..." : null,
-      ip_address: session.ip_address ? session.ip_address.replace(/\.\d+$/, ".***") : null,
+      user_agent: session.user_agent
+        ? session.user_agent.substring(0, 50) + "..."
+        : null,
+      ip_address: session.ip_address
+        ? session.ip_address.replace(/\.\d+$/, ".***")
+        : null,
       is_active: session.is_active,
     }));
 
