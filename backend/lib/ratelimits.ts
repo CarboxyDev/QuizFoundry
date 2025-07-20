@@ -22,7 +22,7 @@ const MINUTES = 60 * 1000;
 export const RATE_LIMIT_CONFIG = {
   AI_OPERATIONS: {
     windowMs: 30 * MINUTES,
-    max: 10,
+    max: 30,
     message: {
       error: "Too many AI requests",
       message:
@@ -35,7 +35,7 @@ export const RATE_LIMIT_CONFIG = {
 
   CREATIVE_PROMPTS: {
     windowMs: 5 * MINUTES,
-    max: 10,
+    max: 20,
     message: {
       error: "Too many creative prompt requests",
       message:
@@ -48,7 +48,7 @@ export const RATE_LIMIT_CONFIG = {
 
   GENERAL_API: {
     windowMs: 15 * MINUTES,
-    max: 100,
+    max: 200,
     message: {
       error: "Too many requests",
       message: "You've made too many requests. Please try again later.",
@@ -60,7 +60,7 @@ export const RATE_LIMIT_CONFIG = {
 
   AUTH_OPERATIONS: {
     windowMs: 15 * MINUTES,
-    max: 20,
+    max: 40,
     message: {
       error: "Too many authentication attempts",
       message: "Too many authentication attempts. Please try again later.",
