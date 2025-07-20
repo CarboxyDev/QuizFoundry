@@ -1,6 +1,5 @@
 "use client";
 
-import { DifficultyIcon } from "@/components/DifficultyIcon";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,7 +16,6 @@ import {
   ArrowLeft,
   CheckCircle,
   Clock,
-  Eye,
   Flame,
   PieChart,
   Star,
@@ -80,15 +78,17 @@ function StatCard({
   return (
     <motion.div variants={cardVariants}>
       <Card className="bg-card/60 backdrop-blur-sm">
-        <CardContent className="p-4">
-          <div className="flex items-center gap-3">
-            <div className={cn("rounded-lg p-2", color)}>
-              <Icon className="h-5 w-5" />
+        <CardContent className="p-3 sm:p-4">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className={cn("rounded-lg p-1.5 sm:p-2", color)}>
+              <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
-            <div className="flex-1">
-              <p className="text-muted-foreground text-sm">{title}</p>
-              <div className="flex items-center gap-2">
-                <p className="text-2xl font-bold">{value}</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-muted-foreground text-xs sm:text-sm">
+                {title}
+              </p>
+              <div className="flex items-center gap-1 sm:gap-2">
+                <p className="text-lg font-bold sm:text-2xl">{value}</p>
                 {trend && (
                   <div
                     className={cn(
@@ -141,7 +141,6 @@ function PerformanceByDifficultyCard({
             <div key={difficulty} className="space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <DifficultyIcon difficulty={difficulty} />
                   <span className="text-sm font-medium capitalize">
                     {difficulty}
                   </span>
@@ -272,28 +271,30 @@ function AchievementsCard({
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-3 sm:gap-4">
             <div className="text-center">
-              <div className="mx-auto mb-2 w-fit rounded-full bg-yellow-500/10 p-3 text-yellow-500">
-                <Trophy className="h-6 w-6" />
+              <div className="mx-auto mb-2 w-fit rounded-full bg-yellow-500/10 p-2 text-yellow-500 sm:p-3">
+                <Trophy className="h-5 w-5 sm:h-6 sm:w-6" />
               </div>
-              <p className="text-lg font-bold">{achievements.perfectScores}</p>
+              <p className="text-base font-bold sm:text-lg">
+                {achievements.perfectScores}
+              </p>
               <p className="text-muted-foreground text-xs">Perfect Scores</p>
             </div>
             <div className="text-center">
-              <div className="mx-auto mb-2 w-fit rounded-full bg-green-500/10 p-3 text-green-500">
-                <TrendingUp className="h-6 w-6" />
+              <div className="mx-auto mb-2 w-fit rounded-full bg-green-500/10 p-2 text-green-500 sm:p-3">
+                <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6" />
               </div>
-              <p className="text-lg font-bold">
+              <p className="text-base font-bold sm:text-lg">
                 {achievements.improvementRate.toFixed(1)}%
               </p>
               <p className="text-muted-foreground text-xs">Improvement Rate</p>
             </div>
             <div className="text-center">
-              <div className="mx-auto mb-2 w-fit rounded-full bg-blue-500/10 p-3 text-blue-500">
-                <Target className="h-6 w-6" />
+              <div className="mx-auto mb-2 w-fit rounded-full bg-blue-500/10 p-2 text-blue-500 sm:p-3">
+                <Target className="h-5 w-5 sm:h-6 sm:w-6" />
               </div>
-              <p className="text-lg font-bold">
+              <p className="text-base font-bold sm:text-lg">
                 {achievements.consistencyScore.toFixed(1)}%
               </p>
               <p className="text-muted-foreground text-xs">Consistency</p>
@@ -365,41 +366,32 @@ function RecentAttemptsCard({
       <CardContent>
         <div className="space-y-3">
           {attempts.slice(0, 5).map((attempt, index) => (
-            <motion.div
-              key={index}
-              className="hover:bg-muted/50 group flex items-center gap-3 rounded-lg p-3 transition-colors"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <DifficultyIcon
-                difficulty={attempt.difficulty as "easy" | "medium" | "hard"}
-              />
-              <div className="flex-1">
-                <p className="group-hover:text-primary text-sm font-medium transition-colors">
-                  {attempt.quizTitle}
-                </p>
-                <p className="text-muted-foreground text-xs">
-                  by {attempt.creatorName || "Anonymous"} •{" "}
-                  {formatDate(attempt.completedAt)}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-sm font-bold">
-                  {attempt.percentage.toFixed(1)}%
-                </p>
-                <p className="text-muted-foreground text-xs">
-                  {attempt.score} points
-                </p>
-              </div>
-              <div className="opacity-0 transition-opacity group-hover:opacity-100">
-                <Link href={`/quiz/${attempt.quizId}`}>
-                  <Button variant="ghost" size="sm">
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                </Link>
-              </div>
-            </motion.div>
+            <Link href={`/quiz/${attempt.quizId}`} key={index}>
+              <motion.div
+                className="hover:bg-muted/50 group flex cursor-pointer items-center gap-2 rounded-lg p-2 transition-colors sm:gap-3 sm:p-3"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="group-hover:text-primary truncate text-xs font-medium transition-colors sm:text-sm">
+                    {attempt.quizTitle}
+                  </p>
+                  <p className="text-muted-foreground text-xs">
+                    by {attempt.creatorName || "Anonymous"} •{" "}
+                    {formatDate(attempt.completedAt)}
+                  </p>
+                </div>
+                <div className="flex-shrink-0 text-right">
+                  <p className="text-xs font-bold sm:text-sm">
+                    {attempt.percentage.toFixed(1)}%
+                  </p>
+                  <p className="text-muted-foreground text-xs">
+                    {attempt.score} points
+                  </p>
+                </div>
+              </motion.div>
+            </Link>
           ))}
           {attempts.length === 0 && (
             <p className="text-muted-foreground py-8 text-center">
@@ -426,17 +418,17 @@ function StreaksCard({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-6">
-          <div className="grid grid-cols-2 gap-6">
-            <div className="space-y-3 text-center">
-              <div className="mx-auto w-fit rounded-full bg-gradient-to-br from-orange-500/20 to-red-500/20 p-4 text-orange-500">
-                <Flame className="h-8 w-8" />
+        <div className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-2 gap-3 sm:gap-6">
+            <div className="space-y-2 text-center sm:space-y-3">
+              <div className="mx-auto w-fit rounded-full bg-gradient-to-br from-orange-500/20 to-red-500/20 p-3 text-orange-500 sm:p-4">
+                <Flame className="h-6 w-6 sm:h-8 sm:w-8" />
               </div>
               <div>
-                <p className="bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-3xl font-bold text-transparent">
+                <p className="bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-2xl font-bold text-transparent sm:text-3xl">
                   {streaks.currentStreak}
                 </p>
-                <p className="text-muted-foreground text-sm font-medium">
+                <p className="text-muted-foreground text-xs font-medium sm:text-sm">
                   Current Streak
                 </p>
                 <p className="text-muted-foreground mt-1 text-xs">
@@ -444,15 +436,15 @@ function StreaksCard({
                 </p>
               </div>
             </div>
-            <div className="space-y-3 text-center">
-              <div className="mx-auto w-fit rounded-full bg-gradient-to-br from-yellow-500/20 to-orange-500/20 p-4 text-yellow-500">
-                <Star className="h-8 w-8" />
+            <div className="space-y-2 text-center sm:space-y-3">
+              <div className="mx-auto w-fit rounded-full bg-gradient-to-br from-yellow-500/20 to-orange-500/20 p-3 text-yellow-500 sm:p-4">
+                <Star className="h-6 w-6 sm:h-8 sm:w-8" />
               </div>
               <div>
-                <p className="bg-gradient-to-r from-yellow-500 to-orange-500 bg-clip-text text-3xl font-bold text-transparent">
+                <p className="bg-gradient-to-r from-yellow-500 to-orange-500 bg-clip-text text-2xl font-bold text-transparent sm:text-3xl">
                   {streaks.longestStreak}
                 </p>
-                <p className="text-muted-foreground text-sm font-medium">
+                <p className="text-muted-foreground text-xs font-medium sm:text-sm">
                   Best Streak
                 </p>
                 <p className="text-muted-foreground mt-1 text-xs">
@@ -461,34 +453,36 @@ function StreaksCard({
               </div>
             </div>
           </div>
-          <div className="bg-card/60 rounded-xl border p-5 backdrop-blur-sm">
-            <div className="mb-4 flex items-center gap-3">
-              <div className="rounded-lg bg-blue-500/10 p-2 text-blue-500">
-                <Clock className="h-4 w-4" />
+          <div className="bg-card/60 rounded-xl border p-3 backdrop-blur-sm sm:p-5">
+            <div className="mb-3 flex items-center gap-2 sm:mb-4 sm:gap-3">
+              <div className="rounded-lg bg-blue-500/10 p-1.5 text-blue-500 sm:p-2">
+                <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
               </div>
               <div>
-                <span className="text-sm font-semibold">Activity Timeline</span>
+                <span className="text-xs font-semibold sm:text-sm">
+                  Activity Timeline
+                </span>
                 <p className="text-muted-foreground text-xs">
                   Your recent quiz activity
                 </p>
               </div>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground text-sm">
+                <span className="text-muted-foreground text-xs sm:text-sm">
                   Last Active
                 </span>
-                <span className="text-sm font-medium">
+                <span className="text-xs font-medium sm:text-sm">
                   {formatDate(streaks.lastActive)}
                 </span>
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground text-sm">
+                <span className="text-muted-foreground text-xs sm:text-sm">
                   Streak Status
                 </span>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1 sm:gap-2">
                   {streaks.currentStreak > 0 ? (
                     <>
                       <div className="rounded-full bg-green-500/20 px-2 py-1 text-xs font-medium text-green-500">
@@ -505,8 +499,8 @@ function StreaksCard({
               </div>
 
               {streaks.currentStreak > 0 && (
-                <div className="mt-3 rounded-lg border border-green-500/20 bg-green-500/5 p-3">
-                  <p className="text-sm font-medium text-green-600">
+                <div className="mt-2 rounded-lg border border-green-500/20 bg-green-500/5 p-2 sm:mt-3 sm:p-3">
+                  <p className="text-xs font-medium text-green-600 sm:text-sm">
                     🎉 You&apos;re on fire! Keep your streak alive!
                   </p>
                   <p className="text-muted-foreground mt-1 text-xs">
@@ -517,8 +511,8 @@ function StreaksCard({
               )}
 
               {streaks.currentStreak === 0 && (
-                <div className="mt-3 rounded-lg border border-blue-500/20 bg-blue-500/5 p-3">
-                  <p className="text-sm font-medium text-blue-500">
+                <div className="mt-2 rounded-lg border border-blue-500/20 bg-blue-500/5 p-2 sm:mt-3 sm:p-3">
+                  <p className="text-xs font-medium text-blue-500 sm:text-sm">
                     Ready to start a new streak?
                   </p>
                   <p className="text-muted-foreground mt-1 text-xs">
@@ -612,24 +606,29 @@ export default function ParticipantAnalyticsPage() {
                 transition={{ duration: 0.2 }}
               >
                 <Link href="/analytics">
-                  <Button variant="ghost" size="sm" className="gap-2">
-                    <ArrowLeft className="h-4 w-4" />
-                    Back to Analytics
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="gap-1 text-xs sm:gap-2 sm:text-sm"
+                  >
+                    <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline">Back to Analytics</span>
+                    <span className="sm:hidden">Back</span>
                   </Button>
                 </Link>
               </motion.div>
 
-              <h1 className="mb-2 text-4xl font-bold tracking-tight">
+              <h1 className="mb-2 text-2xl font-bold tracking-tight sm:text-4xl">
                 Participant Analytics
               </h1>
-              <p className="text-muted-foreground text-lg">
+              <p className="text-muted-foreground text-sm sm:text-lg">
                 Track your quiz performance across all quizzes you have taken.
               </p>
             </div>
           </motion.div>
 
           <motion.div
-            className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4"
+            className="mb-6 grid grid-cols-1 gap-3 sm:mb-8 sm:gap-4 md:grid-cols-2 lg:grid-cols-4"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
@@ -666,7 +665,7 @@ export default function ParticipantAnalyticsPage() {
           </motion.div>
 
           <motion.div
-            className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2"
+            className="mb-6 grid grid-cols-1 gap-4 sm:mb-8 sm:gap-6 lg:grid-cols-2"
             variants={sectionVariants}
             initial="initial"
             animate="animate"
@@ -679,7 +678,7 @@ export default function ParticipantAnalyticsPage() {
           </motion.div>
 
           <motion.div
-            className="mb-8"
+            className="mb-6 sm:mb-8"
             variants={sectionVariants}
             initial="initial"
             animate="animate"

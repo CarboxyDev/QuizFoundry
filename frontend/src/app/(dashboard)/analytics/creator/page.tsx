@@ -1,6 +1,5 @@
 "use client";
 
-import { DifficultyIcon } from "@/components/DifficultyIcon";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -16,7 +15,6 @@ import {
   Brain,
   Calendar,
   Clock,
-  Eye,
   PieChart,
   Star,
   Target,
@@ -79,15 +77,17 @@ function StatCard({
   return (
     <motion.div variants={cardVariants}>
       <Card className="bg-card/60 backdrop-blur-sm">
-        <CardContent className="p-4">
-          <div className="flex items-center gap-3">
-            <div className={cn("rounded-lg p-2", color)}>
-              <Icon className="h-5 w-5" />
+        <CardContent className="p-3 sm:p-4">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className={cn("rounded-lg p-1.5 sm:p-2", color)}>
+              <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
-            <div className="flex-1">
-              <p className="text-muted-foreground text-sm">{title}</p>
-              <div className="flex items-center gap-2">
-                <p className="text-2xl font-bold">{value}</p>
+            <div className="min-w-0 flex-1">
+              <p className="text-muted-foreground text-xs sm:text-sm">
+                {title}
+              </p>
+              <div className="flex items-center gap-1 sm:gap-2">
+                <p className="text-lg font-bold sm:text-2xl">{value}</p>
                 {trend && (
                   <div
                     className={cn(
@@ -145,7 +145,6 @@ function DifficultyBreakdownCard({
             <div key={difficulty} className="space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <DifficultyIcon difficulty={difficulty} />
                   <span className="text-sm font-medium capitalize">
                     {difficulty}
                   </span>
@@ -210,51 +209,44 @@ function TopPerformingQuizzesCard({
       <CardContent>
         <div className="space-y-3">
           {quizzes.slice(0, 5).map((quiz, index) => (
-            <motion.div
-              key={quiz.quizId}
-              className="hover:bg-muted/50 group flex items-center gap-3 rounded-lg p-3 transition-colors"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <div className="flex items-center gap-2">
-                <div
-                  className={cn(
-                    "flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold",
-                    index === 0 && "bg-yellow-500/20 text-yellow-500",
-                    index === 1 && "bg-gray-500/20 text-gray-500",
-                    index === 2 && "bg-orange-500/20 text-orange-500",
-                    index > 2 && "bg-muted text-muted-foreground",
-                  )}
-                >
-                  {index + 1}
+            <Link href={`/analytics/quiz/${quiz.quizId}`} key={quiz.quizId}>
+              <motion.div
+                className="hover:bg-muted/50 group flex cursor-pointer items-center gap-2 rounded-lg p-2 transition-colors sm:gap-3 sm:p-3"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <div className="flex flex-shrink-0 items-center gap-1 sm:gap-2">
+                  <div
+                    className={cn(
+                      "flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold sm:h-6 sm:w-6",
+                      index === 0 && "bg-yellow-500/20 text-yellow-500",
+                      index === 1 && "bg-gray-500/20 text-gray-500",
+                      index === 2 && "bg-orange-500/20 text-orange-500",
+                      index > 2 && "bg-muted text-muted-foreground",
+                    )}
+                  >
+                    {index + 1}
+                  </div>
                 </div>
-                <DifficultyIcon
-                  difficulty={quiz.difficulty as "easy" | "medium" | "hard"}
-                />
-              </div>
-              <div className="flex-1">
-                <p className="group-hover:text-primary text-sm font-medium transition-colors">
-                  {quiz.title}
-                </p>
-                <p className="text-muted-foreground text-xs">
-                  Created {formatDate(quiz.createdAt)}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-sm font-bold">{quiz.avgScore.toFixed(1)}%</p>
-                <p className="text-muted-foreground text-xs">
-                  {quiz.attempts} attempts
-                </p>
-              </div>
-              <div className="opacity-0 transition-opacity group-hover:opacity-100">
-                <Link href={`/analytics/quiz/${quiz.quizId}`}>
-                  <Button variant="ghost" size="sm">
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                </Link>
-              </div>
-            </motion.div>
+                <div className="min-w-0 flex-1">
+                  <p className="group-hover:text-primary truncate text-xs font-medium transition-colors sm:text-sm">
+                    {quiz.title}
+                  </p>
+                  <p className="text-muted-foreground text-xs">
+                    Created {formatDate(quiz.createdAt)}
+                  </p>
+                </div>
+                <div className="flex-shrink-0 text-right">
+                  <p className="text-xs font-bold sm:text-sm">
+                    {quiz.avgScore.toFixed(1)}%
+                  </p>
+                  <p className="text-muted-foreground text-xs">
+                    {quiz.attempts} attempts
+                  </p>
+                </div>
+              </motion.div>
+            </Link>
           ))}
           {quizzes.length === 0 && (
             <p className="text-muted-foreground py-8 text-center">
@@ -349,39 +341,34 @@ function MostPopularQuizzesCard({
       <CardContent>
         <div className="space-y-3">
           {quizzes.slice(0, 5).map((quiz, index) => (
-            <motion.div
-              key={quiz.quizId}
-              className="hover:bg-muted/50 group flex items-center gap-3 rounded-lg p-3 transition-colors"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <div className="flex items-center gap-2">
-                <div className="bg-primary/10 text-primary flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold">
-                  {index + 1}
+            <Link href={`/analytics/quiz/${quiz.quizId}`} key={quiz.quizId}>
+              <motion.div
+                className="hover:bg-muted/50 group flex cursor-pointer items-center gap-2 rounded-lg p-2 transition-colors sm:gap-3 sm:p-3"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <div className="flex flex-shrink-0 items-center gap-2">
+                  <div className="bg-primary/10 text-primary flex h-5 w-5 items-center justify-center rounded-full text-xs font-bold sm:h-6 sm:w-6">
+                    {index + 1}
+                  </div>
                 </div>
-              </div>
-              <div className="flex-1">
-                <p className="group-hover:text-primary text-sm font-medium transition-colors">
-                  {quiz.title}
-                </p>
-                <p className="text-muted-foreground text-xs">
-                  {quiz.uniqueUsers} unique users • {quiz.avgScore.toFixed(1)}%
-                  avg score
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-sm font-bold">{quiz.attempts}</p>
-                <p className="text-muted-foreground text-xs">attempts</p>
-              </div>
-              <div className="opacity-0 transition-opacity group-hover:opacity-100">
-                <Link href={`/analytics/quiz/${quiz.quizId}`}>
-                  <Button variant="ghost" size="sm">
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                </Link>
-              </div>
-            </motion.div>
+                <div className="min-w-0 flex-1">
+                  <p className="group-hover:text-primary truncate text-xs font-medium transition-colors sm:text-sm">
+                    {quiz.title}
+                  </p>
+                  <p className="text-muted-foreground text-xs">
+                    {quiz.uniqueUsers} users • {quiz.avgScore.toFixed(1)}%
+                  </p>
+                </div>
+                <div className="flex-shrink-0 text-right">
+                  <p className="text-xs font-bold sm:text-sm">
+                    {quiz.attempts}
+                  </p>
+                  <p className="text-muted-foreground text-xs">attempts</p>
+                </div>
+              </motion.div>
+            </Link>
           ))}
           {quizzes.length === 0 && (
             <p className="text-muted-foreground py-4 text-center">
@@ -472,17 +459,22 @@ export default function CreatorAnalyticsPage() {
                 transition={{ duration: 0.2 }}
               >
                 <Link href="/analytics">
-                  <Button variant="ghost" size="sm" className="gap-2">
-                    <ArrowLeft className="h-4 w-4" />
-                    Back to Analytics
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="gap-1 text-xs sm:gap-2 sm:text-sm"
+                  >
+                    <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <span className="hidden sm:inline">Back to Analytics</span>
+                    <span className="sm:hidden">Back</span>
                   </Button>
                 </Link>
               </motion.div>
 
-              <h1 className="mb-2 text-4xl font-bold tracking-tight">
+              <h1 className="mb-2 text-2xl font-bold tracking-tight sm:text-4xl">
                 Creator Analytics
               </h1>
-              <p className="text-muted-foreground text-lg">
+              <p className="text-muted-foreground text-sm sm:text-lg">
                 Comprehensive insights into the performance of the quizzes you
                 have created.
               </p>
@@ -490,7 +482,7 @@ export default function CreatorAnalyticsPage() {
           </motion.div>
 
           <motion.div
-            className="mb-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4"
+            className="mb-6 grid grid-cols-1 gap-3 sm:mb-8 sm:gap-4 md:grid-cols-2 lg:grid-cols-4"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
@@ -527,7 +519,7 @@ export default function CreatorAnalyticsPage() {
           </motion.div>
 
           <motion.div
-            className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2"
+            className="mb-6 grid grid-cols-1 gap-4 sm:mb-8 sm:gap-6 lg:grid-cols-2"
             variants={sectionVariants}
             initial="initial"
             animate="animate"
@@ -542,7 +534,7 @@ export default function CreatorAnalyticsPage() {
           </motion.div>
 
           <motion.div
-            className="mb-8"
+            className="mb-6 sm:mb-8"
             variants={sectionVariants}
             initial="initial"
             animate="animate"
@@ -556,59 +548,59 @@ export default function CreatorAnalyticsPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-3">
                   <motion.div variants={cardVariants}>
-                    <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-500/5 to-blue-600/10 p-6 transition-all duration-300 hover:from-blue-500/10 hover:to-blue-600/15 hover:shadow-lg">
-                      <div className="flex items-center gap-4">
-                        <div className="rounded-full bg-blue-500/20 p-3">
-                          <Clock className="h-6 w-6 text-blue-500" />
+                    <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-500/5 to-blue-600/10 p-4 transition-all duration-300 hover:from-blue-500/10 hover:to-blue-600/15 hover:shadow-lg sm:p-6">
+                      <div className="flex items-center gap-3 sm:gap-4">
+                        <div className="rounded-full bg-blue-500/20 p-2 sm:p-3">
+                          <Clock className="h-5 w-5 text-blue-500 sm:h-6 sm:w-6" />
                         </div>
                         <div>
-                          <p className="text-2xl font-bold">
+                          <p className="text-xl font-bold sm:text-2xl">
                             {analytics.engagement.recentActivity.last24Hours}
                           </p>
-                          <p className="text-muted-foreground text-sm font-medium">
+                          <p className="text-muted-foreground text-xs font-medium sm:text-sm">
                             Last 24 hours
                           </p>
                         </div>
                       </div>
-                      <div className="absolute -top-4 -right-4 h-16 w-16 rounded-full bg-blue-500/10 transition-all duration-300 group-hover:scale-110" />
+                      <div className="absolute -top-4 -right-4 h-12 w-12 rounded-full bg-blue-500/10 transition-all duration-300 group-hover:scale-110 sm:h-16 sm:w-16" />
                     </div>
                   </motion.div>
                   <motion.div variants={cardVariants}>
-                    <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-green-500/5 to-green-600/10 p-6 transition-all duration-300 hover:from-green-500/10 hover:to-green-600/15 hover:shadow-lg">
-                      <div className="flex items-center gap-4">
-                        <div className="rounded-full bg-green-500/20 p-3">
-                          <Calendar className="h-6 w-6 text-green-500" />
+                    <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-green-500/5 to-green-600/10 p-4 transition-all duration-300 hover:from-green-500/10 hover:to-green-600/15 hover:shadow-lg sm:p-6">
+                      <div className="flex items-center gap-3 sm:gap-4">
+                        <div className="rounded-full bg-green-500/20 p-2 sm:p-3">
+                          <Calendar className="h-5 w-5 text-green-500 sm:h-6 sm:w-6" />
                         </div>
                         <div>
-                          <p className="text-2xl font-bold">
+                          <p className="text-xl font-bold sm:text-2xl">
                             {analytics.engagement.recentActivity.last7Days}
                           </p>
-                          <p className="text-muted-foreground text-sm font-medium">
+                          <p className="text-muted-foreground text-xs font-medium sm:text-sm">
                             Last 7 days
                           </p>
                         </div>
                       </div>
-                      <div className="absolute -top-4 -right-4 h-16 w-16 rounded-full bg-green-500/10 transition-all duration-300 group-hover:scale-110" />
+                      <div className="absolute -top-4 -right-4 h-12 w-12 rounded-full bg-green-500/10 transition-all duration-300 group-hover:scale-110 sm:h-16 sm:w-16" />
                     </div>
                   </motion.div>
                   <motion.div variants={cardVariants}>
-                    <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-purple-500/5 to-purple-600/10 p-6 transition-all duration-300 hover:from-purple-500/10 hover:to-purple-600/15 hover:shadow-lg">
-                      <div className="flex items-center gap-4">
-                        <div className="rounded-full bg-purple-500/20 p-3">
-                          <BarChart3 className="h-6 w-6 text-purple-500" />
+                    <div className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-purple-500/5 to-purple-600/10 p-4 transition-all duration-300 hover:from-purple-500/10 hover:to-purple-600/15 hover:shadow-lg sm:p-6">
+                      <div className="flex items-center gap-3 sm:gap-4">
+                        <div className="rounded-full bg-purple-500/20 p-2 sm:p-3">
+                          <BarChart3 className="h-5 w-5 text-purple-500 sm:h-6 sm:w-6" />
                         </div>
                         <div>
-                          <p className="text-2xl font-bold">
+                          <p className="text-xl font-bold sm:text-2xl">
                             {analytics.engagement.recentActivity.last30Days}
                           </p>
-                          <p className="text-muted-foreground text-sm font-medium">
+                          <p className="text-muted-foreground text-xs font-medium sm:text-sm">
                             Last 30 days
                           </p>
                         </div>
                       </div>
-                      <div className="absolute -top-4 -right-4 h-16 w-16 rounded-full bg-purple-500/10 transition-all duration-300 group-hover:scale-110" />
+                      <div className="absolute -top-4 -right-4 h-12 w-12 rounded-full bg-purple-500/10 transition-all duration-300 group-hover:scale-110 sm:h-16 sm:w-16" />
                     </div>
                   </motion.div>
                 </div>
@@ -617,7 +609,7 @@ export default function CreatorAnalyticsPage() {
           </motion.div>
 
           <motion.div
-            className="grid grid-cols-1 gap-6 lg:grid-cols-2"
+            className="grid grid-cols-1 gap-4 sm:gap-6 lg:grid-cols-2"
             variants={sectionVariants}
             initial="initial"
             animate="animate"
