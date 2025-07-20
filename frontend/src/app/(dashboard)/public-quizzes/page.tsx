@@ -735,11 +735,6 @@ export default function PublicQuizzesPage() {
                                     ) : null}
                                   </div>
 
-                                  <div className="text-muted-foreground mt-2 flex items-center gap-2 text-xs">
-                                    <span>
-                                      by {quiz.creator?.name || "Anonymous"}
-                                    </span>
-                                  </div>
                                 </CardHeader>
 
                                 <CardContent className="flex flex-grow flex-col pt-0">

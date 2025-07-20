@@ -324,7 +324,7 @@ export interface PublicQuizFilters {
 }
 
 export interface PublicQuizzesResponse {
-  quizzes: QuizWithCreator[];
+  quizzes: Quiz[];
   pagination: {
     total: number;
     limit: number;

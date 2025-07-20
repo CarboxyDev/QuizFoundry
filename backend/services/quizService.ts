@@ -606,7 +606,7 @@ export interface PublicQuizFilters {
 }
 
 export interface PublicQuizzesResponse {
-  quizzes: QuizWithCreator[];
+  quizzes: Quiz[];
   pagination: {
     total: number;
     limit: number;
@@ -615,15 +615,8 @@ export interface PublicQuizzesResponse {
   };
 }
 
-export interface QuizWithCreator extends Quiz {
-  creator: {
-    name: string;
-    avatar_url?: string;
-  };
-}
-
 /**
- * Get public quizzes with enhanced filtering, search, and creator information
+ * Get public quizzes with enhanced filtering and search
  */
 export async function getPublicQuizzes(
   limit: number = 50,
@@ -757,41 +750,15 @@ export async function getPublicQuizzes(
     attemptsMap.set(quizId, (attemptsMap.get(quizId) || 0) + 1);
   });
 
-  // Get creator information for these quizzes
-  const userIds = [...new Set(quizzesData.map((quiz: any) => quiz.user_id))];
-  const { data: usersData, error: usersError } = await supabase
-    .from("users")
-    .select("id, name, avatar_url")
-    .in("id", userIds);
-
-  if (usersError) {
-    console.warn(`Failed to fetch user data: ${usersError.message}`);
-  }
-
-  const usersMap = new Map<string, any>();
-  (usersData || []).forEach((user: any) => {
-    usersMap.set(user.id, user);
-  });
-
   // Transform data and add stats
   let quizzesWithStats = quizzesData.map((quiz: any) => {
     const questionCount = countMap.get(quiz.id) || 0;
     const attempts = attemptsMap.get(quiz.id) || 0;
-    const user = usersMap.get(quiz.user_id);
 
     return {
       ...quiz,
       attempts,
       question_count: questionCount,
-      creator: user
-        ? {
-            name: user.name,
-            avatar_url: user.avatar_url,
-          }
-        : {
-            name: "Anonymous",
-            avatar_url: null,
-          },
     };
   });
 
