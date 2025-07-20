@@ -24,15 +24,88 @@ export interface QuizContext {
   }>;
 }
 
+export const SHARED_QUALITY_REQUIREMENTS = {
+  JSON_VALIDATION: `
+CRITICAL JSON REQUIREMENTS:
+- Your response MUST be valid, parseable JSON only
+- Before responding, mentally validate your JSON structure
+- Ensure all quotes are properly escaped
+- Verify all brackets and braces are balanced
+- Do not include any text before or after the JSON object
+- If you cannot generate valid JSON, respond with an error object: {"error": "reason"}
+`,
+
+  QUESTION_QUALITY: `
+QUESTION QUALITY STANDARDS:
+- Questions should be concise and focused (maximum 15-20 words)
+- Each question must test one specific concept or fact
+- Use clear, direct language - avoid ambiguous phrasing
+- Use active voice when possible
+- Ensure exactly ONE correct answer per question
+- Make questions appropriately challenging for the target difficulty
+- Avoid double negatives or unnecessarily complex constructions
+`,
+
+  OPTION_QUALITY: `
+OPTION QUALITY STANDARDS:
+- Keep options concise (maximum 8-10 words each)
+- All options should be similar in length and structure
+- Incorrect options must be plausible distractors, not obviously wrong
+- Avoid "all of the above" or "none of the above" options
+- Each option should be a complete, standalone answer
+- Options should be parallel in grammatical structure
+- Ensure options test understanding, not just memorization
+`,
+
+  SELF_VALIDATION: `
+SELF-VALIDATION CHECKLIST:
+Before responding, verify:
+□ JSON is valid and parseable
+□ Exactly one correct answer per question
+□ All questions relate to the specified topic
+□ Difficulty level is appropriate and consistent
+□ No duplicate or nearly identical questions
+□ All required fields are present and properly formatted
+□ Content is educational and appropriate
+`,
+};
+
 export class PromptBuilder {
   static getDifficultyGuidelines(difficulty: string): string {
     switch (difficulty) {
       case "easy":
-        return "   - Use straightforward questions with obvious correct answers\n   - Include basic concepts and definitions\n   - Avoid tricky or ambiguous phrasing\n   - Questions should be answerable with fundamental knowledge\n   - Use simple, clear language that's easy to understand";
+        return `   - Use straightforward questions with obvious correct answers
+   - Include basic concepts and definitions
+   - Avoid tricky or ambiguous phrasing
+   - Questions should be answerable with fundamental knowledge
+   - Use simple, clear language that's easy to understand
+   
+   EASY EXAMPLES:
+   - "What is the capital of France?" (Geography)
+   - "Which planet is closest to the Sun?" (Science)
+   - "Who wrote Romeo and Juliet?" (Literature)`;
       case "medium":
-        return "   - Include some analytical thinking and application of concepts\n   - Mix of factual and reasoning questions\n   - Moderate complexity in language and concepts\n   - Questions may require connecting multiple pieces of information\n   - Balance between recall and understanding";
+        return `   - Include some analytical thinking and application of concepts
+   - Mix of factual and reasoning questions
+   - Moderate complexity in language and concepts
+   - Questions may require connecting multiple pieces of information
+   - Balance between recall and understanding
+   
+   MEDIUM EXAMPLES:
+   - "Which factor most contributed to the fall of the Roman Empire?" (History)
+   - "What happens when you mix an acid and a base?" (Science)
+   - "Which literary device is used in 'The wind whispered'?" (Literature)`;
       case "hard":
-        return "   - Require deep understanding and critical thinking\n   - Include complex scenarios and edge cases\n   - Challenge advanced knowledge of the topic\n   - Questions may involve analysis, synthesis, or evaluation\n   - May require expert-level knowledge or specialized understanding";
+        return `   - Require deep understanding and critical thinking
+   - Include complex scenarios and edge cases
+   - Challenge advanced knowledge of the topic
+   - Questions may involve analysis, synthesis, or evaluation
+   - May require expert-level knowledge or specialized understanding
+   
+   HARD EXAMPLES:
+   - "Which economic theory best explains stagflation?" (Economics)
+   - "What is the primary cause of quantum decoherence?" (Physics)
+   - "Which narrative technique defines stream of consciousness?" (Literature)`;
       default:
         return "   - Adjust difficulty appropriately for the target audience";
     }
@@ -60,8 +133,16 @@ export class PromptBuilder {
 
 export const QUIZ_GENERATION_PROMPT: PromptTemplate = {
   system:
-    "You are an expert quiz creator with deep knowledge across multiple domains. Your specialty is creating engaging, accurate, and well-structured educational quizzes that provide an excellent learning experience.",
+    "You are an expert quiz creator with deep knowledge across multiple domains. Your specialty is creating engaging, accurate, and well-structured educational quizzes that provide an excellent learning experience. You MUST respond with valid JSON only.",
   user: `Create a {difficulty} difficulty quiz with the following specifications:
+
+{jsonValidation}
+
+EDGE CASE HANDLING:
+- If the topic is too broad, focus on the most important/popular aspects
+- If the topic is too narrow for {questionCount} questions, create the best questions possible and note in description
+- If you lack sufficient knowledge, focus on widely-known facts and clearly indicate uncertainty in description
+- Prioritize accuracy over quantity - better fewer good questions than many poor ones
 
 REQUIREMENTS:
 - Topic: {prompt}
@@ -102,83 +183,135 @@ Respond with ONLY a valid JSON object in this exact format:
 
 QUALITY GUIDELINES:
 1. Title should be engaging and concise (suggested: "{suggestedTitle}")
+   - Prioritize clarity over creativity when they conflict
+   - Do not include "quiz" or "quiz on" in the title
 2. For {difficulty} difficulty:
 {difficultyGuidelines}
-3. Each question must have EXACTLY ONE correct answer
-4. Incorrect options should be plausible but clearly wrong
-5. The correct answer must be accurate and correct. Incorrect answers will result in a terrible experience for the user.
-6. Use clear, unambiguous language
-7. Ensure all content relates to: "{prompt}"
-8. Number order_index starting from 0
-9. Generate exactly {questionCount} questions with {optionsCount} options each
-10. Do not include any other text in the response.
-11. Make sure you do not include "quiz" or "quiz on" or "Create a quiz on" in the title. The quiz title must consist of the key topic keywords only.
+3. ACCURACY IS PARAMOUNT - incorrect answers will create poor user experience
+4. Generate exactly {questionCount} questions with {optionsCount} options each
+5. Ensure all content relates to: "{prompt}"
+6. Number order_index starting from 0
 
-QUESTION QUALITY REQUIREMENTS:
-- Questions should be concise and focused (maximum 15-20 words)
-- Avoid unnecessarily long or complex sentences
-- Each question should test one specific concept or fact
-- Questions should be direct and easy to understand
-- Avoid ambiguous phrasing or double negatives
-- Use active voice when possible
-- Make questions engaging and interesting, not boring
-- Ensure questions are neither too obvious nor impossibly difficult for the target difficulty level
+{questionQuality}
 
-OPTION QUALITY REQUIREMENTS:
-- Keep options concise (maximum 8-10 words each)
-- All options should be similar in length and structure
-- Incorrect options should be believable distractors, not obviously wrong
-- Avoid "all of the above" or "none of the above" options
-- Each option should be a complete, standalone answer
-- Options should be parallel in grammatical structure
+{optionQuality}
+
+{selfValidation}
 
 Generate the quiz now:`,
 };
 
+export class CreativePromptGenerator {
+  private static readonly SIMPLE_TOPICS = [
+    // Geography & Places
+    "European capital cities", "African countries", "US state flags", "World landmarks", 
+    "Mountain ranges", "Famous rivers", "Island nations", "Desert locations",
+    
+    // Animals & Nature
+    "Ocean animals", "Jungle creatures", "Bird species", "Dog breeds", 
+    "Farm animals", "Endangered species", "Prehistoric animals", "Pet care",
+    
+    // Food & Cooking
+    "Italian dishes", "Breakfast foods", "Tropical fruits", "Cooking methods",
+    "World cuisines", "Desserts", "Spices and herbs", "Fast food chains",
+    
+    // Entertainment & Media
+    "Disney movies", "Classic TV shows", "Video game characters", "Movie genres",
+    "Music instruments", "Famous bands", "Board games", "Cartoon characters",
+    
+    // Sports & Games
+    "Olympic sports", "Baseball teams", "Soccer rules", "Winter sports",
+    "Card games", "Famous athletes", "Sports equipment", "Game rules",
+    
+    // Science & Technology
+    "Solar system", "Human body", "Weather patterns", "Simple machines",
+    "Smartphone features", "Internet basics", "Computer parts", "Car components",
+    
+    // History & Culture
+    "Ancient Egypt", "Medieval times", "American presidents", "World War facts",
+    "Famous explorers", "Traditional holidays", "Cultural traditions", "Historical inventions",
+    
+    // Everyday Life
+    "Household items", "Clothing types", "School subjects", "Job professions",
+    "Transportation", "City features", "Shopping items", "Home appliances"
+  ];
+
+  static generateVariedPrompt(): string {
+    // Use proper randomization for variety
+    const randomIndex1 = Math.floor(Math.random() * this.SIMPLE_TOPICS.length);
+    let randomIndex2 = Math.floor(Math.random() * this.SIMPLE_TOPICS.length);
+    
+    // Ensure fallback is different from primary
+    while (randomIndex2 === randomIndex1) {
+      randomIndex2 = Math.floor(Math.random() * this.SIMPLE_TOPICS.length);
+    }
+    
+    const primaryTopic = this.SIMPLE_TOPICS[randomIndex1];
+    const fallbackTopic = this.SIMPLE_TOPICS[randomIndex2];
+    
+    return `Generate a simple, accessible quiz topic that people will enjoy.
+
+REQUIREMENTS:
+- Keep it simple and familiar - topics that most people can relate to
+- Avoid complex, poetic, or fancy language
+- Use clear, straightforward descriptions
+- Make it educational but not intimidating
+- Topics should be fun and engaging for a general audience
+
+SUGGESTED AREAS (pick one or similar):
+Primary suggestion: "${primaryTopic}"
+Alternative suggestion: "${fallbackTopic}"
+
+OTHER GOOD EXAMPLES:
+- "Movie actors from the 90s"
+- "Basic math concepts" 
+- "Popular dog breeds"
+- "Common kitchen tools"
+- "Famous landmarks"
+- "Types of weather"
+- "School subjects"
+- "Breakfast cereals"
+
+AVOID:
+- Overly academic or scholarly topics
+- Complex scientific terminology
+- Poetic or artistic language
+- Obscure or niche subjects
+- Topics with dramatic phrases like "secrets of" or "mysteries"
+
+FORMAT: Return only a simple topic title (maximum 6 words), nothing else.
+
+Examples of GOOD responses:
+"Popular TV shows from the 2000s"
+"Common birds in North America"
+"Basic cooking techniques"
+
+Examples of BAD responses:
+"Whispered Secrets of Ancient Gastronomy"
+"The Enigmatic Dance of Molecular Structures"
+"Hidden Narratives in Suburban Architecture"
+
+Generate a simple, friendly topic now:`;
+  }
+}
+
 export const CREATIVE_QUIZ_PROMPT: PromptTemplate = {
   system:
-    "You are a creative educational content specialist who excels at generating engaging and diverse quiz topics that appeal to a wide audience.",
-  user: `Generate a creative and engaging quiz topic title.
-  The response should be a fun, educational, and interesting quiz idea that would make for great trivia.
-  It should be small and concise and good enough to generate a good quiz.
-  
-  Choose topics from (but not limited to) areas like:
-  - Pop culture and entertainment
-  - Science and nature
-  - Historical events and figures
-  - Geography and world cultures
-  - Food and cooking traditions
-  - Technology and innovations
-  - Art and literature
-  - Sports and video games
-  - Mythology and legends
-  - Fun facts and general trivia
-  - Other unique and engaging knowledge areas
-
-  The response:
-  - Must be only 1 sentence (at most 2), with no extra explanation
-  - Should not include the word "quiz"
-  - Should not include markdown, emojis, or formatting
-  - Should avoid dramatic, poetic, or clickbait phrases (e.g., "unsung heroes", "unraveling the secrets", "the surprising science behind")
-  - Should avoid vague or filler-heavy phrases
-  - Must use simple, direct, and descriptive language
-
-  Examples of excellent responses:
-  "Food cultures from around the world",
-  "Iconic video game soundtracks",
-  "Popular mythological creatures from around the world",
-  "Solar system planets and their characteristics",
-
-  Examples of bad responses:
-  "Unsung heroes of scientific breakthroughs",
-  "Unraveling the secrets of the deep sea's most bizarre inhabitants."
-  "The surprising science behind everyday phenomena"`,
+    "You are a helpful assistant that generates simple, accessible quiz topics that people will enjoy. Focus on familiar subjects that are educational but not intimidating. Avoid complex or overly academic language.",
+  user: CreativePromptGenerator.generateVariedPrompt(),
 };
 
 export const ADDITIONAL_QUESTIONS_PROMPT: PromptTemplate = {
   system:
-    "You are an expert quiz creator specializing in maintaining consistency and flow within quiz sets while introducing fresh and engaging content.",
+    "You are an expert quiz creator specializing in maintaining consistency and flow within quiz sets while introducing fresh and engaging content. You MUST respond with valid JSON only.",
   user: `Generate {count} additional questions for an existing quiz.
+
+{jsonValidation}
+
+EDGE CASE HANDLING:
+- If requesting more questions than the topic can reasonably support, generate fewer high-quality questions
+- Ensure new questions complement rather than duplicate existing content
+- If the existing questions suggest a specific subtopic focus, maintain that focus
 
 QUIZ CONTEXT:
 - Title: {title}
@@ -235,42 +368,26 @@ Respond with ONLY a valid JSON object in this exact format:
 QUALITY GUIDELINES:
 1. For {difficulty} difficulty:
 {difficultyGuidelines}
-2. Each question must have EXACTLY ONE correct answer
-3. Incorrect options should be plausible but clearly wrong
-4. The correct answer must be accurate and correct
-5. Use clear, unambiguous language
-6. Ensure all content relates to the topic
-7. Number order_index starting from 0
-8. Avoid duplicating existing questions
-9. Do not include any other text in the response
+2. Avoid duplicating existing questions or concepts
+3. Ensure questions complement and enhance the existing quiz
+4. Number order_index starting from 0
+5. Maintain consistency with existing question style and difficulty
 
-QUESTION QUALITY REQUIREMENTS:
-- Questions should be concise and focused (maximum 15-20 words)
-- Avoid unnecessarily long or complex sentences
-- Each question should test one specific concept or fact
-- Questions should be direct and easy to understand
-- Avoid ambiguous phrasing or double negatives
-- Use active voice when possible
-- Make questions engaging and interesting, not boring
-- Ensure questions complement existing questions without being repetitive
-- Questions should flow naturally within the quiz context
+{questionQuality}
 
-OPTION QUALITY REQUIREMENTS:
-- Keep options concise (maximum 8-10 words each)
-- All options should be similar in length and structure
-- Incorrect options should be believable distractors, not obviously wrong
-- Avoid "all of the above" or "none of the above" options
-- Each option should be a complete, standalone answer
-- Options should be parallel in grammatical structure
-- Ensure options are relevant to the question and topic
+{optionQuality}
+
+{selfValidation}
 
 Generate the questions now:`,
 };
 
 export const QUESTION_ENHANCEMENT_PROMPT: PromptTemplate = {
   system:
-    "You are an expert educational content editor with a focus on clarity, engagement, and pedagogical effectiveness. Your specialty is improving quiz questions while maintaining their educational value.",
+    "You are an expert educational content editor with a focus on clarity, engagement, and pedagogical effectiveness. Your specialty is improving quiz questions while maintaining their educational value. You MUST respond with valid JSON only.",
   user: `Enhance the following question to make it clearer, more engaging, and better suited for the quiz difficulty level.
+
+{jsonValidation}
 
 ORIGINAL QUESTION:
 {questionText}
@@ -303,29 +420,29 @@ QUALITY GUIDELINES:
 2. Keep the core meaning of the original question
 3. Make improvements that genuinely enhance the question
 4. Ensure the enhanced question is still answerable
-5. Use clear, unambiguous language
-6. Keep reasoning concise (1-2 sentences)
-7. Do not include any other text in the response
+5. Keep reasoning concise (1-2 sentences)
+6. When clarity and engagement conflict, prioritize clarity
 
 ENHANCEMENT FOCUS AREAS:
-- Make the question more concise if it's too long (aim for 15-20 words maximum)
-- Improve clarity and readability
-- Remove ambiguous or confusing phrasing
-- Ensure the question is direct and specific
+- Improve clarity and readability (primary goal)
+- Make appropriately engaging for educational context
+- Ensure question matches target difficulty level
 - Fix grammatical issues or awkward wording
-- Make the question more engaging while maintaining accuracy
-- Ensure the question matches the appropriate difficulty level
-- Remove double negatives or unnecessarily complex constructions
+- Remove ambiguous or confusing phrasing
 - Use active voice when possible
-- Ensure the question is self-contained and doesn't rely on external context
+- Ensure question is self-contained
+
+{selfValidation}
 
 Enhance the question now:`,
 };
 
 export const ADDITIONAL_OPTIONS_PROMPT: PromptTemplate = {
   system:
-    "You are an expert quiz creator with a specialty in crafting plausible distractors that test understanding while avoiding common pitfalls in multiple-choice design.",
+    "You are an expert quiz creator with a specialty in crafting plausible distractors that test understanding while avoiding common pitfalls in multiple-choice design. You MUST respond with valid JSON only.",
   user: `Generate {optionsCount} additional INCORRECT answer options for this question.
+
+{jsonValidation}
 
 QUESTION:
 {questionText}
@@ -361,32 +478,30 @@ Respond with ONLY a valid JSON object in this exact format:
 
 QUALITY GUIDELINES:
 1. All generated options must be INCORRECT answers
-2. Options should be plausible distractors
-3. Avoid obviously wrong or silly options
-4. Match the style and length of existing options
-5. Use clear, unambiguous language
-6. Number order_index starting from 0
-7. Do not include any other text in the response
+2. Options should be plausible distractors that test understanding
+3. Match the style and length of existing options
+4. Number order_index starting from 0
+5. Focus on common misconceptions rather than random wrong answers
 
-OPTION QUALITY REQUIREMENTS:
-- Keep options concise (maximum 8-10 words each)
-- All options should be similar in length and structure to existing options
-- Incorrect options should be believable distractors that test common misconceptions
-- Avoid "all of the above" or "none of the above" options
-- Each option should be a complete, standalone answer
-- Options should be parallel in grammatical structure
+{optionQuality}
+
+SPECIFIC REQUIREMENTS:
+- Options should represent common wrong answers or misconceptions
+- Use the same tone and style as existing options
 - Ensure options are relevant to the question and topic
 - Make sure options are not obviously wrong or absurd
-- Use the same tone and style as the existing options
-- Options should represent common wrong answers or misconceptions
+
+{selfValidation}
 
 Generate the options now:`,
 };
 
 export const QUESTION_TYPE_SUGGESTIONS_PROMPT: PromptTemplate = {
   system:
-    "You are an educational design expert with deep knowledge of assessment methodologies and question taxonomies. Your specialty is suggesting diverse question types that comprehensively evaluate understanding.",
+    "You are an educational design expert with deep knowledge of assessment methodologies and question taxonomies. Your specialty is suggesting diverse question types that comprehensively evaluate understanding. You MUST respond with valid JSON only.",
   user: `Suggest 5 different question types that would work well for a {difficulty} quiz about "{topic}".
+
+{jsonValidation}
 
 TOPIC: {topic}
 DIFFICULTY: {difficulty}
@@ -433,29 +548,29 @@ QUALITY GUIDELINES:
 {difficultyGuidelines}
 2. Each type should be distinct and valuable
 3. Examples should be specific to the topic
-4. Descriptions should be clear and helpful
-5. Types should progressively build knowledge
-6. Do not include any other text in the response
+4. Descriptions should be clear and helpful (1-2 sentences)
+5. Focus on practical, actionable suggestions
 
 SUGGESTION QUALITY REQUIREMENTS:
-- Make suggestions practical and actionable for quiz creators
 - Ensure each suggestion type is clearly different from others
 - Example questions should be concise (15-20 words maximum)
-- Descriptions should be brief but informative (1-2 sentences)
 - Focus on question types that work well for multiple choice format
-- Suggestions should cover different aspects of the topic
-- Examples should be engaging and appropriately challenging
-- Each suggestion should add value to the quiz
+- Suggestions should cover different cognitive aspects of the topic
+- Examples should be appropriately challenging for the difficulty level
 - Avoid overly complex or academic question types
 - Make sure suggestions are relevant to the specific topic provided
+
+{selfValidation}
 
 Generate the suggestions now:`,
 };
 
 export const SECURITY_CHECK_PROMPT: PromptTemplate = {
   system:
-    "You are a content safety specialist with expertise in educational content moderation. Your role is to ensure quiz content meets high standards for safety, quality, and educational value while being fair and constructive in your evaluations.",
-  user: `Review this user-generated quiz content for quality and safety. 
+    "You are a content safety specialist with expertise in educational content moderation. Your role is to ensure quiz content meets high standards for safety, quality, and educational value while being fair and constructive in your evaluations. You MUST respond with valid JSON only.",
+  user: `Review this user-generated quiz content for quality and safety.
+
+{jsonValidation} 
 
 QUIZ TO REVIEW:
 Title: {title}
@@ -501,9 +616,12 @@ Respond with ONLY a valid JSON object in this exact format:
 GUIDELINES:
 - Set isApproved to true if the content meets all criteria
 - Set isApproved to false if there are significant violations
-- confidence should be a number between 0-100
+- confidence should be a number between 0-100 (higher = more confident in decision)
 - concerns should be an array of specific issues (empty array if none)
-- Keep reasoning concise but informative
+- Keep reasoning concise but informative (1-2 sentences)
+- Be fair and constructive - don't reject content for minor issues
+
+{selfValidation}
 
 Evaluate the quiz now:`,
 };
@@ -523,7 +641,17 @@ export class PromptFormatter {
       .replace(/{questionCount}/g, context.questionCount.toString())
       .replace(/{optionsCount}/g, context.optionsCount.toString())
       .replace(/{suggestedTitle}/g, suggestedTitle)
-      .replace(/{difficultyGuidelines}/g, difficultyGuidelines);
+      .replace(/{difficultyGuidelines}/g, difficultyGuidelines)
+      .replace(/{jsonValidation}/g, SHARED_QUALITY_REQUIREMENTS.JSON_VALIDATION)
+      .replace(
+        /{questionQuality}/g,
+        SHARED_QUALITY_REQUIREMENTS.QUESTION_QUALITY
+      )
+      .replace(/{optionQuality}/g, SHARED_QUALITY_REQUIREMENTS.OPTION_QUALITY)
+      .replace(
+        /{selfValidation}/g,
+        SHARED_QUALITY_REQUIREMENTS.SELF_VALIDATION
+      );
   }
 
   static formatAdditionalQuestions(
@@ -549,7 +677,17 @@ export class PromptFormatter {
       .replace(/{difficulty}/g, context.difficulty)
       .replace(/{originalPrompt}/g, context.originalPrompt)
       .replace(/{existingQuestions}/g, existingQuestionsText)
-      .replace(/{difficultyGuidelines}/g, difficultyGuidelines);
+      .replace(/{difficultyGuidelines}/g, difficultyGuidelines)
+      .replace(/{jsonValidation}/g, SHARED_QUALITY_REQUIREMENTS.JSON_VALIDATION)
+      .replace(
+        /{questionQuality}/g,
+        SHARED_QUALITY_REQUIREMENTS.QUESTION_QUALITY
+      )
+      .replace(/{optionQuality}/g, SHARED_QUALITY_REQUIREMENTS.OPTION_QUALITY)
+      .replace(
+        /{selfValidation}/g,
+        SHARED_QUALITY_REQUIREMENTS.SELF_VALIDATION
+      );
   }
 
   static formatQuestionEnhancement(
@@ -565,7 +703,12 @@ export class PromptFormatter {
       .replace(/{title}/g, context.title)
       .replace(/{difficulty}/g, context.difficulty)
       .replace(/{originalPrompt}/g, context.originalPrompt)
-      .replace(/{difficultyGuidelines}/g, difficultyGuidelines);
+      .replace(/{difficultyGuidelines}/g, difficultyGuidelines)
+      .replace(/{jsonValidation}/g, SHARED_QUALITY_REQUIREMENTS.JSON_VALIDATION)
+      .replace(
+        /{selfValidation}/g,
+        SHARED_QUALITY_REQUIREMENTS.SELF_VALIDATION
+      );
   }
 
   static formatAdditionalOptions(
@@ -583,7 +726,13 @@ export class PromptFormatter {
     return ADDITIONAL_OPTIONS_PROMPT.user
       .replace(/{questionText}/g, questionText)
       .replace(/{existingOptions}/g, existingOptionsText)
-      .replace(/{optionsCount}/g, optionsCount.toString());
+      .replace(/{optionsCount}/g, optionsCount.toString())
+      .replace(/{jsonValidation}/g, SHARED_QUALITY_REQUIREMENTS.JSON_VALIDATION)
+      .replace(/{optionQuality}/g, SHARED_QUALITY_REQUIREMENTS.OPTION_QUALITY)
+      .replace(
+        /{selfValidation}/g,
+        SHARED_QUALITY_REQUIREMENTS.SELF_VALIDATION
+      );
   }
 
   static formatQuestionTypeSuggestions(
@@ -596,7 +745,12 @@ export class PromptFormatter {
     return QUESTION_TYPE_SUGGESTIONS_PROMPT.user
       .replace(/{topic}/g, topic)
       .replace(/{difficulty}/g, difficulty)
-      .replace(/{difficultyGuidelines}/g, difficultyGuidelines);
+      .replace(/{difficultyGuidelines}/g, difficultyGuidelines)
+      .replace(/{jsonValidation}/g, SHARED_QUALITY_REQUIREMENTS.JSON_VALIDATION)
+      .replace(
+        /{selfValidation}/g,
+        SHARED_QUALITY_REQUIREMENTS.SELF_VALIDATION
+      );
   }
 
   static formatSecurityCheck(quizContent: {
@@ -624,6 +778,11 @@ ${q.options.map((opt, optIndex) => `  ${optIndex + 1}. ${opt.option_text}`).join
         /{description}/g,
         quizContent.description || "No description provided"
       )
-      .replace(/{questions}/g, questionsText);
+      .replace(/{questions}/g, questionsText)
+      .replace(/{jsonValidation}/g, SHARED_QUALITY_REQUIREMENTS.JSON_VALIDATION)
+      .replace(
+        /{selfValidation}/g,
+        SHARED_QUALITY_REQUIREMENTS.SELF_VALIDATION
+      );
   }
 }

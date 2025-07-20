@@ -2,7 +2,7 @@ import { GoogleGenAI } from "@google/genai";
 import { AppError } from "../errors/AppError";
 import {
   PromptFormatter,
-  CREATIVE_QUIZ_PROMPT,
+  CreativePromptGenerator,
   type QuizGenerationContext,
   type QuizContext as PromptQuizContext,
 } from "./prompts";
@@ -369,7 +369,7 @@ function normalizeAIResponse(
   };
 }
 
-function createQuizPrompt(input: QuizGenerationInput): string {
+function createQuizPrompt(input: QuizGenerationInput): Array<{ role: string; parts: Array<{ text: string }> }> {
   const context: QuizGenerationContext = {
     prompt: input.prompt,
     difficulty: input.difficulty,
@@ -377,7 +377,14 @@ function createQuizPrompt(input: QuizGenerationInput): string {
     optionsCount: input.optionsCount,
   };
 
-  return PromptFormatter.formatQuizGeneration(context);
+  const formattedPrompt = PromptFormatter.formatQuizGeneration(context);
+  
+  return [
+    {
+      role: "user",
+      parts: [{ text: formattedPrompt }],
+    },
+  ];
 }
 
 export async function generateCreativeQuizPrompt(): Promise<string> {
@@ -387,14 +394,17 @@ export async function generateCreativeQuizPrompt(): Promise<string> {
 
   const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
-  const prompt = CREATIVE_QUIZ_PROMPT.user;
+  // Generate a new varied prompt each time for maximum diversity
+  const dynamicPrompt = CreativePromptGenerator.generateVariedPrompt();
+
+  console.log(`[Creative Quiz] Generating with variety seed: ${dynamicPrompt.substring(0, 100)}...`);
 
   const response = await ai.models.generateContent({
     model,
     contents: [
       {
         role: "user",
-        parts: [{ text: prompt }],
+        parts: [{ text: dynamicPrompt }],
       },
     ],
   });
@@ -403,6 +413,8 @@ export async function generateCreativeQuizPrompt(): Promise<string> {
   if (!generatedPrompt) {
     throw new AppError("Failed to generate quiz prompt", 500);
   }
+  
+  console.log(`[Creative Quiz] Generated topic: "${generatedPrompt}"`);
   return generatedPrompt;
 }
 
@@ -759,7 +771,7 @@ export async function suggestQuestionTypes(
 function createAdditionalQuestionsPrompt(
   context: QuizContext,
   count: number
-): string {
+): Array<{ role: string; parts: Array<{ text: string }> }> {
   const promptContext: PromptQuizContext = {
     title: context.title,
     description: context.description,
@@ -768,13 +780,20 @@ function createAdditionalQuestionsPrompt(
     existingQuestions: context.existingQuestions,
   };
 
-  return PromptFormatter.formatAdditionalQuestions(promptContext, count);
+  const formattedPrompt = PromptFormatter.formatAdditionalQuestions(promptContext, count);
+  
+  return [
+    {
+      role: "user",
+      parts: [{ text: formattedPrompt }],
+    },
+  ];
 }
 
 function createQuestionEnhancementPrompt(
   questionText: string,
   context: QuizContext
-): string {
+): Array<{ role: string; parts: Array<{ text: string }> }> {
   const promptContext: PromptQuizContext = {
     title: context.title,
     description: context.description,
@@ -783,26 +802,47 @@ function createQuestionEnhancementPrompt(
     existingQuestions: context.existingQuestions,
   };
 
-  return PromptFormatter.formatQuestionEnhancement(questionText, promptContext);
+  const formattedPrompt = PromptFormatter.formatQuestionEnhancement(questionText, promptContext);
+  
+  return [
+    {
+      role: "user",
+      parts: [{ text: formattedPrompt }],
+    },
+  ];
 }
 
 function createAdditionalOptionsPrompt(
   questionText: string,
   existingOptions: Array<{ option_text: string; is_correct: boolean }>,
   optionsCount: number
-): string {
-  return PromptFormatter.formatAdditionalOptions(
+): Array<{ role: string; parts: Array<{ text: string }> }> {
+  const formattedPrompt = PromptFormatter.formatAdditionalOptions(
     questionText,
     existingOptions,
     optionsCount
   );
+  
+  return [
+    {
+      role: "user",
+      parts: [{ text: formattedPrompt }],
+    },
+  ];
 }
 
 function createQuestionTypeSuggestionsPrompt(
   topic: string,
   difficulty: "easy" | "medium" | "hard"
-): string {
-  return PromptFormatter.formatQuestionTypeSuggestions(topic, difficulty);
+): Array<{ role: string; parts: Array<{ text: string }> }> {
+  const formattedPrompt = PromptFormatter.formatQuestionTypeSuggestions(topic, difficulty);
+  
+  return [
+    {
+      role: "user",
+      parts: [{ text: formattedPrompt }],
+    },
+  ];
 }
 
 function normalizeAdditionalQuestionsResponse(
@@ -1069,8 +1109,15 @@ export async function validateQuizContent(
 
 function createSecurityCheckPrompt(
   quizContent: QuizContentForValidation
-): string {
-  return PromptFormatter.formatSecurityCheck(quizContent);
+): Array<{ role: string; parts: Array<{ text: string }> }> {
+  const formattedPrompt = PromptFormatter.formatSecurityCheck(quizContent);
+  
+  return [
+    {
+      role: "user",
+      parts: [{ text: formattedPrompt }],
+    },
+  ];
 }
 
 function parseSecurityCheckResponse(text: string): AISecurityCheckResult {
