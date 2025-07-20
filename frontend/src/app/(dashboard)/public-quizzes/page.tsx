@@ -19,7 +19,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { formatDate } from "@/lib/date";
-import { getPublicQuizStats, getPublicQuizzes } from "@/lib/quiz-api";
+import {
+  getPublicQuizStats,
+  getPublicQuizzes,
+  type PublicQuizFilters,
+} from "@/lib/quiz-api";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
@@ -30,7 +34,6 @@ import {
   ChevronRight,
   Clock,
   FileQuestion,
-  Filter,
   Play,
   Search,
   Sparkles,
@@ -46,6 +49,7 @@ const QUIZZES_PER_PAGE = 12;
 
 type DifficultyFilter = "all" | "easy" | "medium" | "hard";
 type TypeFilter = "all" | "ai" | "manual";
+type SortByFilter = "created_at" | "popularity" | "difficulty" | "title";
 
 const pageVariants = {
   initial: { opacity: 0, y: 20 },
@@ -122,16 +126,39 @@ export default function PublicQuizzesPage() {
   const [difficultyFilter, setDifficultyFilter] =
     useState<DifficultyFilter>("all");
   const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
+  const [sortBy, setSortBy] = useState<SortByFilter>("created_at");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+
+  // Build filters for API call
+  const filters: PublicQuizFilters = {
+    ...(searchTerm && { search: searchTerm }),
+    ...(difficultyFilter !== "all" && { difficulty: difficultyFilter }),
+    ...(typeFilter !== "all" && { type: typeFilter }),
+    sortBy,
+    sortOrder,
+  };
 
   const {
-    data: quizzes = [],
+    data: publicQuizzesData,
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["public-quizzes", currentPage],
+    queryKey: [
+      "public-quizzes",
+      currentPage,
+      searchTerm,
+      difficultyFilter,
+      typeFilter,
+      sortBy,
+      sortOrder,
+    ],
     queryFn: () =>
-      getPublicQuizzes(QUIZZES_PER_PAGE, (currentPage - 1) * QUIZZES_PER_PAGE),
-    staleTime: 5 * 60 * 1000,
+      getPublicQuizzes(
+        QUIZZES_PER_PAGE,
+        (currentPage - 1) * QUIZZES_PER_PAGE,
+        filters,
+      ),
+    staleTime: 30 * 1000, // Reduced stale time since we have server-side filtering
   });
 
   const {
@@ -144,26 +171,17 @@ export default function PublicQuizzesPage() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const filteredQuizzes = quizzes.filter((quiz) => {
-    const matchesSearch =
-      quiz.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      quiz.description?.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesDifficulty =
-      difficultyFilter === "all" || quiz.difficulty === difficultyFilter;
-
-    const matchesType =
-      typeFilter === "all" ||
-      (typeFilter === "ai" && quiz.is_ai_generated) ||
-      (typeFilter === "manual" && !quiz.is_ai_generated);
-
-    return matchesSearch && matchesDifficulty && matchesType;
-  });
+  // Extract quizzes and pagination from response
+  const quizzes = publicQuizzesData?.quizzes || [];
+  const pagination = publicQuizzesData?.pagination;
 
   const clearFilters = () => {
     setSearchTerm("");
     setDifficultyFilter("all");
     setTypeFilter("all");
+    setSortBy("created_at");
+    setSortOrder("desc");
+    setCurrentPage(1);
   };
 
   if (error) {
@@ -265,7 +283,7 @@ export default function PublicQuizzesPage() {
               </div>
 
               <motion.div
-                className="from-primary to-primary/80 text-primary-foreground relative overflow-hidden rounded-2xl bg-gradient-to-r p-4 sm:p-6 lg:p-8 shadow-xl"
+                className="from-primary to-primary/80 text-primary-foreground relative overflow-hidden rounded-2xl bg-gradient-to-r p-4 shadow-xl sm:p-6 lg:p-8"
                 whileHover={{
                   boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
                 }}
@@ -279,7 +297,7 @@ export default function PublicQuizzesPage() {
                     transition={{ duration: 0.6, delay: 0.3 }}
                   >
                     <motion.div
-                      className="bg-primary-foreground/20 rounded-xl p-2 sm:p-3 backdrop-blur-sm self-start"
+                      className="bg-primary-foreground/20 self-start rounded-xl p-2 backdrop-blur-sm sm:p-3"
                       whileHover={{
                         scale: 1.1,
                         backgroundColor: "rgba(255, 255, 255, 0.3)",
@@ -290,7 +308,7 @@ export default function PublicQuizzesPage() {
                     </motion.div>
                     <div>
                       <motion.h1
-                        className="text-2xl sm:text-3xl lg:text-4xl font-bold drop-shadow-sm"
+                        className="text-2xl font-bold drop-shadow-sm sm:text-3xl lg:text-4xl"
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ duration: 0.5, delay: 0.4 }}
@@ -298,7 +316,7 @@ export default function PublicQuizzesPage() {
                         Public Quizzes
                       </motion.h1>
                       <motion.p
-                        className="text-primary-foreground/90 text-sm sm:text-base font-medium"
+                        className="text-primary-foreground/90 text-sm font-medium sm:text-base"
                         initial={{ y: 20, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ duration: 0.5, delay: 0.5 }}
@@ -308,7 +326,7 @@ export default function PublicQuizzesPage() {
                     </div>
                   </motion.div>
                   <motion.div
-                    className="text-primary-foreground/90 flex min-h-[32px] flex-wrap items-center gap-2 sm:gap-3 text-xs sm:text-sm font-medium"
+                    className="text-primary-foreground/90 flex min-h-[32px] flex-wrap items-center gap-2 text-xs font-medium sm:gap-3 sm:text-sm"
                     initial={{ y: 20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ duration: 0.5, delay: 0.6 }}
@@ -317,7 +335,7 @@ export default function PublicQuizzesPage() {
                       {!statsLoading && (
                         <>
                           <motion.div
-                            className="bg-primary-foreground/10 flex items-center gap-1.5 sm:gap-2 rounded-full px-2 sm:px-3 py-1 sm:py-1.5 backdrop-blur-sm"
+                            className="bg-primary-foreground/10 flex items-center gap-1.5 rounded-full px-2 py-1 backdrop-blur-sm sm:gap-2 sm:px-3 sm:py-1.5"
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.8 }}
@@ -333,7 +351,7 @@ export default function PublicQuizzesPage() {
                             </span>
                           </motion.div>
                           <motion.div
-                            className="bg-primary-foreground/10 flex items-center gap-1.5 sm:gap-2 rounded-full px-2 sm:px-3 py-1 sm:py-1.5 backdrop-blur-sm"
+                            className="bg-primary-foreground/10 flex items-center gap-1.5 rounded-full px-2 py-1 backdrop-blur-sm sm:gap-2 sm:px-3 sm:py-1.5"
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.8 }}
@@ -349,7 +367,7 @@ export default function PublicQuizzesPage() {
                             </span>
                           </motion.div>
                           <motion.div
-                            className="bg-primary-foreground/10 flex items-center gap-1.5 sm:gap-2 rounded-full px-2 sm:px-3 py-1 sm:py-1.5 backdrop-blur-sm"
+                            className="bg-primary-foreground/10 flex items-center gap-1.5 rounded-full px-2 py-1 backdrop-blur-sm sm:gap-2 sm:px-3 sm:py-1.5"
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.8 }}
@@ -361,7 +379,8 @@ export default function PublicQuizzesPage() {
                           >
                             <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
                             <span className="whitespace-nowrap">
-                              {stats?.recentActivity.addedLast24Hours || 0} today
+                              {stats?.recentActivity.addedLast24Hours || 0}{" "}
+                              today
                             </span>
                           </motion.div>
                         </>
@@ -402,30 +421,27 @@ export default function PublicQuizzesPage() {
                   <Input
                     placeholder="Search quizzes by title or description..."
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value);
+                      setCurrentPage(1);
+                    }}
                     className="bg-card/60 border-border/40 focus:bg-card h-11 pl-10"
                   />
                 </motion.div>
 
                 <motion.div
-                  className="flex items-center gap-3"
+                  className="flex flex-wrap items-center gap-3"
                   initial={{ x: 20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ duration: 0.5, delay: 0.4 }}
                 >
-                  <div className="hidden items-center gap-2 md:flex">
-                    <Filter className="text-muted-foreground h-4 w-4" />
-                    <span className="text-foreground text-sm font-medium">
-                      Filters:
-                    </span>
-                  </div>
-
                   <motion.div whileHover={{ scale: 1.05 }}>
                     <Select
                       value={difficultyFilter}
-                      onValueChange={(value: DifficultyFilter) =>
-                        setDifficultyFilter(value)
-                      }
+                      onValueChange={(value: DifficultyFilter) => {
+                        setDifficultyFilter(value);
+                        setCurrentPage(1);
+                      }}
                     >
                       <SelectTrigger className="bg-card/60 border-border/40 w-32 backdrop-blur-sm">
                         <SelectValue placeholder="Difficulty" />
@@ -457,11 +473,12 @@ export default function PublicQuizzesPage() {
                   <motion.div whileHover={{ scale: 1.05 }}>
                     <Select
                       value={typeFilter}
-                      onValueChange={(value: TypeFilter) =>
-                        setTypeFilter(value)
-                      }
+                      onValueChange={(value: TypeFilter) => {
+                        setTypeFilter(value);
+                        setCurrentPage(1);
+                      }}
                     >
-                      <SelectTrigger className="bg-card/60 border-border/40 w-32 backdrop-blur-sm">
+                      <SelectTrigger className="bg-card/60 border-border/40 w-40 backdrop-blur-sm">
                         <SelectValue placeholder="Type" />
                       </SelectTrigger>
                       <SelectContent>
@@ -472,10 +489,51 @@ export default function PublicQuizzesPage() {
                     </Select>
                   </motion.div>
 
+                  <motion.div whileHover={{ scale: 1.05 }}>
+                    <Select
+                      value={sortBy}
+                      onValueChange={(value: SortByFilter) => {
+                        setSortBy(value);
+                        setCurrentPage(1);
+                      }}
+                    >
+                      <SelectTrigger className="bg-card/60 border-border/40 w-44 backdrop-blur-sm">
+                        <SelectValue placeholder="Sort by" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="created_at">
+                          📅 Date Created
+                        </SelectItem>
+                        <SelectItem value="popularity">
+                          🔥 Popularity
+                        </SelectItem>
+                        <SelectItem value="difficulty">
+                          ⚡ Difficulty
+                        </SelectItem>
+                        <SelectItem value="title">🔤 Title</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </motion.div>
+
+                  <motion.div whileHover={{ scale: 1.05 }}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+                      }
+                      className="bg-card/60 border-border/40 backdrop-blur-sm"
+                    >
+                      {sortOrder === "asc" ? "↑" : "↓"}
+                    </Button>
+                  </motion.div>
+
                   <AnimatePresence>
                     {(searchTerm ||
                       difficultyFilter !== "all" ||
-                      typeFilter !== "all") && (
+                      typeFilter !== "all" ||
+                      sortBy !== "created_at" ||
+                      sortOrder !== "desc") && (
                       <motion.div
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
@@ -561,7 +619,7 @@ export default function PublicQuizzesPage() {
 
               {!isLoading && (
                 <>
-                  {filteredQuizzes.length === 0 ? (
+                  {quizzes.length === 0 ? (
                     <motion.div
                       variants={emptyStateVariants}
                       initial="initial"
@@ -583,21 +641,27 @@ export default function PublicQuizzesPage() {
                             <h3 className="text-foreground mb-3 text-xl font-semibold">
                               {searchTerm ||
                               difficultyFilter !== "all" ||
-                              typeFilter !== "all"
+                              typeFilter !== "all" ||
+                              sortBy !== "created_at" ||
+                              sortOrder !== "desc"
                                 ? "No quizzes found matching your criteria"
                                 : "No public quizzes yet"}
                             </h3>
                             <p className="text-muted-foreground mx-auto mb-6 max-w-sm">
                               {searchTerm ||
                               difficultyFilter !== "all" ||
-                              typeFilter !== "all"
+                              typeFilter !== "all" ||
+                              sortBy !== "created_at" ||
+                              sortOrder !== "desc"
                                 ? "Try adjusting your search terms or filters to find more quizzes."
                                 : "Be the first to create and share a quiz with the community!"}
                             </p>
                             {!(
                               searchTerm ||
                               difficultyFilter !== "all" ||
-                              typeFilter !== "all"
+                              typeFilter !== "all" ||
+                              sortBy !== "created_at" ||
+                              sortOrder !== "desc"
                             ) ? (
                               <motion.div
                                 whileHover={{ scale: 1.05 }}
@@ -638,7 +702,7 @@ export default function PublicQuizzesPage() {
                       animate="animate"
                     >
                       <AnimatePresence>
-                        {filteredQuizzes.map((quiz, index) => {
+                        {quizzes.map((quiz, index) => {
                           return (
                             <motion.div
                               key={quiz.id}
@@ -669,6 +733,12 @@ export default function PublicQuizzesPage() {
                                         {quiz.description}
                                       </p>
                                     ) : null}
+                                  </div>
+
+                                  <div className="text-muted-foreground mt-2 flex items-center gap-2 text-xs">
+                                    <span>
+                                      by {quiz.creator?.name || "Anonymous"}
+                                    </span>
                                   </div>
                                 </CardHeader>
 
@@ -797,14 +867,23 @@ export default function PublicQuizzesPage() {
                     </motion.div>
                   )}
 
-                  {filteredQuizzes.length > 0 &&
-                    quizzes.length === QUIZZES_PER_PAGE && (
-                      <motion.div
-                        className="mt-12 flex items-center justify-center gap-3"
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: 0.3 }}
-                      >
+                  {pagination && pagination.total > 0 && (
+                    <motion.div
+                      className="mt-12 flex flex-col items-center gap-4"
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: 0.3 }}
+                    >
+                      <div className="text-muted-foreground text-center text-sm">
+                        Showing {pagination.offset + 1} to{" "}
+                        {Math.min(
+                          pagination.offset + pagination.limit,
+                          pagination.total,
+                        )}{" "}
+                        of {pagination.total} quizzes
+                      </div>
+
+                      <div className="flex items-center gap-3">
                         <motion.div
                           whileHover={{ scale: 1.05, x: -2 }}
                           whileTap={{ scale: 0.95 }}
@@ -827,7 +906,8 @@ export default function PublicQuizzesPage() {
                           whileHover={{ scale: 1.05 }}
                         >
                           <span className="text-foreground text-sm font-medium">
-                            Page {currentPage}
+                            Page {currentPage} of{" "}
+                            {Math.ceil(pagination.total / pagination.limit)}
                           </span>
                         </motion.div>
 
@@ -838,15 +918,16 @@ export default function PublicQuizzesPage() {
                           <Button
                             variant="outline"
                             onClick={() => setCurrentPage((prev) => prev + 1)}
-                            disabled={quizzes.length < QUIZZES_PER_PAGE}
+                            disabled={!pagination.hasMore}
                             className="bg-card/60 border-border/40 backdrop-blur-sm"
                           >
                             Next
                             <ChevronRight className="ml-1 h-4 w-4" />
                           </Button>
                         </motion.div>
-                      </motion.div>
-                    )}
+                      </div>
+                    </motion.div>
+                  )}
                 </>
               )}
             </AnimatePresence>

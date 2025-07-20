@@ -597,23 +597,105 @@ export async function getUserQuizzes(userId: string): Promise<Quiz[]> {
   return data || [];
 }
 
+export interface PublicQuizFilters {
+  search?: string;
+  difficulty?: "easy" | "medium" | "hard";
+  type?: "ai" | "manual";
+  sortBy?: "created_at" | "popularity" | "difficulty" | "title";
+  sortOrder?: "asc" | "desc";
+}
+
+export interface PublicQuizzesResponse {
+  quizzes: QuizWithCreator[];
+  pagination: {
+    total: number;
+    limit: number;
+    offset: number;
+    hasMore: boolean;
+  };
+}
+
+export interface QuizWithCreator extends Quiz {
+  creator: {
+    name: string;
+    avatar_url?: string;
+  };
+}
+
 /**
- * Get public quizzes with question count
+ * Get public quizzes with enhanced filtering, search, and creator information
  */
 export async function getPublicQuizzes(
   limit: number = 50,
-  offset: number = 0
-): Promise<Quiz[]> {
+  offset: number = 0,
+  filters: PublicQuizFilters = {}
+): Promise<PublicQuizzesResponse> {
   console.log(
-    `[Quiz Service] Fetching public quizzes (limit: ${limit}, offset: ${offset})`
+    `[Quiz Service] Fetching public quizzes (limit: ${limit}, offset: ${offset}, filters: ${JSON.stringify(filters)})`
   );
 
-  const { data: quizzesData, error: quizzesError } = await supabase
+  // Build the base query - temporarily simplified without joins
+  let query = supabase.from("quizzes").select("*").eq("is_public", true);
+
+  // Apply filters
+  if (filters.difficulty) {
+    query = query.eq("difficulty", filters.difficulty);
+  }
+
+  if (filters.type) {
+    const isAiGenerated = filters.type === "ai";
+    query = query.eq("is_ai_generated", isAiGenerated);
+  }
+
+  if (filters.search && filters.search.trim()) {
+    const searchTerm = filters.search.trim();
+    query = query.or(
+      `title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`
+    );
+  }
+
+  // Apply sorting
+  const sortBy = filters.sortBy || "created_at";
+  const sortOrder = filters.sortOrder || "desc";
+
+  if (sortBy === "popularity") {
+    // For popularity, we'll order by attempts count (handled after we get attempts data)
+  } else if (sortBy === "difficulty") {
+    // Custom ordering for difficulty: easy -> medium -> hard
+    query = query.order("difficulty", { ascending: sortOrder === "asc" });
+  } else {
+    query = query.order(sortBy, { ascending: sortOrder === "asc" });
+  }
+
+  // Get total count first for pagination
+  let countQuery = supabase
     .from("quizzes")
-    .select("*")
-    .eq("is_public", true)
-    .order("created_at", { ascending: false })
-    .range(offset, offset + limit - 1);
+    .select("id", { count: "exact", head: true })
+    .eq("is_public", true);
+
+  if (filters.difficulty) {
+    countQuery = countQuery.eq("difficulty", filters.difficulty);
+  }
+  if (filters.type) {
+    const isAiGenerated = filters.type === "ai";
+    countQuery = countQuery.eq("is_ai_generated", isAiGenerated);
+  }
+  if (filters.search && filters.search.trim()) {
+    const searchTerm = filters.search.trim();
+    countQuery = countQuery.or(
+      `title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`
+    );
+  }
+
+  const { count: totalCount, error: countError } = await countQuery;
+
+  if (countError) {
+    throw new AppError(`Failed to get quiz count: ${countError.message}`, 500);
+  }
+
+  // Apply pagination and execute query
+  query = query.range(offset, offset + limit - 1);
+  const { data: quizzesData, error: quizzesError } = await query;
 
   if (quizzesError) {
     throw new AppError(
@@ -624,10 +706,20 @@ export async function getPublicQuizzes(
 
   if (!quizzesData || quizzesData.length === 0) {
     console.log(`[Quiz Service] Found 0 public quizzes`);
-    return [];
+    return {
+      quizzes: [],
+      pagination: {
+        total: totalCount || 0,
+        limit,
+        offset,
+        hasMore: false,
+      },
+    };
   }
 
   const quizIds = quizzesData.map((quiz) => quiz.id);
+
+  // Get question counts
   const { data: questionCounts, error: countsError } = await supabase
     .from("questions")
     .select("quiz_id")
@@ -646,7 +738,7 @@ export async function getPublicQuizzes(
     countMap.set(quizId, (countMap.get(quizId) || 0) + 1);
   });
 
-  // Get attempts counts for these quizzes
+  // Get attempts counts
   const { data: attemptsData, error: attemptsError } = await supabase
     .from("quiz_attempts")
     .select("quiz_id")
@@ -659,26 +751,72 @@ export async function getPublicQuizzes(
     );
   }
 
-  // Count attempts per quiz
   const attemptsMap = new Map<string, number>();
   (attemptsData || []).forEach((a: any) => {
     const quizId = a.quiz_id;
     attemptsMap.set(quizId, (attemptsMap.get(quizId) || 0) + 1);
   });
 
-  // Add question count and attempts
-  const quizzesWithStats = quizzesData.map((quiz: any) => {
+  // Get creator information for these quizzes
+  const userIds = [...new Set(quizzesData.map((quiz: any) => quiz.user_id))];
+  const { data: usersData, error: usersError } = await supabase
+    .from("users")
+    .select("id, name, avatar_url")
+    .in("id", userIds);
+
+  if (usersError) {
+    console.warn(`Failed to fetch user data: ${usersError.message}`);
+  }
+
+  const usersMap = new Map<string, any>();
+  (usersData || []).forEach((user: any) => {
+    usersMap.set(user.id, user);
+  });
+
+  // Transform data and add stats
+  let quizzesWithStats = quizzesData.map((quiz: any) => {
     const questionCount = countMap.get(quiz.id) || 0;
     const attempts = attemptsMap.get(quiz.id) || 0;
+    const user = usersMap.get(quiz.user_id);
+
     return {
       ...quiz,
       attempts,
       question_count: questionCount,
+      creator: user
+        ? {
+            name: user.name,
+            avatar_url: user.avatar_url,
+          }
+        : {
+            name: "Anonymous",
+            avatar_url: null,
+          },
     };
   });
 
+  // Handle popularity sorting post-query since it requires attempts data
+  if (filters.sortBy === "popularity") {
+    quizzesWithStats.sort((a, b) => {
+      const aAttempts = a.attempts || 0;
+      const bAttempts = b.attempts || 0;
+      return filters.sortOrder === "asc"
+        ? aAttempts - bAttempts
+        : bAttempts - aAttempts;
+    });
+  }
+
   console.log(`[Quiz Service] Found ${quizzesWithStats.length} public quizzes`);
-  return quizzesWithStats;
+
+  return {
+    quizzes: quizzesWithStats,
+    pagination: {
+      total: totalCount || 0,
+      limit,
+      offset,
+      hasMore: offset + limit < (totalCount || 0),
+    },
+  };
 }
 
 /**
@@ -2937,7 +3075,9 @@ export async function generateQuestionsForQuiz(
   count: number,
   context?: QuizContext
 ): Promise<GeneratedQuestionsResult> {
-  console.log(`[Quiz Service] Generating ${count} questions for ${quizId ? `quiz ${quizId}` : 'prototype'} by user ${userId}`);
+  console.log(
+    `[Quiz Service] Generating ${count} questions for ${quizId ? `quiz ${quizId}` : "prototype"} by user ${userId}`
+  );
 
   let quizContext: QuizContext;
 
@@ -2957,18 +3097,23 @@ export async function generateQuestionsForQuiz(
     // Get existing questions to provide context
     const { data: existingQuestions, error: questionsError } = await supabase
       .from("questions")
-      .select(`
+      .select(
+        `
         question_text,
         question_options (
           option_text,
           is_correct
         )
-      `)
+      `
+      )
       .eq("quiz_id", quizId)
       .order("order_index");
 
     if (questionsError) {
-      throw new AppError(`Failed to fetch existing questions: ${questionsError.message}`, 500);
+      throw new AppError(
+        `Failed to fetch existing questions: ${questionsError.message}`,
+        500
+      );
     }
 
     // Build quiz context
@@ -2977,13 +3122,14 @@ export async function generateQuestionsForQuiz(
       description: quiz.description,
       difficulty: quiz.difficulty,
       originalPrompt: quiz.original_prompt || quiz.title,
-      existingQuestions: existingQuestions?.map(q => ({
-        question_text: q.question_text,
-        options: (q.question_options || []).map((opt: any) => ({
-          option_text: opt.option_text,
-          is_correct: opt.is_correct,
-        })),
-      })) || [],
+      existingQuestions:
+        existingQuestions?.map((q) => ({
+          question_text: q.question_text,
+          options: (q.question_options || []).map((opt: any) => ({
+            option_text: opt.option_text,
+            is_correct: opt.is_correct,
+          })),
+        })) || [],
     };
   } else {
     // Use provided context for prototype mode
@@ -2996,8 +3142,10 @@ export async function generateQuestionsForQuiz(
   // Generate questions using AI
   const result = await generateAdditionalQuestions(quizContext, count);
 
-  console.log(`[Quiz Service] Successfully generated ${result.questions.length} questions for ${quizId || 'prototype'}`);
-  
+  console.log(
+    `[Quiz Service] Successfully generated ${result.questions.length} questions for ${quizId || "prototype"}`
+  );
+
   return result;
 }
 
@@ -3007,7 +3155,9 @@ export async function enhanceQuizQuestion(
   questionText: string,
   context?: QuizContext
 ): Promise<EnhancedQuestionResult> {
-  console.log(`[Quiz Service] Enhancing question for ${quizId ? `quiz ${quizId}` : 'prototype'} by user ${userId}`);
+  console.log(
+    `[Quiz Service] Enhancing question for ${quizId ? `quiz ${quizId}` : "prototype"} by user ${userId}`
+  );
 
   let quizContext: QuizContext;
 
@@ -3042,8 +3192,10 @@ export async function enhanceQuizQuestion(
   // Enhance question using AI
   const result = await enhanceQuestion(questionText, quizContext);
 
-  console.log(`[Quiz Service] Successfully enhanced question for ${quizId || 'prototype'}`);
-  
+  console.log(
+    `[Quiz Service] Successfully enhanced question for ${quizId || "prototype"}`
+  );
+
   return result;
 }
 
@@ -3054,7 +3206,9 @@ export async function generateOptionsForQuestion(
   existingOptions: Array<{ option_text: string; is_correct: boolean }>,
   optionsCount: number
 ): Promise<GeneratedOptionsResult> {
-  console.log(`[Quiz Service] Generating ${optionsCount} options for question in ${quizId ? `quiz ${quizId}` : 'prototype'} by user ${userId}`);
+  console.log(
+    `[Quiz Service] Generating ${optionsCount} options for question in ${quizId ? `quiz ${quizId}` : "prototype"} by user ${userId}`
+  );
 
   if (quizId) {
     // Verify user owns the quiz
@@ -3071,10 +3225,16 @@ export async function generateOptionsForQuestion(
   }
 
   // Generate options using AI
-  const result = await generateAdditionalOptions(questionText, existingOptions, optionsCount);
+  const result = await generateAdditionalOptions(
+    questionText,
+    existingOptions,
+    optionsCount
+  );
 
-  console.log(`[Quiz Service] Successfully generated ${result.options.length} options for question in ${quizId || 'prototype'}`);
-  
+  console.log(
+    `[Quiz Service] Successfully generated ${result.options.length} options for question in ${quizId || "prototype"}`
+  );
+
   return result;
 }
 
@@ -3084,7 +3244,9 @@ export async function getQuestionTypeSuggestions(
   topic: string,
   difficulty: "easy" | "medium" | "hard"
 ): Promise<QuestionTypeSuggestionsResult> {
-  console.log(`[Quiz Service] Getting question type suggestions for ${quizId ? `quiz ${quizId}` : 'prototype'} by user ${userId}`);
+  console.log(
+    `[Quiz Service] Getting question type suggestions for ${quizId ? `quiz ${quizId}` : "prototype"} by user ${userId}`
+  );
 
   if (quizId) {
     // Verify user owns the quiz
@@ -3103,7 +3265,9 @@ export async function getQuestionTypeSuggestions(
   // Get question type suggestions using AI
   const result = await suggestQuestionTypes(topic, difficulty);
 
-  console.log(`[Quiz Service] Successfully generated ${result.suggestions.length} question type suggestions for ${quizId || 'prototype'}`);
-  
+  console.log(
+    `[Quiz Service] Successfully generated ${result.suggestions.length} question type suggestions for ${quizId || "prototype"}`
+  );
+
   return result;
 }

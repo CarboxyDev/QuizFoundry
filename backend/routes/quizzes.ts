@@ -198,7 +198,7 @@ quizzesRouter.get(
 );
 
 /**
- * GET /quizzes/public - Get public quizzes
+ * GET /quizzes/public - Get public quizzes with enhanced filtering and search
  */
 quizzesRouter.get(
   "/public",
@@ -217,18 +217,39 @@ quizzesRouter.get(
       throw new AppError("Offset must be non-negative", 400);
     }
 
-    const quizzes = await getPublicQuizzes(limit, offset);
+    // Extract filter parameters
+    const filters = {
+      search: req.query.search as string,
+      difficulty: req.query.difficulty as "easy" | "medium" | "hard",
+      type: req.query.type as "ai" | "manual",
+      sortBy: req.query.sortBy as "created_at" | "popularity" | "difficulty" | "title",
+      sortOrder: req.query.sortOrder as "asc" | "desc",
+    };
+
+    // Validate filter values
+    if (filters.difficulty && !["easy", "medium", "hard"].includes(filters.difficulty)) {
+      throw new AppError("Invalid difficulty filter", 400);
+    }
+    if (filters.type && !["ai", "manual"].includes(filters.type)) {
+      throw new AppError("Invalid type filter", 400);
+    }
+    if (filters.sortBy && !["created_at", "popularity", "difficulty", "title"].includes(filters.sortBy)) {
+      throw new AppError("Invalid sortBy parameter", 400);
+    }
+    if (filters.sortOrder && !["asc", "desc"].includes(filters.sortOrder)) {
+      throw new AppError("Invalid sortOrder parameter", 400);
+    }
+
+    // Clean undefined values from filters
+    const cleanedFilters = Object.fromEntries(
+      Object.entries(filters).filter(([_, value]) => value !== undefined)
+    );
+
+    const result = await getPublicQuizzes(limit, offset, cleanedFilters);
 
     res.json({
       success: true,
-      data: {
-        quizzes,
-        pagination: {
-          limit,
-          offset,
-          count: quizzes.length,
-        },
-      },
+      data: result,
     });
   })
 );

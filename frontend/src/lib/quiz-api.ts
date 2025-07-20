@@ -315,22 +315,62 @@ export async function getUserQuizzes(): Promise<Quiz[]> {
   return response.data.data.quizzes;
 }
 
+export interface PublicQuizFilters {
+  search?: string;
+  difficulty?: "easy" | "medium" | "hard";
+  type?: "ai" | "manual";
+  sortBy?: "created_at" | "popularity" | "difficulty" | "title";
+  sortOrder?: "asc" | "desc";
+}
+
+export interface PublicQuizzesResponse {
+  quizzes: QuizWithCreator[];
+  pagination: {
+    total: number;
+    limit: number;
+    offset: number;
+    hasMore: boolean;
+  };
+}
+
 /**
- * Get public quizzes
+ * Get public quizzes with enhanced filtering and search
  */
 export async function getPublicQuizzes(
   limit: number = 50,
   offset: number = 0,
-): Promise<Quiz[]> {
-  const response = await axiosInstance.get<GetQuizzesResponse>(
-    `/quizzes/public?limit=${limit}&offset=${offset}`,
-  );
+  filters: PublicQuizFilters = {}
+): Promise<PublicQuizzesResponse> {
+  const params = new URLSearchParams();
+  params.append("limit", limit.toString());
+  params.append("offset", offset.toString());
+  
+  if (filters.search) {
+    params.append("search", filters.search);
+  }
+  if (filters.difficulty) {
+    params.append("difficulty", filters.difficulty);
+  }
+  if (filters.type) {
+    params.append("type", filters.type);
+  }
+  if (filters.sortBy) {
+    params.append("sortBy", filters.sortBy);
+  }
+  if (filters.sortOrder) {
+    params.append("sortOrder", filters.sortOrder);
+  }
+
+  const response = await axiosInstance.get<{
+    success: boolean;
+    data: PublicQuizzesResponse;
+  }>(`/quizzes/public?${params.toString()}`);
 
   if (!response.data.success) {
     throw new Error("Failed to fetch public quizzes");
   }
 
-  return response.data.data.quizzes;
+  return response.data.data;
 }
 
 /**
