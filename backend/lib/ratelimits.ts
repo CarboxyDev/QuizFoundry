@@ -69,6 +69,18 @@ export const RATE_LIMIT_CONFIG = {
     standardHeaders: true,
     legacyHeaders: false,
   },
+
+  SECURITY_VALIDATION: {
+    windowMs: 10 * MINUTES,
+    max: 50,
+    message: {
+      error: "Too many security validation requests",
+      message: "You've reached the limit for content security validation. Please try again later.",
+      retryAfter: "10 minutes",
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+  },
 } as const;
 
 const generateKeyFromUser = (req: Request): string => {
@@ -111,6 +123,17 @@ export const generalApiLimiter = rateLimit({
 
 export const authOperationsLimiter = rateLimit({
   ...RATE_LIMIT_CONFIG.AUTH_OPERATIONS,
+  keyGenerator: generateKeyFromUser,
+  skip: (req) => {
+    return (
+      process.env.NODE_ENV === "development" &&
+      process.env.SKIP_RATE_LIMITS === "true"
+    );
+  },
+});
+
+export const securityValidationLimiter = rateLimit({
+  ...RATE_LIMIT_CONFIG.SECURITY_VALIDATION,
   keyGenerator: generateKeyFromUser,
   skip: (req) => {
     return (

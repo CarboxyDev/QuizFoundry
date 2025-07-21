@@ -37,6 +37,7 @@ import {
   aiOperationsLimiter,
   creativePromptsLimiter,
   generalApiLimiter,
+  securityValidationLimiter,
 } from "../lib/ratelimits";
 import type { Router } from "express";
 import { z } from "zod";
@@ -92,6 +93,7 @@ function stripAnswersFromQuiz(quiz: any) {
 quizzesRouter.post(
   "/create/express",
   aiOperationsLimiter,
+  securityValidationLimiter,
   authMiddleware,
   requireCompletedOnboarding,
   asyncHandler(async (req: AuthenticatedRequest, res) => {
@@ -377,6 +379,7 @@ quizzesRouter.get(
  */
 quizzesRouter.put(
   "/:id",
+  securityValidationLimiter,
   authMiddleware,
   requireCompletedOnboarding,
   asyncHandler(async (req: AuthenticatedRequest, res) => {

@@ -1068,8 +1068,12 @@ export async function validateQuizContent(
     throw new AppError("Gemini API key is not configured", 500);
   }
 
+  const startTime = Date.now();
+  const checkId = Math.random().toString(36).substring(2, 15);
+
   try {
-    console.log(`[AI Security Check] Validating quiz: "${quizContent.title}"`);
+    console.log(`[AI Security Check] [${checkId}] Starting validation for quiz: "${quizContent.title}"`);
+    console.log(`[AI Security Check] [${checkId}] Questions count: ${quizContent.questions.length}`);
 
     const prompt = createSecurityCheckPrompt(quizContent);
 
@@ -1081,20 +1085,54 @@ export async function validateQuizContent(
     const text = response.text?.trim();
 
     if (!text) {
+      console.error(`[AI Security Check] [${checkId}] No response received from API`);
       throw new AppError("No response received from AI security check", 500);
     }
 
-    console.log(`[AI Security Check] Received response (${text.length} chars)`);
+    console.log(`[AI Security Check] [${checkId}] Received response (${text.length} chars)`);
 
     const result = parseSecurityCheckResponse(text);
+    const duration = Date.now() - startTime;
 
-    console.log(
-      `[AI Security Check] Result: ${result.isApproved ? "APPROVED" : "REJECTED"} (confidence: ${result.confidence}%)`
-    );
+    // Enhanced logging with metrics
+    const logData = {
+      checkId,
+      quizTitle: quizContent.title,
+      questionCount: quizContent.questions.length,
+      isApproved: result.isApproved,
+      confidence: result.confidence,
+      concernsCount: result.concerns.length,
+      duration: `${duration}ms`,
+      timestamp: new Date().toISOString(),
+    };
+
+    if (result.isApproved) {
+      console.log(`[AI Security Check] [${checkId}] ✅ APPROVED (confidence: ${result.confidence}%, duration: ${duration}ms)`);
+    } else {
+      console.warn(`[AI Security Check] [${checkId}] ❌ REJECTED (confidence: ${result.confidence}%, duration: ${duration}ms)`);
+      console.warn(`[AI Security Check] [${checkId}] Rejection reason: ${result.reasoning}`);
+      if (result.concerns.length > 0) {
+        console.warn(`[AI Security Check] [${checkId}] Concerns: ${result.concerns.join(", ")}`);
+      }
+    }
+
+    // Log structured data for monitoring
+    console.log(`[AI Security Check] [${checkId}] METRICS:`, JSON.stringify(logData));
 
     return result;
   } catch (error) {
-    console.error("[AI Security Check] Error during validation:", error);
+    const duration = Date.now() - startTime;
+    console.error(`[AI Security Check] [${checkId}] ERROR during validation (duration: ${duration}ms):`, error);
+
+    // Log error metrics
+    console.log(`[AI Security Check] [${checkId}] ERROR_METRICS:`, JSON.stringify({
+      checkId,
+      quizTitle: quizContent.title,
+      questionCount: quizContent.questions.length,
+      error: error instanceof Error ? error.message : String(error),
+      duration: `${duration}ms`,
+      timestamp: new Date().toISOString(),
+    }));
 
     if (error instanceof AppError) {
       throw error;

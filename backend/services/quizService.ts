@@ -101,6 +101,50 @@ export async function createQuizExpressMode(
       difficulty: defaults.difficulty,
     });
 
+    // Apply AI security validation for public quizzes (light validation for AI-generated content)
+    if (input.is_public) {
+      console.log(
+        `[Quiz Service] Express Mode quiz will be public - performing AI security validation for user ${userId}`
+      );
+
+      const contentForValidation: QuizContentForValidation = {
+        title: generatedQuiz.title,
+        description: generatedQuiz.description,
+        questions: generatedQuiz.questions.map((q) => ({
+          question_text: q.question_text,
+          options: q.options.map((opt) => ({
+            option_text: opt.option_text,
+            is_correct: opt.is_correct,
+          })),
+        })),
+      };
+
+      const securityResult = await validateQuizContent(contentForValidation);
+
+      if (!securityResult.isApproved) {
+        console.error(
+          `[Quiz Service] Express Mode quiz rejected by AI security check: ${securityResult.reasoning}`
+        );
+
+        throw new AppError(
+          `Quiz content was rejected: ${securityResult.reasoning}${
+            securityResult.concerns.length > 0
+              ? ` Specific concerns: ${securityResult.concerns.join(", ")}`
+              : ""
+          }`,
+          400
+        );
+      }
+
+      console.log(
+        `[Quiz Service] Express Mode quiz approved by AI security check (confidence: ${securityResult.confidence}%)`
+      );
+    } else {
+      console.log(
+        `[Quiz Service] Express Mode quiz is private - skipping AI security validation`
+      );
+    }
+
     const quiz = await saveGeneratedQuiz(
       userId,
       input.prompt,
@@ -244,7 +288,7 @@ export async function publishManualQuiz(
      */
     if (env.BYPASS_CHECKS !== "true" && input.is_public) {
       console.log(
-        `[Quiz Service] Quiz will be public - performing AI security validation`
+        `[Quiz Service] Manual quiz will be public - performing AI security validation for user ${userId}`
       );
 
       const securityResult = await validateQuizContent(contentForValidation);
@@ -866,7 +910,7 @@ export async function updateQuiz(
     // Apply AI security validation only if quiz is/will be public
     if (env.BYPASS_CHECKS !== "true" && (isCurrentlyPublic || willBePublic)) {
       console.log(
-        `[Quiz Service] Quiz is/will be public - performing AI security validation`
+        `[Quiz Service] Quiz content update is/will be public - performing AI security validation for user ${userId}`
       );
 
       const securityResult = await validateQuizContent(contentForValidation);
@@ -975,7 +1019,7 @@ export async function updateQuizWithQuestions(
     // Apply AI security validation only if quiz will be public
     if (env.BYPASS_CHECKS !== "true" && willBePublic) {
       console.log(
-        `[Quiz Service] Quiz will be public - performing AI security validation`
+        `[Quiz Service] Quiz update will be public - performing AI security validation for user ${userId}`
       );
 
       const securityResult = await validateQuizContent(contentForValidation);

@@ -14,7 +14,7 @@ import {
   requireCompletedOnboarding,
   AuthenticatedRequest,
 } from "../middleware/auth";
-import { aiOperationsLimiter, generalApiLimiter } from "../lib/ratelimits";
+import { aiOperationsLimiter, securityValidationLimiter } from "../lib/ratelimits";
 import type { Router } from "express";
 
 const manualQuizzesRouter: Router = express.Router();
@@ -61,7 +61,7 @@ manualQuizzesRouter.post(
  */
 manualQuizzesRouter.post(
   "/publish",
-  generalApiLimiter,
+  securityValidationLimiter,
   authMiddleware,
   requireCompletedOnboarding,
   asyncHandler(async (req: AuthenticatedRequest, res) => {
