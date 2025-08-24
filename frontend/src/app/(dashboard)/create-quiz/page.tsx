@@ -1,6 +1,7 @@
 "use client";
 
 import { ProtectedRouteGuard } from "@/components/AuthGuard";
+import { BorderBeam } from "@/components/magicui/border-beam";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -217,7 +218,9 @@ export default function CreateQuizPage() {
                   </motion.div>
                 </AnimatePresence>
               </motion.div>
-              <h1 className="mb-4 text-2xl font-bold sm:text-3xl lg:text-4xl">Create Your Quiz</h1>
+              <h1 className="mb-4 text-2xl font-bold sm:text-3xl lg:text-4xl">
+                Create Your Quiz
+              </h1>
             </motion.div>
 
             <motion.div
@@ -228,36 +231,13 @@ export default function CreateQuizPage() {
               <Card className="relative mx-auto max-w-3xl overflow-hidden shadow-lg">
                 <AnimatePresence>
                   {isGenerating && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="absolute inset-0 z-10 rounded-lg"
-                    >
-                      <motion.div
-                        className="absolute inset-0 rounded-lg"
-                        style={{
-                          background: `conic-gradient(from 0deg, 
-                            transparent 0%, 
-                            transparent 85%, 
-                            rgba(255, 125, 40, 0.3) 88%, 
-                            rgba(255, 140, 70, 0.8) 92%, 
-                            rgb(255, 125, 40) 95%, 
-                            rgba(255, 140, 70, 0.8) 98%, 
-                            rgba(255, 125, 40, 0.3) 100%)`,
-                        }}
-                        animate={{
-                          rotate: 360,
-                        }}
-                        transition={{
-                          duration: 2,
-                          repeat: Infinity,
-                          ease: "linear",
-                        }}
-                      />
-
-                      <div className="bg-card absolute inset-[2px] rounded-lg" />
-                    </motion.div>
+                    <BorderBeam
+                      size={100}
+                      duration={2}
+                      colorFrom="#ff7d28"
+                      colorTo="#ff8c46"
+                      borderWidth={2}
+                    />
                   )}
                 </AnimatePresence>
 
@@ -286,7 +266,7 @@ export default function CreateQuizPage() {
                           variant="outline"
                           onClick={handleSurpriseMe}
                           disabled={isGenerating || isSurpriseLoading}
-                          className="h-9 w-full gap-2 bg-gradient-to-r from-purple-50 to-pink-50 px-4 shadow-sm transition-all duration-300 hover:border-purple-400 hover:from-purple-100 hover:to-pink-100 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 dark:from-purple-900/20 dark:to-pink-900/20 dark:hover:from-purple-900/30 dark:hover:to-pink-900/30 sm:w-auto"
+                          className="h-9 w-full gap-2 bg-gradient-to-r from-purple-50 to-pink-50 px-4 shadow-sm transition-all duration-300 hover:border-purple-400 hover:from-purple-100 hover:to-pink-100 hover:shadow-md disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto dark:from-purple-900/20 dark:to-pink-900/20 dark:hover:from-purple-900/30 dark:hover:to-pink-900/30"
                         >
                           {isSurpriseLoading ? (
                             <>
@@ -452,7 +432,7 @@ export default function CreateQuizPage() {
                         >
                           Visibility
                         </Label>
-                        <div className="flex w-full items-center justify-between rounded-md border px-3 py-2 h-9">
+                        <div className="flex h-9 w-full items-center justify-between rounded-md border px-3 py-2">
                           <div className="flex items-center gap-2">
                             <AnimatePresence mode="wait">
                               <motion.div
@@ -500,7 +480,7 @@ export default function CreateQuizPage() {
                   <Separator />
 
                   <div className="space-y-4">
-                    <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
                       <motion.div
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
