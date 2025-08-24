@@ -47,14 +47,15 @@ export const QuizModesSection = memo(() => {
           </p>
         </motion.div>
 
-        <div className="grid gap-6 lg:h-[600px] lg:grid-cols-12 lg:grid-rows-8">
+        <div className="grid gap-8 lg:grid-cols-2">
           <motion.div
             variants={fadeInUp}
-            className="group mb-6 lg:col-span-7 lg:row-span-8 lg:mb-0"
+            className="group relative"
           >
             <div className="group/express relative h-full">
-              <div className="relative h-full rounded-3xl bg-zinc-900/60 border border-zinc-800/60 hover:border-primary/30 shadow-lg hover:shadow-xl transition-all duration-200 p-8 flex flex-col">
+              <div className="relative h-full rounded-3xl border border-zinc-800/60 bg-zinc-900/70 shadow-lg hover:shadow-xl transition-all duration-300 p-8 flex flex-col min-h-[500px]">
                 <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-primary/10 via-orange-500/5 to-transparent opacity-0 group-hover/express:opacity-100 transition-opacity duration-300" />
+                
                 <div className="relative z-10 mb-8">
                   <div className="mb-6 flex items-center gap-4">
                     <motion.div
@@ -74,18 +75,24 @@ export const QuizModesSection = memo(() => {
                 </div>
 
                 <div className="relative z-10 flex-1 space-y-4 mb-8">
-                  {expressFeatures.map((feature) => (
-                    <div key={feature} className="flex items-center gap-4">
-                      <div className="rounded-full bg-green-500/20 p-1.5">
+                  {expressFeatures.map((feature, index) => (
+                    <motion.div 
+                      key={feature} 
+                      className="flex items-center gap-4"
+                      initial={{ opacity: 0, x: -20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <div className="rounded-full bg-green-500/20 p-1.5 shrink-0">
                         <Check className="h-4 w-4 text-green-500" />
                       </div>
                       <span className="text-muted-foreground leading-relaxed">{feature}</span>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
 
                 <motion.div
-                  className="relative z-10 border-t border-border pt-6 text-center"
+                  className="relative z-10 border-t border-zinc-800/60 pt-6 text-center"
                   initial={{ opacity: 0.8 }}
                   whileHover={{ opacity: 1 }}
                   transition={{ duration: 0.3 }}
@@ -107,19 +114,20 @@ export const QuizModesSection = memo(() => {
 
           <motion.div
             variants={fadeInUp}
-            className="group lg:col-span-5 lg:row-span-8"
+            className="group relative"
           >
             <div className="group/advanced relative h-full">
-              <div className="relative h-full rounded-3xl bg-zinc-900/60 border border-zinc-800/60 hover:border-purple-500/30 shadow-lg hover:shadow-xl transition-all duration-200 p-6 flex flex-col">
+              <div className="relative h-full rounded-3xl border border-zinc-800/60 bg-zinc-900/70 shadow-lg hover:shadow-xl transition-all duration-300 p-8 flex flex-col min-h-[500px]">
                 <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-purple-500/10 via-pink-500/5 to-transparent opacity-0 group-hover/advanced:opacity-100 transition-opacity duration-300" />
-                <div className="relative z-10 mb-6">
-                  <div className="mb-4 flex items-center gap-3">
+                
+                <div className="relative z-10 mb-8">
+                  <div className="mb-6 flex items-center gap-4">
                     <motion.div
-                      className="rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 p-3 shadow-lg group-hover/advanced:shadow-xl transition-all duration-300"
+                      className="rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 p-4 shadow-lg group-hover/advanced:shadow-xl transition-all duration-300"
                       whileHover={{ rotate: -5, scale: 1.1 }}
                       transition={{ duration: 0.3 }}
                     >
-                      <Wand2 className="h-8 w-8 text-purple-500" />
+                      <Wand2 className="h-10 w-10 text-purple-500" />
                     </motion.div>
                     <h3 className="text-3xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">Advanced Mode</h3>
                   </div>
@@ -129,14 +137,20 @@ export const QuizModesSection = memo(() => {
                   </p>
                 </div>
 
-                <div className="relative z-10 flex-1 space-y-4">
-                  {advancedFeatures.map((feature) => (
-                    <div key={feature} className="flex items-center gap-3">
-                      <div className="rounded-full bg-green-500/20 p-1.5">
+                <div className="relative z-10 flex-1 space-y-4 mb-8">
+                  {advancedFeatures.map((feature, index) => (
+                    <motion.div 
+                      key={feature} 
+                      className="flex items-center gap-4"
+                      initial={{ opacity: 0, x: -20 }}
+                      whileInView={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <div className="rounded-full bg-green-500/20 p-1.5 shrink-0">
                         <Check className="h-4 w-4 text-green-500" />
                       </div>
                       <span className="text-muted-foreground leading-relaxed">{feature}</span>
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               </div>
