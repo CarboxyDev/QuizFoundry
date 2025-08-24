@@ -828,7 +828,7 @@ export default function EditQuizPage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.4 }}
-                className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+                className="absolute inset-0 bg-black/80 backdrop-blur-xl"
               />
 
               {/* Subtle Gradient Effect */}
