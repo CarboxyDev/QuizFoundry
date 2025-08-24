@@ -72,6 +72,12 @@
   --shadow-opacity: var(--shadow-opacity);
   --color-shadow-color: var(--shadow-color);
   --color-destructive-foreground: var(--destructive-foreground);
+  --animate-gradient: gradient 8s linear infinite;
+  @keyframes gradient {
+  to {
+    background-position: var(--bg-size, 300%) 0;
+    }
+  }
 }
 
 :root {
@@ -276,6 +282,47 @@
 
   .animate-shimmer {
     animation: shimmer 2s infinite;
+  }
+
+  /* Shimmer slide animation for Magic UI ShimmerButton */
+  @keyframes shimmer-slide {
+    0% {
+      transform: translateX(-150%);
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    90% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateX(150%);
+      opacity: 0;
+    }
+  }
+
+  .animate-shimmer-slide {
+    animation: shimmer-slide 3s ease-in-out infinite;
+    animation-delay: 1s;
+  }
+
+  /* Gradient animation for text */
+  @keyframes gradient {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  .animate-gradient {
+    animation: gradient 4s ease-in-out infinite;
+    background-size: 200% 100%;
   }
 }
 

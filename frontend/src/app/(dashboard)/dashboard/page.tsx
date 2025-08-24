@@ -1,7 +1,7 @@
 "use client";
 
-import { DashboardCards } from "@/app/(dashboard)/dashboard/DashboardCards";
-import { GettingStarted } from "@/app/(dashboard)/dashboard/GettingStarted";
+import { DashboardCards } from "@/app/(dashboard)/dashboard/dashboard-cards";
+import { GettingStarted } from "@/app/(dashboard)/dashboard/getting-started";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { motion } from "framer-motion";
 

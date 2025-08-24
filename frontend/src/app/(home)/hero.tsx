@@ -1,18 +1,18 @@
 "use client";
 
-import { memo } from "react";
+import { AnimatedGradientText } from "@/components/magicui/animated-gradient-text";
+import { Safari } from "@/components/magicui/safari";
 import { Button } from "@/components/ui/button";
+import { ShimmerButton } from "@/components/ui/shimmer-button";
+import { fadeInUp, scaleIn, staggerContainer } from "@/lib/animations";
 import { cn } from "@/lib/utils";
-import { fadeInUp, staggerContainer, scaleIn, gradientAnimation } from "@/lib/animations";
 import { motion } from "framer-motion";
-import { ArrowRight, Play, Brain } from "lucide-react";
+import { ArrowRight, Play, Sparkles } from "lucide-react";
 import Link from "next/link";
-
-export const HeroSection = memo(() => {
+export const HeroSection = () => {
   return (
     <section className="relative overflow-hidden px-4 py-20 sm:px-6 lg:px-8">
-      <div className="from-primary/3 via-primary/1 absolute inset-0 bg-gradient-to-b to-transparent" />
-      <div className="via-primary/2 absolute inset-0 bg-gradient-to-r from-transparent to-transparent" />
+
       <motion.div
         className="relative mx-auto max-w-7xl text-center"
         initial="initial"
@@ -20,56 +20,76 @@ export const HeroSection = memo(() => {
         variants={staggerContainer}
       >
         <motion.div variants={fadeInUp} className="mb-8">
-          <h1 className="mb-6 text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-            Generate Professional Quizzes
-            <br />
-            <motion.span
-              className="from-primary via-primary/80 to-primary/60 bg-gradient-to-r bg-[length:200%_100%] bg-clip-text text-transparent"
-              animate={gradientAnimation.animate}
-              transition={gradientAnimation.transition}
-              style={{
-                textShadow: "0 0 30px hsl(var(--primary) / 0.4)",
-              }}
-            >
-              in 15 Seconds with AI
-            </motion.span>
-          </h1>
-          <p className="text-muted-foreground mx-auto max-w-3xl text-lg sm:text-xl md:text-2xl">
+          <div className="mb-6">
+            <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl lg:text-6xl">
+              <span className="mb-2 block">Generate Professional Quizzes</span>
+              <AnimatedGradientText
+                className="text-4xl font-extrabold drop-shadow-lg sm:text-5xl md:text-6xl lg:text-6xl"
+                speed={0.8}
+                colorFrom="#ff6b35"
+                colorTo="#ff9f47"
+              >
+                in 15 Seconds with AI
+              </AnimatedGradientText>
+            </h1>
+          </div>
+
+          <p className="text-muted-foreground mx-auto max-w-3xl text-lg leading-relaxed sm:text-xl">
             From topic to complete quiz in seconds. AI-powered generation with
-            advanced customization, comprehensive analytics, and seamless
-            sharing. Perfect for educators, trainers, and quiz enthusiasts.
+            <span className="text-foreground font-semibold">
+              {" "}
+              advanced customization
+            </span>
+            ,
+            <span className="text-foreground font-semibold">
+              {" "}
+              comprehensive analytics
+            </span>
+            , and
+            <span className="text-foreground font-semibold">
+              {" "}
+              seamless sharing
+            </span>
+            .
           </p>
         </motion.div>
 
         <motion.div
           variants={fadeInUp}
-          className="mb-12 flex flex-col gap-4 sm:flex-row sm:justify-center"
+          className="mb-12 flex flex-col gap-6 sm:flex-row sm:justify-center sm:gap-4"
         >
-          <Link href="/signup">
-            <Button
-              size="lg"
+          {/* Primary CTA with ShimmerButton */}
+          <Link href="/signup" className="group">
+            <ShimmerButton
               className={cn(
-                "group relative h-14 px-8 text-lg font-semibold",
+                "h-16 px-10 text-lg font-bold text-white",
                 "bg-primary hover:bg-primary/90",
-                "hover:shadow-primary/25 shadow-lg hover:shadow-xl",
-                "transform transition-all duration-200 hover:-translate-y-0.5",
-                "border-0",
+                "hover:shadow-primary/25 shadow-2xl",
+                "transform transition-all duration-300 hover:-translate-y-1 hover:scale-105",
+                "rounded-full border-0",
               )}
+              shimmerDuration="2s"
+              shimmerColor="rgba(255,255,255,0.8)"
             >
-              <span className="flex items-center">
+              <span className="relative z-10 flex items-center">
+                <Sparkles className="mr-2 h-5 w-5" />
                 Try It Now
                 <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
               </span>
-            </Button>
+            </ShimmerButton>
           </Link>
+
           <Button
             variant="outline"
             size="lg"
             className={cn(
-              "group relative h-14 px-8 text-lg font-semibold backdrop-blur-sm",
-              "bg-background/80 border-primary/20 hover:border-primary/40 border-2",
-              "hover:bg-primary/5",
-              "shadow-lg hover:shadow-xl",
+              "group relative h-16 overflow-hidden px-10 text-lg font-semibold backdrop-blur-sm",
+              "bg-background/60 border-primary/30 hover:border-primary/60 border-2",
+              "hover:bg-primary/10 hover:text-primary",
+              "shadow-xl hover:shadow-2xl",
+              "rounded-full transition-all duration-300 hover:-translate-y-0.5 hover:scale-105",
+              "before:from-primary/0 before:via-primary/5 before:to-primary/0 before:absolute before:inset-0 before:bg-gradient-to-r",
+              "before:translate-x-[-100%] before:transition-transform before:duration-500 hover:before:translate-x-[100%]",
             )}
             onClick={() => {
               document.getElementById("how-it-works")?.scrollIntoView({
@@ -78,33 +98,19 @@ export const HeroSection = memo(() => {
             }}
             aria-label="Scroll to How It Works section"
           >
-            <span className="flex items-center">
-              <Play className="mr-2 h-5 w-5 transition-transform group-hover:scale-110" />
+            <span className="relative z-10 flex items-center">
+              <Play className="group-hover:text-primary mr-3 h-5 w-5 transition-all duration-300 group-hover:scale-110" />
               See How It Works
             </span>
           </Button>
         </motion.div>
 
-        <motion.div variants={scaleIn} className="relative mx-auto max-w-4xl">
-          <div className="bg-card/60 relative rounded-2xl p-8 shadow-2xl backdrop-blur-sm">
-            <div className="border-muted-foreground/20 bg-muted/30 flex aspect-video w-full items-center justify-center rounded-xl border-2 border-dashed">
-              <div className="text-center">
-                <div className="bg-muted-foreground/10 mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full">
-                  <Brain className="text-muted-foreground/60 h-8 w-8" />
-                </div>
-                <p className="text-muted-foreground text-sm font-medium">
-                  Demo Image Placeholder
-                </p>
-                <p className="text-muted-foreground/60 text-xs">
-                  Show QuizFoundry in action
-                </p>
-              </div>
-            </div>
+        <motion.div variants={scaleIn} className="flex justify-center">
+          <div className="w-fit">
+            <Safari url="quizfoundry.com/create" className="shadow-2xl" />
           </div>
         </motion.div>
       </motion.div>
     </section>
   );
-});
-
-HeroSection.displayName = "HeroSection";
+};
