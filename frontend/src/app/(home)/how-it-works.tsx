@@ -50,13 +50,22 @@ export const HowItWorksSection = memo(() => {
         variants={staggerContainer}
       >
         <motion.div variants={fadeInUp} className="mb-16 text-center">
-          <h2 className="mb-4 text-4xl font-bold tracking-tight">
-            How It Works
+          <h2 className="mb-4 text-4xl font-extrabold tracking-tight sm:text-5xl">
+            <span className="from-primary bg-gradient-to-r to-orange-500 bg-clip-text text-transparent">
+              How It Works
+            </span>
           </h2>
-          <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
-            From idea to insight in just a few simple steps. Create, take, and
-            analyze your quizzes and attempts with comprehensive performance
-            tracking.
+          <p className="text-muted-foreground mx-auto max-w-3xl text-lg leading-relaxed sm:text-xl">
+            From idea to insight in just a few simple steps.{" "}
+            <span className="text-foreground font-semibold">
+              Create, take, and analyze
+            </span>{" "}
+            your quizzes and attempts with
+            <span className="text-foreground font-semibold">
+              {" "}
+              comprehensive performance tracking
+            </span>
+            .
           </p>
         </motion.div>
 
@@ -65,20 +74,28 @@ export const HowItWorksSection = memo(() => {
             <motion.div
               key={step.step}
               variants={fadeInUp}
-              className="relative text-center sm:text-left lg:text-left"
+              className="group relative text-center sm:text-left lg:text-left"
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.2 }}
             >
-              <div className="mb-4 flex justify-center sm:justify-start lg:justify-start">
-                <div className="bg-primary/10 text-primary flex h-16 w-16 items-center justify-center rounded-full">
-                  <step.icon className="h-8 w-8" />
-                </div>
+              <div className="mb-6 flex justify-center sm:justify-start lg:justify-start">
+                <motion.div
+                  className="text-primary flex h-20 w-20 items-center justify-center rounded-full border border-zinc-800/60 bg-zinc-900/70 shadow-lg transition-all duration-200 group-hover:shadow-xl"
+                  whileHover={{ rotate: 5 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <step.icon className="h-10 w-10 transition-transform duration-300 group-hover:scale-110" />
+                </motion.div>
               </div>
-              <div className="text-primary mb-2 text-sm font-medium">
+              <div className="from-primary mb-3 bg-gradient-to-r to-orange-500 bg-clip-text text-sm font-bold tracking-wide text-transparent uppercase">
                 Step {step.step}
               </div>
-              <h3 className="mb-2 text-xl font-semibold">{step.title}</h3>
-              <p className="text-muted-foreground">{step.description}</p>
+              <h3 className="mb-3 text-xl font-bold">{step.title}</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                {step.description}
+              </p>
               {index < 4 && (
-                <div className="from-primary/20 absolute top-8 -right-4 hidden h-0.5 w-8 bg-gradient-to-r to-transparent md:hidden lg:block xl:block" />
+                <div className="from-primary/30 absolute top-10 -right-4 hidden h-0.5 w-8 bg-gradient-to-r to-orange-500/30 md:hidden lg:block xl:block" />
               )}
             </motion.div>
           ))}

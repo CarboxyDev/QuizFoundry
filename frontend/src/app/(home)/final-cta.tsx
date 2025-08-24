@@ -1,7 +1,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { fadeInUp, staggerContainer } from "@/lib/animations";
 import { cn } from "@/lib/utils";
 import { Stat } from "@/types/landing";
@@ -83,13 +82,25 @@ export const CTASection = memo(() => {
         variants={staggerContainer}
       >
         <motion.div variants={fadeInUp} className="mb-12 text-center">
-          <h2 className="mb-4 text-4xl font-bold tracking-tight lg:text-5xl">
-            Ready to Elevate Your Quiz Experience?
+          <h2 className="mb-6 text-4xl font-extrabold tracking-tight lg:text-5xl">
+            <span className="from-foreground to-foreground/80 bg-gradient-to-r bg-clip-text">
+              Ready to Elevate Your
+            </span>
+            <br />
+            <span className="from-primary bg-gradient-to-r to-orange-500 bg-clip-text text-transparent">
+              Quiz Experience?
+            </span>
           </h2>
-          <p className="text-muted-foreground mx-auto max-w-3xl text-xl">
-            Join educators, trainers, and quiz enthusiasts who are creating,
-            taking, and analyzing smarter quizzes with the power of AI and
-            comprehensive analytics.
+          <p className="text-muted-foreground mx-auto max-w-3xl text-lg leading-relaxed sm:text-xl">
+            Join educators, trainers, and quiz enthusiasts who are
+            <span className="text-foreground font-semibold">
+              creating, taking, and analyzing
+            </span>{" "}
+            smarter quizzes with the power of
+            <span className="text-foreground font-semibold">
+              AI and comprehensive analytics
+            </span>
+            .
           </p>
         </motion.div>
 
@@ -101,59 +112,91 @@ export const CTASection = memo(() => {
                 variants={fadeInUp}
                 className="text-center"
               >
-                <Card className="bg-card/60 hover:bg-card/80 backdrop-blur-sm transition-all duration-300 hover:shadow-lg">
-                  <CardContent className="p-8">
-                    <div className="mb-4 flex justify-center">
-                      <div className={cn("rounded-xl p-3", stat.bg)}>
-                        <stat.icon className={cn("h-8 w-8", stat.color)} />
+                <div className="group/stat relative">
+                  <div className="from-primary/25 absolute inset-0 rounded-2xl bg-gradient-to-br to-orange-500/25 opacity-0 blur-xl transition-all duration-500 group-hover/stat:opacity-100" />
+                  <div className="hover:border-primary/40 relative rounded-2xl border border-zinc-800/60 bg-zinc-900/60 p-8 text-center shadow-lg transition-all duration-200 hover:shadow-xl">
+                    <div className="from-primary/5 absolute inset-0 rounded-2xl bg-gradient-to-br via-transparent to-orange-500/5 opacity-0 transition-opacity duration-300 group-hover/stat:opacity-100" />
+                    <div className="relative z-10">
+                      <div className="mb-6 flex justify-center">
+                        <div
+                          className={cn(
+                            "rounded-2xl p-4 shadow-lg transition-all duration-300 group-hover/stat:scale-110 group-hover/stat:shadow-xl",
+                            stat.bg,
+                          )}
+                        >
+                          <stat.icon
+                            className={cn(
+                              "h-10 w-10 transition-all duration-300",
+                              stat.color,
+                            )}
+                          />
+                        </div>
+                      </div>
+                      <div className="from-primary mb-3 bg-gradient-to-r to-orange-500 bg-clip-text text-4xl font-bold text-transparent">
+                        {stat.number}
+                      </div>
+                      <div className="text-foreground mb-3 text-lg font-bold">
+                        {stat.label}
+                      </div>
+                      <div className="text-muted-foreground text-sm leading-relaxed">
+                        {stat.description}
                       </div>
                     </div>
-                    <div className="mb-2 text-4xl font-bold">{stat.number}</div>
-                    <div className="mb-2 text-lg font-semibold">
-                      {stat.label}
-                    </div>
-                    <div className="text-muted-foreground text-sm">
-                      {stat.description}
-                    </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </motion.div>
             ))}
           </div>
         </motion.div>
 
         <motion.div variants={fadeInUp}>
-          <Card className="from-primary/5 via-primary/10 to-primary/5 overflow-hidden bg-gradient-to-r backdrop-blur-sm">
-            <CardContent className="p-8 lg:p-12">
+          <div className="relative overflow-hidden rounded-3xl border border-zinc-800/60 bg-zinc-900/70 shadow-2xl">
+            <div className="from-primary/10 absolute inset-0 bg-gradient-to-br via-orange-500/5 to-transparent opacity-60" />
+            <div className="relative z-10 p-8 lg:p-12">
               <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
                 <div className="text-center lg:text-left">
-                  <div className="bg-primary/10 text-primary mb-4 inline-flex items-center rounded-full px-4 py-2 text-sm font-medium">
-                    <Sparkles className="mr-2 h-4 w-4" />
+                  <motion.div
+                    className="from-primary/20 text-primary border-primary/30 mb-6 inline-flex items-center rounded-full border bg-gradient-to-r to-orange-500/20 px-6 py-3 text-sm font-bold shadow-lg"
+                    whileHover={{ scale: 1.05 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Sparkles className="mr-2 h-5 w-5" />
                     Absolutely Free
-                  </div>
-                  <h3 className="mb-4 text-3xl font-bold tracking-tight">
-                    Start Your Complete Quiz Journey Today
+                  </motion.div>
+                  <h3 className="mb-6 text-3xl font-bold tracking-tight lg:text-4xl">
+                    <span className="from-primary bg-gradient-to-r to-orange-500 bg-clip-text text-transparent">
+                      Start Your Complete Quiz Journey Today
+                    </span>
                   </h3>
-                  <p className="text-muted-foreground mb-6 text-lg">
-                    Get instant access to AI-powered quiz generation, seamless
-                    quiz experiences, and comprehensive analytics to track every
-                    aspect of performance.
+                  <p className="text-muted-foreground mb-8 text-lg leading-relaxed">
+                    Get instant access to{" "}
+                    <span className="text-foreground font-semibold">
+                      AI-powered quiz generation
+                    </span>
+                    , seamless quiz experiences, and{" "}
+                    <span className="text-foreground font-semibold">
+                      comprehensive analytics
+                    </span>{" "}
+                    to track every aspect of performance.
                   </p>
                   <div className="flex flex-col gap-4 sm:flex-row sm:justify-center lg:justify-start">
                     <Link href="/signup">
                       <Button
                         size="lg"
-                        className="group bg-primary hover:bg-primary/90 h-14 px-8 text-lg font-semibold shadow-lg transition-all duration-300 hover:scale-105"
+                        className="group bg-primary hover:bg-primary/90 hover:shadow-primary/25 h-16 rounded-full px-10 text-lg font-bold shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:scale-105"
                       >
-                        Get Started
-                        <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                        <span className="flex items-center">
+                          <Sparkles className="mr-2 h-5 w-5" />
+                          Get Started
+                          <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                        </span>
                       </Button>
                     </Link>
                     <Link href="/public-quizzes">
                       <Button
                         variant="outline"
                         size="lg"
-                        className="h-14 px-8 text-lg font-semibold backdrop-blur-sm"
+                        className="group border-primary/30 hover:border-primary/60 hover:bg-primary/10 hover:text-primary h-16 rounded-full border-2 px-10 text-lg font-semibold shadow-xl backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:scale-105 hover:shadow-2xl"
                       >
                         <Users className="mr-2 h-5 w-5" />
                         Browse Public Quizzes
@@ -163,17 +206,28 @@ export const CTASection = memo(() => {
                 </div>
                 <div className="flex items-center justify-center">
                   <div className="relative">
-                    <div className="bg-primary/20 absolute -inset-4 rounded-full blur-xl"></div>
-                    <div className="bg-card/80 relative rounded-2xl p-6 backdrop-blur-sm">
-                      <div className="space-y-4">
-                        {ctaFeatures.map((feature) => (
-                          <div
+                    <div className="from-primary/30 absolute -inset-6 animate-pulse rounded-full bg-gradient-to-r to-orange-500/30 blur-2xl"></div>
+                    <motion.div
+                      className="relative rounded-2xl border border-zinc-700/60 bg-zinc-800/80 p-8 shadow-lg"
+                      initial={{ scale: 0.9, opacity: 0.8 }}
+                      whileInView={{ scale: 1, opacity: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.5 }}
+                    >
+                      <div className="from-primary/10 absolute inset-0 rounded-2xl bg-gradient-to-br via-transparent to-orange-500/10 opacity-50" />
+                      <div className="relative z-10 space-y-6">
+                        {ctaFeatures.map((feature, index) => (
+                          <motion.div
                             key={feature.text}
-                            className="flex items-center gap-3"
+                            className="flex items-center gap-4"
+                            initial={{ x: -20, opacity: 0 }}
+                            whileInView={{ x: 0, opacity: 1 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: index * 0.1, duration: 0.4 }}
                           >
                             <div
                               className={cn(
-                                "flex h-10 w-10 items-center justify-center rounded-full",
+                                "flex h-12 w-12 items-center justify-center rounded-2xl shadow-lg",
                                 feature.bgClass,
                               )}
                             >
@@ -181,16 +235,18 @@ export const CTASection = memo(() => {
                                 className={cn("h-6 w-6", feature.colorClass)}
                               />
                             </div>
-                            <span className="font-medium">{feature.text}</span>
-                          </div>
+                            <span className="text-foreground text-lg font-semibold">
+                              {feature.text}
+                            </span>
+                          </motion.div>
                         ))}
                       </div>
-                    </div>
+                    </motion.div>
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </motion.div>
       </motion.div>
     </section>
