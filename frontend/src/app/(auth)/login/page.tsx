@@ -13,7 +13,6 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useGoogleAuth } from "@/hooks/auth/useGoogleAuth";
 import { useLogin } from "@/hooks/auth/useLogin";
-import { isDevelopment } from "@/lib/environment";
 import { motion } from "framer-motion";
 import { Mail } from "lucide-react";
 import Link from "next/link";
@@ -30,17 +29,16 @@ const loginSchema = z.object({
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuth();
-  const [formData, setFormData] = useState(
-    isDevelopment()
-      ? {
-          email: "dev@carboxy.xyz",
-          password: "CarboxyDev123!",
-        }
-      : {
-          email: "",
-          password: "",
-        },
-  );
+  const [formData, setFormData] = useState({
+    email:
+      process.env.NODE_ENV === "development"
+        ? process.env.NEXT_PUBLIC_DEV_EMAIL || ""
+        : "",
+    password:
+      process.env.NODE_ENV === "development"
+        ? process.env.NEXT_PUBLIC_DEV_PASSWORD || ""
+        : "",
+  });
   const [showPassword, setShowPassword] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
