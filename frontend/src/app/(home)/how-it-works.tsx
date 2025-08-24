@@ -69,22 +69,20 @@ export const HowItWorksSection = memo(() => {
           </p>
         </motion.div>
 
-        <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 lg:gap-8">
-          {steps.map((step, index) => (
+        <div className="relative grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 lg:gap-8">
+          {steps.map((step) => (
             <motion.div
               key={step.step}
               variants={fadeInUp}
               className="group relative text-center sm:text-left lg:text-left"
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.2 }}
             >
               <div className="mb-6 flex justify-center sm:justify-start lg:justify-start">
                 <motion.div
-                  className="text-primary flex h-20 w-20 items-center justify-center rounded-full border border-zinc-800/60 bg-zinc-900/70 shadow-lg transition-all duration-200 group-hover:shadow-xl"
-                  whileHover={{ rotate: 5 }}
+                  className="text-primary flex h-20 w-20 items-center justify-center rounded-full border border-zinc-800/60 bg-zinc-900/70 shadow-lg"
+                  whileHover={{ scale: 1.1 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <step.icon className="h-10 w-10 transition-transform duration-300 group-hover:scale-110" />
+                  <step.icon className="h-10 w-10" />
                 </motion.div>
               </div>
               <div className="from-primary mb-3 bg-gradient-to-r to-orange-500 bg-clip-text text-sm font-bold tracking-wide text-transparent uppercase">
@@ -94,9 +92,6 @@ export const HowItWorksSection = memo(() => {
               <p className="text-muted-foreground leading-relaxed">
                 {step.description}
               </p>
-              {index < 4 && (
-                <div className="from-primary/30 absolute top-10 -right-4 hidden h-0.5 w-8 bg-gradient-to-r to-orange-500/30 md:hidden lg:block xl:block" />
-              )}
             </motion.div>
           ))}
         </div>
