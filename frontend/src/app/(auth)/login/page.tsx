@@ -6,6 +6,7 @@ import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
 import PasswordInput from "@/components/auth/PasswordInput";
 import { AuthGuard } from "@/components/AuthGuard";
 import { BrandIcon } from "@/components/BrandIcon";
+import { SpinLoader } from "@/components/Loaders";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -231,6 +232,7 @@ export default function LoginPage() {
                       className="h-11 w-full"
                       disabled={isSubmitDisabled}
                     >
+                      {isLoading && <SpinLoader size="sm" className="mr-2" color="text-white" />}
                       {isLoading
                         ? "Signing in..."
                         : isSuccess

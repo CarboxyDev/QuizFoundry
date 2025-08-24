@@ -14,6 +14,7 @@ import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
 import PasswordInput from "@/components/auth/PasswordInput";
 import { AuthGuard } from "@/components/AuthGuard";
 import { BrandIcon } from "@/components/BrandIcon";
+import { SpinLoader } from "@/components/Loaders";
 import { useAuth } from "@/hooks/auth/useAuth";
 import { useGoogleAuth } from "@/hooks/auth/useGoogleAuth";
 import { useSignup } from "@/hooks/auth/useSignup";
@@ -213,6 +214,7 @@ export default function SignUpPage() {
                       className="h-11 w-full"
                       disabled={isSubmitDisabled}
                     >
+                      {isLoading && <SpinLoader size="sm" className="mr-2" color="text-white" />}
                       {isLoading
                         ? "Creating account..."
                         : isSuccess
