@@ -369,7 +369,9 @@ function normalizeAIResponse(
   };
 }
 
-function createQuizPrompt(input: QuizGenerationInput): Array<{ role: string; parts: Array<{ text: string }> }> {
+function createQuizPrompt(
+  input: QuizGenerationInput
+): Array<{ role: string; parts: Array<{ text: string }> }> {
   const context: QuizGenerationContext = {
     prompt: input.prompt,
     difficulty: input.difficulty,
@@ -378,7 +380,7 @@ function createQuizPrompt(input: QuizGenerationInput): Array<{ role: string; par
   };
 
   const formattedPrompt = PromptFormatter.formatQuizGeneration(context);
-  
+
   return [
     {
       role: "user",
@@ -397,7 +399,9 @@ export async function generateCreativeQuizPrompt(): Promise<string> {
   // Generate a new varied prompt each time for maximum diversity
   const dynamicPrompt = CreativePromptGenerator.generateVariedPrompt();
 
-  console.log(`[Creative Quiz] Generating with variety seed: ${dynamicPrompt.substring(0, 100)}...`);
+  console.log(
+    `[Creative Quiz] Generating with variety seed: ${dynamicPrompt.substring(0, 100)}...`
+  );
 
   const response = await ai.models.generateContent({
     model,
@@ -413,7 +417,7 @@ export async function generateCreativeQuizPrompt(): Promise<string> {
   if (!generatedPrompt) {
     throw new AppError("Failed to generate quiz prompt", 500);
   }
-  
+
   console.log(`[Creative Quiz] Generated topic: "${generatedPrompt}"`);
   return generatedPrompt;
 }
@@ -780,8 +784,11 @@ function createAdditionalQuestionsPrompt(
     existingQuestions: context.existingQuestions,
   };
 
-  const formattedPrompt = PromptFormatter.formatAdditionalQuestions(promptContext, count);
-  
+  const formattedPrompt = PromptFormatter.formatAdditionalQuestions(
+    promptContext,
+    count
+  );
+
   return [
     {
       role: "user",
@@ -802,8 +809,11 @@ function createQuestionEnhancementPrompt(
     existingQuestions: context.existingQuestions,
   };
 
-  const formattedPrompt = PromptFormatter.formatQuestionEnhancement(questionText, promptContext);
-  
+  const formattedPrompt = PromptFormatter.formatQuestionEnhancement(
+    questionText,
+    promptContext
+  );
+
   return [
     {
       role: "user",
@@ -822,7 +832,7 @@ function createAdditionalOptionsPrompt(
     existingOptions,
     optionsCount
   );
-  
+
   return [
     {
       role: "user",
@@ -835,8 +845,11 @@ function createQuestionTypeSuggestionsPrompt(
   topic: string,
   difficulty: "easy" | "medium" | "hard"
 ): Array<{ role: string; parts: Array<{ text: string }> }> {
-  const formattedPrompt = PromptFormatter.formatQuestionTypeSuggestions(topic, difficulty);
-  
+  const formattedPrompt = PromptFormatter.formatQuestionTypeSuggestions(
+    topic,
+    difficulty
+  );
+
   return [
     {
       role: "user",
@@ -1072,8 +1085,12 @@ export async function validateQuizContent(
   const checkId = Math.random().toString(36).substring(2, 15);
 
   try {
-    console.log(`[AI Security Check] [${checkId}] Starting validation for quiz: "${quizContent.title}"`);
-    console.log(`[AI Security Check] [${checkId}] Questions count: ${quizContent.questions.length}`);
+    console.log(
+      `[AI Security Check] [${checkId}] Starting validation for quiz: "${quizContent.title}"`
+    );
+    console.log(
+      `[AI Security Check] [${checkId}] Questions count: ${quizContent.questions.length}`
+    );
 
     const prompt = createSecurityCheckPrompt(quizContent);
 
@@ -1085,11 +1102,15 @@ export async function validateQuizContent(
     const text = response.text?.trim();
 
     if (!text) {
-      console.error(`[AI Security Check] [${checkId}] No response received from API`);
+      console.error(
+        `[AI Security Check] [${checkId}] No response received from API`
+      );
       throw new AppError("No response received from AI security check", 500);
     }
 
-    console.log(`[AI Security Check] [${checkId}] Received response (${text.length} chars)`);
+    console.log(
+      `[AI Security Check] [${checkId}] Received response (${text.length} chars)`
+    );
 
     const result = parseSecurityCheckResponse(text);
     const duration = Date.now() - startTime;
@@ -1107,32 +1128,49 @@ export async function validateQuizContent(
     };
 
     if (result.isApproved) {
-      console.log(`[AI Security Check] [${checkId}] ✅ APPROVED (confidence: ${result.confidence}%, duration: ${duration}ms)`);
+      console.log(
+        `[AI Security Check] [${checkId}] ✅ APPROVED (confidence: ${result.confidence}%, duration: ${duration}ms)`
+      );
     } else {
-      console.warn(`[AI Security Check] [${checkId}] ❌ REJECTED (confidence: ${result.confidence}%, duration: ${duration}ms)`);
-      console.warn(`[AI Security Check] [${checkId}] Rejection reason: ${result.reasoning}`);
+      console.warn(
+        `[AI Security Check] [${checkId}] ❌ REJECTED (confidence: ${result.confidence}%, duration: ${duration}ms)`
+      );
+      console.warn(
+        `[AI Security Check] [${checkId}] Rejection reason: ${result.reasoning}`
+      );
       if (result.concerns.length > 0) {
-        console.warn(`[AI Security Check] [${checkId}] Concerns: ${result.concerns.join(", ")}`);
+        console.warn(
+          `[AI Security Check] [${checkId}] Concerns: ${result.concerns.join(", ")}`
+        );
       }
     }
 
     // Log structured data for monitoring
-    console.log(`[AI Security Check] [${checkId}] METRICS:`, JSON.stringify(logData));
+    console.log(
+      `[AI Security Check] [${checkId}] METRICS:`,
+      JSON.stringify(logData)
+    );
 
     return result;
   } catch (error) {
     const duration = Date.now() - startTime;
-    console.error(`[AI Security Check] [${checkId}] ERROR during validation (duration: ${duration}ms):`, error);
+    console.error(
+      `[AI Security Check] [${checkId}] ERROR during validation (duration: ${duration}ms):`,
+      error
+    );
 
     // Log error metrics
-    console.log(`[AI Security Check] [${checkId}] ERROR_METRICS:`, JSON.stringify({
-      checkId,
-      quizTitle: quizContent.title,
-      questionCount: quizContent.questions.length,
-      error: error instanceof Error ? error.message : String(error),
-      duration: `${duration}ms`,
-      timestamp: new Date().toISOString(),
-    }));
+    console.log(
+      `[AI Security Check] [${checkId}] ERROR_METRICS:`,
+      JSON.stringify({
+        checkId,
+        quizTitle: quizContent.title,
+        questionCount: quizContent.questions.length,
+        error: error instanceof Error ? error.message : String(error),
+        duration: `${duration}ms`,
+        timestamp: new Date().toISOString(),
+      })
+    );
 
     if (error instanceof AppError) {
       throw error;
@@ -1149,7 +1187,7 @@ function createSecurityCheckPrompt(
   quizContent: QuizContentForValidation
 ): Array<{ role: string; parts: Array<{ text: string }> }> {
   const formattedPrompt = PromptFormatter.formatSecurityCheck(quizContent);
-  
+
   return [
     {
       role: "user",

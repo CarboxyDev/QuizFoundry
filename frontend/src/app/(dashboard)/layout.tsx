@@ -1,7 +1,7 @@
 "use client";
 
-import { SidebarNav } from "@/app/(dashboard)/dashboard/SidebarNav";
-import { SidebarUserFooter } from "@/app/(dashboard)/dashboard/SidebarUserFooter";
+import { SidebarNav } from "@/app/(dashboard)/dashboard/sidebar";
+import { SidebarUserMenu } from "@/app/(dashboard)/dashboard/sidebar-user-menu";
 import { ProtectedRouteGuard } from "@/components/AuthGuard";
 import {
   Sidebar,
@@ -52,7 +52,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <SidebarNav pathname={pathname} />
           </SidebarContent>
           <SidebarFooter className="border-sidebar-border border-t">
-            <SidebarUserFooter user={user} logout={logout} />
+            <SidebarUserMenu user={user} logout={logout} />
           </SidebarFooter>
         </Sidebar>
         <SidebarInset>

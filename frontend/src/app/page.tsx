@@ -1,10 +1,10 @@
-import { Background } from "@/components/landing/Background";
-import { CTASection } from "@/components/landing/CTASection";
-import { FeaturesSection } from "@/components/landing/FeaturesSection";
-import { Footer } from "@/components/landing/Footer";
-import { HeroSection } from "@/components/landing/HeroSection";
-import { HowItWorksSection } from "@/components/landing/HowItWorksSection";
-import { QuizModesSection } from "@/components/landing/QuizModesSection";
+import { Background } from "@/app/(home)/background";
+import { FeaturesSection } from "@/app/(home)/features";
+import { CTASection } from "@/app/(home)/final-cta";
+import { Footer } from "@/app/(home)/footer";
+import { HeroSection } from "@/app/(home)/hero";
+import { HowItWorksSection } from "@/app/(home)/how-it-works";
+import { QuizModesSection } from "@/app/(home)/quiz-modes";
 
 export default function HomePage() {
   return (

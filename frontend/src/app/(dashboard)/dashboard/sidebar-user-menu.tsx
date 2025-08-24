@@ -19,12 +19,12 @@ interface UserProfile {
   is_onboarding_complete: boolean;
 }
 
-interface SidebarUserFooterProps {
+interface SidebarUserMenuProps {
   user: UserProfile | null;
   logout: () => void;
 }
 
-export function SidebarUserFooter({ user, logout }: SidebarUserFooterProps) {
+export function SidebarUserMenu({ user, logout }: SidebarUserMenuProps) {
   return (
     <SidebarMenu>
       <SidebarMenuItem>
