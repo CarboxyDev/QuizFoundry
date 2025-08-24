@@ -17,7 +17,7 @@ export function Providers({ children }: { children: ReactNode }) {
           position="top-right"
           richColors
           closeButton
-          duration={60000}
+          duration={10000}
           toastOptions={{
             style: {
               fontSize: "14px",

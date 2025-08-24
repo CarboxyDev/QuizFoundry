@@ -24,6 +24,9 @@ const Toaster = ({ ...props }: ToasterProps) => {
           "--info-bg": "hsl(215 100% 6%)",
           "--info-border": "hsl(223 100% 12%)",
           "--info-text": "hsl(216 87% 65%)",
+          "--primary-bg": "hsl(var(--primary) / 0.1)",
+          "--primary-border": "hsl(var(--primary) / 0.2)",
+          "--primary-text": "hsl(var(--primary))",
         }
       : {
           "--normal-bg": "var(--card)",
@@ -41,6 +44,9 @@ const Toaster = ({ ...props }: ToasterProps) => {
           "--info-bg": "hsl(214 100% 97%)",
           "--info-border": "hsl(214 95% 93%)",
           "--info-text": "hsl(214 84% 56%)",
+          "--primary-bg": "hsl(var(--primary) / 0.1)",
+          "--primary-border": "hsl(var(--primary) / 0.2)",
+          "--primary-text": "hsl(var(--primary))",
         };
 
   return (

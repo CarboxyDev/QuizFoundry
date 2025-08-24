@@ -233,7 +233,7 @@ export default function CreateQuizPage() {
                   {isGenerating && (
                     <BorderBeam
                       size={100}
-                      duration={2}
+                      duration={3}
                       colorFrom="#ff7d28"
                       colorTo="#ff8c46"
                       borderWidth={2}
