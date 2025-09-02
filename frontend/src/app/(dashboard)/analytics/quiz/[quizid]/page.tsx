@@ -86,7 +86,9 @@ function StatCard({
               <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="text-muted-foreground text-xs sm:text-sm">{title}</p>
+              <p className="text-muted-foreground text-xs sm:text-sm">
+                {title}
+              </p>
               <p className="text-lg font-bold sm:text-2xl">{value}</p>
             </div>
           </div>
@@ -115,7 +117,9 @@ function ScoreDistributionCard({
         <div className="space-y-3">
           {distribution.map((range, index) => (
             <div key={range.range} className="flex items-center gap-1 sm:gap-3">
-              <div className="w-14 text-xs font-medium sm:w-16 sm:text-sm">{range.range}</div>
+              <div className="w-14 text-xs font-medium sm:w-16 sm:text-sm">
+                {range.range}
+              </div>
               <div className="bg-muted h-3 flex-1 overflow-hidden rounded-full">
                 <motion.div
                   className="h-full bg-gradient-to-r from-blue-500 to-purple-500"
@@ -175,7 +179,9 @@ function TopPerformersCard({
                 </div>
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-medium sm:text-sm">{performer.userName}</p>
+                <p className="truncate text-xs font-medium sm:text-sm">
+                  {performer.userName}
+                </p>
                 <p className="text-muted-foreground text-xs">
                   {formatDate(performer.completedAt)}
                 </p>
@@ -259,7 +265,9 @@ function QuestionAnalysisCard({
                         <CheckCircle className="h-2 w-2 text-white sm:h-3 sm:w-3" />
                       )}
                     </div>
-                    <div className="min-w-0 flex-1 text-xs sm:text-sm">{option.optionText}</div>
+                    <div className="min-w-0 flex-1 text-xs sm:text-sm">
+                      {option.optionText}
+                    </div>
                     <div className="bg-muted h-2 w-16 flex-shrink-0 overflow-hidden rounded-full sm:w-24">
                       <motion.div
                         className={cn(
@@ -374,14 +382,22 @@ export default function QuizAnalyticsPage() {
                 transition={{ duration: 0.2 }}
               >
                 <Link href="/my-quizzes">
-                  <Button variant="ghost" size="sm" className="gap-1 text-xs sm:gap-2 sm:text-sm">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="gap-1 text-xs sm:gap-2 sm:text-sm"
+                  >
                     <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span className="hidden sm:inline">Back to My Quizzes</span>
                     <span className="sm:hidden">Back</span>
                   </Button>
                 </Link>
                 <Link href={`/my-quizzes/edit/${quizId}`}>
-                  <Button variant="outline" size="sm" className="gap-1 text-xs sm:gap-2 sm:text-sm">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1 text-xs sm:gap-2 sm:text-sm"
+                  >
                     <Edit className="h-3 w-3 sm:h-4 sm:w-4" />
                     <span className="hidden sm:inline">Edit Quiz</span>
                     <span className="sm:hidden">Edit</span>
